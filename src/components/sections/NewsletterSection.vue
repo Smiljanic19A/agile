@@ -178,11 +178,7 @@ const submit = () => {
     align-items: start;
   }
 }
-@media (max-width: 520px) {
-  .news {
-    padding-top: clamp(48px, 12vw, 96px);
-    padding-bottom: clamp(48px, 12vw, 96px);
-  }
+@media (max-width: 720px) {
   .news__form {
     grid-template-columns: 1fr;
   }

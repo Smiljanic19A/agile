@@ -71,7 +71,7 @@ watch(featured, () => { current.value = 0; stopTimer(); startTimer() })
           <span class="spot__live" aria-hidden="true"></span>
           Now Featured
         </span>
-        <span v-if="total > 1" class="spot__counter">{{ current + 1 }} / {{ total }}</span>
+        <span v-if="total > 1" class="spot__counter">{{ String(current + 1).padStart(2, '0') }} — {{ String(total).padStart(2, '0') }}</span>
       </div>
 
       <!-- slide content + side arrows -->
@@ -363,6 +363,13 @@ watch(featured, () => { current.value = 0; stopTimer(); startTimer() })
   .spot__cover :deep(.cover) {
     aspect-ratio: 4 / 3;
   }
+  /* pull side arrows inside — no overflow clipping risk */
+  .spot__nav--prev {
+    left: 8px;
+  }
+  .spot__nav--next {
+    right: 8px;
+  }
 }
 
 @media (max-width: 720px) {
@@ -378,23 +385,23 @@ watch(featured, () => { current.value = 0; stopTimer(); startTimer() })
     z-index: 1;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--gutter);
     scrollbar-width: none;
-    gap: 0;
+    padding-left: var(--gutter);
+    padding-right: var(--gutter);
+    gap: 16px;
   }
   .spot__rail::-webkit-scrollbar { display: none; }
 
   .spot__slide {
-    flex: 0 0 calc(100% - 2 * var(--gutter));
-    margin-left: var(--gutter);
+    flex: 0 0 calc(100vw - var(--gutter) * 2);
     scroll-snap-align: start;
+    scroll-snap-stop: always;
     display: flex;
     flex-direction: column;
     gap: 16px;
     padding-bottom: clamp(44px, 8vw, 64px);
     padding-top: 8px;
-  }
-  .spot__slide:last-child {
-    margin-right: var(--gutter);
   }
 
   .spot__slide-cover {

@@ -156,11 +156,13 @@ const { articles, featureArticle, standardArticles, textArticles } = storeToRefs
   .blog__mobile-cta {
     margin-top: 12px;
     display: flex;
-    justify-content: stretch;
   }
   .blog__mobile-cta :deep(.btn) {
     width: 100%;
     justify-content: center;
+  }
+  .blog__rail :deep(.card) {
+    height: clamp(360px, 76vw, 460px);
   }
 }
 </style>

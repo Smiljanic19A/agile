@@ -19,7 +19,7 @@ const { video } = storeToRefs(content)
       <div class="watch__copy">
         <SectionLabel index="02" label="Watch" />
         <h2 id="watch-title" class="display-2 watch__title fade-up">
-          On screen. <em>Talks, breakdowns, field notes.</em>
+          Talks, workshops, <em>and field breakdowns.</em>
         </h2>
         <p class="prose fade-up">{{ video.description }}</p>
         <div class="watch__cta fade-up">

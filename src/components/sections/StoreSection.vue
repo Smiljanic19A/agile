@@ -20,7 +20,7 @@ const visible = computed(() => content.productsByCategory(active.value))
     <div class="container">
       <header class="store__head">
         <div class="store__head-left">
-          <SectionLabel index="04" label="Tools & Resources" />
+          <SectionLabel index="05" label="Tools & Resources" />
           <h2 id="store-title" class="display-2 store__title fade-up">
             Books, courses, templates, <em>and working material.</em>
           </h2>
@@ -133,15 +133,11 @@ const visible = computed(() => content.productsByCategory(active.value))
 
 .store-fade-enter-active,
 .store-fade-leave-active {
-  transition: opacity 220ms var(--ease), transform 220ms var(--ease);
+  transition: opacity 180ms var(--ease);
 }
-.store-fade-enter-from {
-  opacity: 0;
-  transform: translateY(6px);
-}
+.store-fade-enter-from,
 .store-fade-leave-to {
   opacity: 0;
-  transform: translateY(-6px);
 }
 
 @media (max-width: 1100px) {
@@ -176,6 +172,9 @@ const visible = computed(() => content.productsByCategory(active.value))
   .store__mobile-cta :deep(.btn) {
     width: 100%;
     justify-content: center;
+  }
+  .store__rail :deep(.prod) {
+    height: clamp(360px, 76vw, 460px);
   }
 }
 </style>

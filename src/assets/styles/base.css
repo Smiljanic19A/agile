@@ -2,7 +2,6 @@
   --teal: #378882;
   --teal-deep: #23615c;
   --teal-soft: #5ba39d;
-  --teal-glow: #4c9892;
   --cream: #f3f3f3;
   --paper: #faf9f4;
   --ink: #0e1a1a;
@@ -263,14 +262,14 @@ input {
   display: none;
 }
 .snap-rail > * {
-  flex: 0 0 82%;
+  flex: 0 0 calc(100vw - var(--gutter) * 3);
   max-width: 460px;
-  height: 460px;
+  height: clamp(360px, 76vw, 460px);
   scroll-snap-align: start;
   scroll-snap-stop: always;
   overflow: hidden;
 }
 .snap-rail--narrow > * {
-  flex: 0 0 78%;
-  height: 460px;
+  flex: 0 0 calc(100vw - var(--gutter) * 3.5);
+  height: clamp(360px, 76vw, 460px);
 }

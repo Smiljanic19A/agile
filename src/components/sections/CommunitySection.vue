@@ -22,7 +22,7 @@ const initial = (h) => h.charAt(0).toUpperCase()
         <div class="comm__left-hex" aria-hidden="true">
           <HexLattice variant="cluster" tone="on-cream" :size="56" :accents="3" :seed="44" :pulse="false" />
         </div>
-        <SectionLabel index="03.5" label="The Center" />
+        <SectionLabel index="04" label="The Center" />
 
         <h2 id="comm-title" class="display-2 comm__title fade-up">
           The community is the <em>center of the project.</em>
@@ -311,7 +311,7 @@ const initial = (h) => h.charAt(0).toUpperCase()
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border: 1px solid var(--ink);
+  border: 1px solid rgba(243, 243, 243, 0.1);
 }
 .comm__floating-eyebrow {
   font-family: var(--font-mono);

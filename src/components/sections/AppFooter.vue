@@ -150,7 +150,6 @@ const connect = [
   font-weight: 400;
   letter-spacing: -0.018em;
   margin: 0;
-  font-variation-settings: "SOFT" 40, "opsz" 144;
 }
 .ft__brand-tag {
   font-size: 14px;

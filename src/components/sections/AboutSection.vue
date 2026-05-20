@@ -218,7 +218,8 @@ import SectionLabel from '@/components/ui/SectionLabel.vue'
     padding: 20px;
   }
   .about__quote {
-    display: none;
+    font-size: 15px;
+    padding-left: 12px;
   }
 }
 </style>

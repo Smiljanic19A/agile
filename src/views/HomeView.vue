@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useContentStore } from '@/stores/content.js'
 import AppNav from '@/components/AppNav.vue'
@@ -16,10 +16,11 @@ import AppFooter from '@/components/sections/AppFooter.vue'
 const content = useContentStore()
 const { featured } = storeToRefs(content)
 
+let io = null
 onMounted(() => {
   if (typeof IntersectionObserver === 'undefined') return
   const els = document.querySelectorAll('.fade-up')
-  const io = new IntersectionObserver(
+  io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
         if (e.isIntersecting) {
@@ -32,6 +33,7 @@ onMounted(() => {
   )
   els.forEach((el) => io.observe(el))
 })
+onBeforeUnmount(() => { io?.disconnect() })
 </script>
 
 <template>

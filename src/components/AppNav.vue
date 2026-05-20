@@ -269,16 +269,19 @@ const close = () => (open.value = false)
   height: 1.5px;
   background: currentColor;
   border-radius: 1px;
-  transition: opacity 200ms var(--ease);
+  transition: transform 260ms var(--ease), opacity 180ms var(--ease);
 }
 .nav__burger-line:nth-of-type(1) {
-  top: 17px;
+  top: 20px;
 }
 .nav__burger-line:nth-of-type(2) {
-  top: 23px;
+  top: 20px;
 }
-.nav__burger-line.is-open {
-  opacity: 0;
+.nav__burger-line:nth-of-type(1).is-open {
+  transform: rotate(45deg);
+}
+.nav__burger-line:nth-of-type(2).is-open {
+  transform: rotate(-45deg);
 }
 
 /* full-screen menu overlay */
