@@ -19,8 +19,8 @@
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --container: 1280px;
-  --gutter: clamp(20px, 4vw, 56px);
-  --section-y: clamp(80px, 11vw, 160px);
+  --gutter: clamp(22px, 4vw, 56px);
+  --section-y: clamp(56px, 11vw, 160px);
 
   --radius-sm: 6px;
   --radius: 14px;
@@ -151,20 +151,20 @@ input {
 }
 
 .display-1 {
-  font-size: clamp(44px, 7.4vw, 110px);
-  line-height: 0.98;
+  font-size: clamp(40px, 7.4vw, 110px);
+  line-height: 1;
   letter-spacing: -0.025em;
 }
 
 .display-2 {
-  font-size: clamp(36px, 5.4vw, 80px);
-  line-height: 1.02;
+  font-size: clamp(30px, 5.4vw, 80px);
+  line-height: 1.04;
   letter-spacing: -0.022em;
 }
 
 .display-3 {
-  font-size: clamp(28px, 3.6vw, 52px);
-  line-height: 1.08;
+  font-size: clamp(24px, 3.6vw, 52px);
+  line-height: 1.1;
   letter-spacing: -0.02em;
 }
 
@@ -227,4 +227,49 @@ input {
   .hidden-desktop {
     display: none;
   }
+}
+
+/* mobile-only horizontal swipe rail used by Blog + Store */
+.is-desktop-only {
+  display: initial;
+}
+.is-mobile-only {
+  display: none !important;
+}
+@media (max-width: 720px) {
+  .is-desktop-only {
+    display: none !important;
+  }
+  .is-mobile-only {
+    display: flex !important;
+  }
+}
+
+.snap-rail {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--gutter);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 4px var(--gutter) 24px;
+  margin-left: calc(-1 * var(--gutter));
+  margin-right: calc(-1 * var(--gutter));
+}
+.snap-rail::-webkit-scrollbar {
+  display: none;
+}
+.snap-rail > * {
+  flex: 0 0 82%;
+  max-width: 460px;
+  height: 480px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.snap-rail--narrow > * {
+  flex: 0 0 78%;
+  height: 460px;
 }

@@ -35,13 +35,25 @@ const visible = computed(() =>
 
       <div class="store__tab-row fade-up">
         <StoreTabs v-model="active" :tabs="tabs" />
-        <AppButton variant="ghostOnTeal" size="sm" :href="externalLinks.payhip" external>
-          Visit full store
-        </AppButton>
+        <div class="is-desktop-only">
+          <AppButton variant="ghostOnTeal" size="sm" :href="externalLinks.payhip" external>
+            Visit full store
+          </AppButton>
+        </div>
       </div>
 
       <Transition name="store-fade" mode="out-in">
-        <div :key="active" class="store__grid">
+        <div :key="active" class="store__grid is-desktop-only">
+          <ProductCard
+            v-for="p in visible"
+            :key="p.id"
+            :product="p"
+          />
+        </div>
+      </Transition>
+
+      <Transition name="store-fade" mode="out-in">
+        <div :key="`m-${active}`" class="store__rail snap-rail snap-rail--narrow is-mobile-only">
           <ProductCard
             v-for="p in visible"
             :key="p.id"
@@ -51,6 +63,12 @@ const visible = computed(() =>
       </Transition>
 
       <p v-if="!visible.length" class="store__empty">No items in this category yet.</p>
+
+      <div class="store__mobile-cta is-mobile-only">
+        <AppButton variant="ghostOnTeal" :href="externalLinks.payhip" external>
+          Visit full store
+        </AppButton>
+      </div>
     </div>
   </section>
 </template>
@@ -131,7 +149,8 @@ const visible = computed(() =>
 @media (max-width: 1100px) {
   .store__head {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 24px;
+    margin-bottom: 36px;
     align-items: start;
   }
   .store__grid {
@@ -142,10 +161,23 @@ const visible = computed(() =>
   .store__grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .store__tab-row {
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
 }
-@media (max-width: 480px) {
-  .store__grid {
-    grid-template-columns: 1fr;
+@media (max-width: 720px) {
+  .store__head-left {
+    gap: 22px;
+  }
+  .store__mobile-cta {
+    margin-top: 14px;
+    display: flex;
+  }
+  .store__mobile-cta :deep(.btn) {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

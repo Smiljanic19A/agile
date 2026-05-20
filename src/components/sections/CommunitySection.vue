@@ -46,7 +46,7 @@ const initial = (h) => h.charAt(0).toUpperCase()
         </div>
       </div>
 
-      <div class="comm__right fade-up" aria-hidden="true">
+      <div class="comm__right is-desktop-only fade-up" aria-hidden="true">
         <div class="comm__channels">
           <span class="comm__channel is-active"># planning</span>
           <span class="comm__channel"># monitoring</span>
@@ -299,13 +299,65 @@ const initial = (h) => h.charAt(0).toUpperCase()
 @media (max-width: 1024px) {
   .comm__grid {
     grid-template-columns: 1fr;
-    gap: 56px;
+    gap: 44px;
   }
 }
-@media (max-width: 520px) {
+@media (max-width: 640px) {
+  .comm__left {
+    gap: 22px;
+  }
+  .comm__stats {
+    grid-template-columns: 1fr;
+  }
+  .comm__stat {
+    padding: 18px 0;
+    border-right: none;
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .comm__stat:last-child {
+    border-bottom: none;
+  }
+  .comm__stat-label {
+    margin-top: 0;
+    text-align: right;
+  }
+  .comm__cta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .comm__cta :deep(.btn) {
+    width: 100%;
+    justify-content: center;
+  }
+  .comm__right {
+    padding: 18px;
+    border-radius: var(--radius);
+  }
+  .comm__channels {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    padding-bottom: 12px;
+  }
+  .comm__channels::-webkit-scrollbar {
+    display: none;
+  }
+  .comm__channel {
+    flex-shrink: 0;
+  }
+  .comm__thread {
+    padding: 12px;
+    gap: 12px;
+  }
   .comm__floating-card {
-    right: 16px;
-    bottom: -16px;
+    position: static;
+    align-self: flex-start;
+    margin-top: 4px;
   }
 }
 </style>

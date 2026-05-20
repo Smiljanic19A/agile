@@ -5,7 +5,6 @@ export const externalLinks = {
   skool: 'https://www.skool.com/agileperiodization',
   payhip: 'https://payhip.com/mjovanovic',
   amazon: 'https://amzn.to/4bQPUeM',
-  complementary: 'https://complementarytraining.com/',
   linkedin: 'https://www.linkedin.com/in/mladenjovanovic/',
   instagram: 'https://www.instagram.com/physical_prep/',
   github: 'https://github.com/mladenjovanovic',

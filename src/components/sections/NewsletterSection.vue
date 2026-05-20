@@ -158,13 +158,24 @@ const submit = () => {
 @media (max-width: 960px) {
   .news__inner {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 28px;
     align-items: start;
   }
 }
 @media (max-width: 520px) {
+  .news {
+    padding-top: clamp(48px, 12vw, 96px);
+    padding-bottom: clamp(48px, 12vw, 96px);
+  }
   .news__form {
     grid-template-columns: 1fr;
+  }
+  .news__submit {
+    justify-content: center;
+    padding: 14px 20px;
+  }
+  .news__input {
+    padding: 14px 18px;
   }
 }
 </style>

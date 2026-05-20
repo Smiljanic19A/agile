@@ -117,4 +117,26 @@ defineProps({
   display: inline-block;
   transition: transform 220ms var(--ease);
 }
+
+@media (max-width: 720px) {
+  .prod {
+    padding: 16px;
+  }
+  .prod__cover {
+    margin-bottom: 16px;
+  }
+  .prod__title {
+    font-size: 20px;
+  }
+  .prod__blurb {
+    margin-bottom: 16px;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    overflow: hidden;
+  }
+  .prod__foot {
+    padding-top: 12px;
+  }
+}
 </style>

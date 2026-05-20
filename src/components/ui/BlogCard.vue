@@ -173,7 +173,46 @@ defineProps({
 @media (max-width: 900px) {
   .card--feature {
     grid-template-columns: 1fr;
-    gap: 22px;
+    gap: 18px;
+  }
+}
+
+@media (max-width: 720px) {
+  .card {
+    padding: 18px;
+  }
+  .card--feature {
+    padding: 18px;
+  }
+  .card--feature .card__title {
+    font-size: 26px;
+    margin-bottom: 12px;
+  }
+  .card--feature .card__dek {
+    font-size: 15px;
+    margin-bottom: 22px;
+  }
+  .card--text {
+    padding: 20px;
+  }
+  .card__cover {
+    margin-bottom: 16px;
+  }
+  .card__title {
+    font-size: 20px;
+  }
+  .card__dek {
+    margin-bottom: 20px;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    overflow: hidden;
+  }
+  .card__meta {
+    margin-bottom: 10px;
+  }
+  .card__foot {
+    padding-top: 14px;
   }
 }
 </style>

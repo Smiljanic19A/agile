@@ -6,7 +6,7 @@ import BlogCard from '@/components/ui/BlogCard.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 
 const content = useContentStore()
-const { featurePost, standardPosts, textPosts } = storeToRefs(content)
+const { posts, featurePost, standardPosts, textPosts } = storeToRefs(content)
 </script>
 
 <template>
@@ -24,13 +24,15 @@ const { featurePost, standardPosts, textPosts } = storeToRefs(content)
             Long-form pieces on training, planning, skill acquisition, monitoring,
             testing, and coaching philosophy. Published on Substack, archived here.
           </p>
-          <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>
-            Read all essays on Substack
-          </AppButton>
+          <div class="is-desktop-only">
+            <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>
+              Read all essays on Substack
+            </AppButton>
+          </div>
         </div>
       </header>
 
-      <div class="blog__grid fade-up">
+      <div class="blog__grid is-desktop-only fade-up">
         <div v-if="featurePost" class="blog__feature">
           <BlogCard :post="featurePost" variant="feature" />
         </div>
@@ -52,6 +54,21 @@ const { featurePost, standardPosts, textPosts } = storeToRefs(content)
             variant="text"
           />
         </div>
+      </div>
+
+      <div class="blog__rail snap-rail is-mobile-only fade-up">
+        <BlogCard
+          v-for="post in posts"
+          :key="post.id"
+          :post="post"
+          variant="standard"
+        />
+      </div>
+
+      <div class="blog__mobile-cta is-mobile-only">
+        <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>
+          Read all on Substack
+        </AppButton>
       </div>
     </div>
   </section>
@@ -121,19 +138,29 @@ const { featurePost, standardPosts, textPosts } = storeToRefs(content)
 @media (max-width: 1100px) {
   .blog__head {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 28px;
+    margin-bottom: 44px;
     align-items: start;
   }
   .blog__row {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (max-width: 640px) {
-  .blog__row {
-    grid-template-columns: 1fr;
+@media (max-width: 720px) {
+  .blog__head {
+    margin-bottom: 28px;
   }
-  .blog__text {
-    grid-template-columns: 1fr;
+  .blog__lead {
+    font-size: 15px;
+  }
+  .blog__mobile-cta {
+    margin-top: 12px;
+    display: flex;
+    justify-content: stretch;
+  }
+  .blog__mobile-cta :deep(.btn) {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>

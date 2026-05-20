@@ -15,7 +15,6 @@ const ecosystem = [
   { href: externalLinks.skool, label: 'Skool community' },
   { href: externalLinks.payhip, label: 'Payhip store' },
   { href: externalLinks.amazon, label: 'Books on Amazon' },
-  { href: externalLinks.complementary, label: 'Complementary Training' },
 ]
 
 const connect = [
@@ -33,7 +32,7 @@ const connect = [
           <img src="/logo.png" alt="" aria-hidden="true" />
         </div>
         <h3 class="ft__brand-title">Agile Periodization</h3>
-        <p class="ft__brand-tag">
+        <p class="ft__brand-tag is-desktop-only">
           For coaches working in the real world. Training systems that adapt to
           feedback, constraints, and the athletes in front of you.
         </p>
@@ -91,7 +90,7 @@ const connect = [
     <div class="container ft__bottom">
       <span class="ft__copy">© {{ year }} Agile Periodization · Mladen Jovanović</span>
       <span class="ft__credo">Built by practitioners, for practitioners.</span>
-      <span class="ft__build">
+      <span class="ft__build is-desktop-only">
         <span>v 1.0</span>
         <span>·</span>
         <span>Belgrade / Global</span>
@@ -286,15 +285,46 @@ const connect = [
   }
 }
 @media (max-width: 720px) {
+  .ft {
+    padding-top: clamp(56px, 11vw, 88px);
+  }
   .ft__inner {
     grid-template-columns: 1fr 1fr;
-    gap: 36px;
+    gap: 28px;
+    padding-bottom: clamp(36px, 9vw, 64px);
   }
   .ft__brand {
     grid-column: 1 / -1;
+    gap: 12px;
+  }
+  .ft__brand-title {
+    font-size: 20px;
+  }
+  .ft__col-title {
+    font-size: 10.5px;
+  }
+  .ft__col ul {
+    gap: 10px;
+  }
+  .ft__col li a {
+    font-size: 13px;
   }
   .ft__col--news {
     grid-column: 1 / -1;
+  }
+  .ft__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 18px;
+    font-size: 10.5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ft__inner {
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
 }
 </style>

@@ -20,13 +20,13 @@ import SectionLabel from '@/components/ui/SectionLabel.vue'
           schedules change, readiness fluctuates, and coaches still need to make
           good calls.
         </p>
-        <p class="prose">
+        <p class="prose about__copy-extra">
           You need enough structure to move forward, and enough flexibility to
           adapt. Models, but not model worship. Plans, but not attachment to the
           plan. That intersection — sports science, skill acquisition, physical
           preparation, and practical coaching — is what this work sits inside.
         </p>
-        <p class="prose">
+        <p class="prose about__copy-extra">
           For strength and conditioning coaches, sport scientists, physios and
           rehab practitioners, combat sports coaches, team-sport practitioners,
           and serious athletes who want the logic behind the training.
@@ -56,10 +56,6 @@ import SectionLabel from '@/components/ui/SectionLabel.vue'
           <li>
             <span>Hammarby IF</span>
             <span>Sweden</span>
-          </li>
-          <li>
-            <span>Complementary Training</span>
-            <span>Founder</span>
           </li>
         </ul>
 
@@ -189,7 +185,40 @@ import SectionLabel from '@/components/ui/SectionLabel.vue'
 @media (max-width: 960px) {
   .about__grid {
     grid-template-columns: 1fr;
-    gap: 48px;
+    gap: 40px;
+  }
+  .about__head {
+    gap: 20px;
+    margin-bottom: 8px;
+  }
+  .about__copy {
+    gap: 18px;
+  }
+  .about__card {
+    padding: 24px;
+    gap: 14px;
+  }
+  .about__quote {
+    font-size: 16px;
+    padding-left: 14px;
+  }
+  .about__list li {
+    padding: 12px 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .about__grid {
+    gap: 32px;
+  }
+  .about__copy-extra {
+    display: none;
+  }
+  .about__card {
+    padding: 20px;
+  }
+  .about__quote {
+    display: none;
   }
 }
 </style>

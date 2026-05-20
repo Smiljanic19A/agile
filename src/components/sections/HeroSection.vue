@@ -30,16 +30,14 @@ import { externalLinks } from '@/stores/content.js'
       <p class="hero__eyebrow fade-up">For coaches working in the real world</p>
 
       <h1 id="hero-title" class="hero__title display-1 fade-up">
-        Coaching,<br />
-        periodization,<br />
-        <em>and decision-making</em><br />
-        in the real world.
+        Coaching, periodization, <em>and decision-making</em> in the real world.
       </h1>
 
       <p class="hero__sub prose fade-up">
-        Agile Periodization is the operating framework for practitioners who need
-        enough structure to move forward and enough flexibility to adapt. This is
-        the hub for the writing, the community, the tools, and the books.
+        <span>The operating framework for practitioners who need enough structure to move forward and enough flexibility to adapt.</span>
+        <span class="hero__sub-extra">
+          This is the hub for the writing, the community, the tools, and the books.
+        </span>
       </p>
 
       <div class="hero__cta fade-up">
@@ -64,7 +62,7 @@ import { externalLinks } from '@/stores/content.js'
   position: relative;
   background: var(--teal);
   color: var(--cream);
-  min-height: 100vh;
+  min-height: 100svh;
   padding: 120px 0 80px;
   overflow: hidden;
   isolation: isolate;
@@ -225,8 +223,52 @@ import { externalLinks } from '@/stores/content.js'
 }
 
 @media (max-width: 720px) {
-  .hero__corner--tr {
+  .hero {
+    padding: 96px 0 64px;
+    min-height: 100svh;
+  }
+  .hero__meta,
+  .hero__sub-extra,
+  .ring--2,
+  .ring--3 {
     display: none;
+  }
+  .hero__inner {
+    padding-top: 24px;
+    justify-content: center;
+  }
+  .hero__logo {
+    width: clamp(200px, 56vw, 280px);
+    margin: 0 auto 40px;
+  }
+  .hero__eyebrow {
+    margin-bottom: 18px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+  }
+  .hero__title {
+    margin-bottom: 22px;
+  }
+  .hero__sub {
+    margin-bottom: 36px;
+    font-size: 15px;
+  }
+  .hero__cta {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .hero__cta :deep(.btn) {
+    width: 100%;
+    justify-content: center;
+  }
+  .ring--1 {
+    width: 480px;
+    height: 480px;
+    opacity: 0.5;
+  }
+  .hero__scroll {
+    bottom: 20px;
   }
 }
 </style>

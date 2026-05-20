@@ -40,32 +40,57 @@ const select = (id) => emit('update:modelValue', id)
 </script>
 
 <template>
-  <div ref="wrap" class="tabs" role="tablist" aria-label="Store categories">
-    <button
-      v-for="tab in tabs"
-      :key="tab.id"
-      :ref="(el) => setRef(el, tab.id)"
-      role="tab"
-      :aria-selected="modelValue === tab.id"
-      class="tabs__btn"
-      :class="{ 'is-active': modelValue === tab.id }"
-      @click="select(tab.id)"
-    >
-      {{ tab.label }}
-    </button>
-    <span
-      class="tabs__indicator"
-      :style="{
-        transform: `translateX(${indicator.x}px)`,
-        width: `${indicator.w}px`,
-        opacity: indicator.opacity,
-      }"
-      aria-hidden="true"
-    />
+  <div class="tabs-wrap">
+    <div ref="wrap" class="tabs" role="tablist" aria-label="Store categories">
+      <button
+        v-for="tab in tabs"
+        :key="tab.id"
+        :ref="(el) => setRef(el, tab.id)"
+        role="tab"
+        :aria-selected="modelValue === tab.id"
+        class="tabs__btn"
+        :class="{ 'is-active': modelValue === tab.id }"
+        @click="select(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+      <span
+        class="tabs__indicator"
+        :style="{
+          transform: `translateX(${indicator.x}px)`,
+          width: `${indicator.w}px`,
+          opacity: indicator.opacity,
+        }"
+        aria-hidden="true"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped>
+.tabs-wrap {
+  position: relative;
+  max-width: 100%;
+}
+.tabs-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  pointer-events: none;
+  background: linear-gradient(to right, rgba(55, 136, 130, 0), var(--teal));
+  opacity: 0;
+  transition: opacity 200ms var(--ease);
+  border-radius: 0 999px 999px 0;
+}
+@media (max-width: 560px) {
+  .tabs-wrap::after {
+    opacity: 1;
+  }
+}
+
 .tabs {
   position: relative;
   display: inline-flex;
@@ -97,6 +122,12 @@ const select = (id) => emit('update:modelValue', id)
   transition: color 200ms var(--ease);
   white-space: nowrap;
   cursor: pointer;
+}
+@media (max-width: 560px) {
+  .tabs__btn {
+    padding: 9px 14px;
+    font-size: 12.5px;
+  }
 }
 .tabs__btn.is-active {
   color: var(--ink);
