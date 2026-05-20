@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import HexLattice from '@/components/ui/HexLattice.vue'
 
 const email = ref('')
 const submitted = ref(false)
@@ -12,6 +13,9 @@ const submit = () => {
 
 <template>
   <section id="newsletter" class="news section section--teal" aria-labelledby="news-title">
+    <div class="news__hex" aria-hidden="true">
+      <HexLattice variant="grid" tone="on-teal" mask="top" :size="80" :accents="5" :seed="22" />
+    </div>
     <div class="container news__inner">
       <div class="news__copy">
         <span class="eyebrow news__eyebrow">Stay connected</span>
@@ -52,6 +56,16 @@ const submit = () => {
   padding-bottom: clamp(60px, 8vw, 120px);
   border-top: 1px solid var(--hairline-light);
   border-bottom: 1px solid var(--hairline-light);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.news__hex {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .news__inner {
@@ -59,6 +73,8 @@ const submit = () => {
   grid-template-columns: 1.1fr 1fr;
   gap: 64px;
   align-items: end;
+  position: relative;
+  z-index: 1;
 }
 
 .news__eyebrow {

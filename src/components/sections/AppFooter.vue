@@ -1,5 +1,6 @@
 <script setup>
 import { externalLinks } from '@/stores/content.js'
+import HexLattice from '@/components/ui/HexLattice.vue'
 
 const year = new Date().getFullYear()
 
@@ -85,7 +86,9 @@ const connect = [
       </div>
     </div>
 
-    <div class="ft__watermark" aria-hidden="true">AP</div>
+    <div class="ft__watermark" aria-hidden="true">
+      <HexLattice variant="cluster" tone="on-deep" :size="180" :accents="3" :seed="33" />
+    </div>
 
     <div class="container ft__bottom">
       <span class="ft__copy">© {{ year }} Agile Periodization · Mladen Jovanović</span>
@@ -240,19 +243,13 @@ const connect = [
 
 .ft__watermark {
   position: absolute;
-  right: -2vw;
-  bottom: -4vw;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-style: italic;
-  font-size: clamp(180px, 28vw, 460px);
-  line-height: 0.85;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(243, 243, 243, 0.08);
+  right: -8vw;
+  bottom: -10vw;
+  width: clamp(420px, 60vw, 880px);
+  height: clamp(380px, 50vw, 760px);
   pointer-events: none;
   z-index: 0;
-  letter-spacing: -0.05em;
-  font-variation-settings: "SOFT" 100, "opsz" 144;
+  opacity: 0.85;
 }
 
 .ft__bottom {

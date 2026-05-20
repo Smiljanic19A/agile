@@ -1,4 +1,6 @@
 <script setup>
+import HexLattice from './HexLattice.vue'
+
 defineProps({
   index: { type: String, required: true },
   label: { type: String, required: true },
@@ -7,6 +9,9 @@ defineProps({
 
 <template>
   <div class="section-label">
+    <span class="section-label__glyph" aria-hidden="true">
+      <HexLattice variant="glyph" tone="on-teal" :size="6" :pulse="false" mask="none" />
+    </span>
     <span class="section-label__index">{{ index }}</span>
     <span class="section-label__line" aria-hidden="true" />
     <span class="section-label__text">{{ label }}</span>
@@ -17,7 +22,7 @@ defineProps({
 .section-label {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 500;
@@ -26,8 +31,15 @@ defineProps({
   color: currentColor;
   opacity: 0.78;
 }
+.section-label__glyph {
+  display: inline-flex;
+  width: 26px;
+  height: 18px;
+  margin-right: 2px;
+  opacity: 0.85;
+}
 .section-label__line {
-  width: 38px;
+  width: 32px;
   height: 1px;
   background: currentColor;
   opacity: 0.4;

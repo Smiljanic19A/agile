@@ -1,14 +1,20 @@
 <script setup>
 import AppButton from '@/components/ui/AppButton.vue'
+import HexLattice from '@/components/ui/HexLattice.vue'
 import { externalLinks } from '@/stores/content.js'
 </script>
 
 <template>
   <section class="hero" aria-labelledby="hero-title">
-    <div class="hero__rings" aria-hidden="true">
-      <span class="ring ring--1"></span>
-      <span class="ring ring--2"></span>
-      <span class="ring ring--3"></span>
+    <div class="hero__hex" aria-hidden="true">
+      <HexLattice
+        variant="grid"
+        tone="on-teal"
+        mask="radial"
+        :size="110"
+        :accents="7"
+        :seed="11"
+      />
     </div>
 
     <div class="hero__meta">
@@ -68,33 +74,11 @@ import { externalLinks } from '@/stores/content.js'
   isolation: isolate;
 }
 
-.hero__rings {
+.hero__hex {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-}
-.ring {
-  position: absolute;
-  border: 1px solid rgba(243, 243, 243, 0.1);
-  border-radius: 50%;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-.ring--1 {
-  width: 580px;
-  height: 580px;
-}
-.ring--2 {
-  width: 920px;
-  height: 920px;
-  border-color: rgba(243, 243, 243, 0.07);
-}
-.ring--3 {
-  width: 1320px;
-  height: 1320px;
-  border-color: rgba(243, 243, 243, 0.045);
 }
 
 .hero__meta {
@@ -228,9 +212,7 @@ import { externalLinks } from '@/stores/content.js'
     min-height: 100svh;
   }
   .hero__meta,
-  .hero__sub-extra,
-  .ring--2,
-  .ring--3 {
+  .hero__sub-extra {
     display: none;
   }
   .hero__inner {
@@ -261,11 +243,6 @@ import { externalLinks } from '@/stores/content.js'
   .hero__cta :deep(.btn) {
     width: 100%;
     justify-content: center;
-  }
-  .ring--1 {
-    width: 480px;
-    height: 480px;
-    opacity: 0.5;
   }
   .hero__scroll {
     bottom: 20px;

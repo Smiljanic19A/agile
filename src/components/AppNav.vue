@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import HexLattice from '@/components/ui/HexLattice.vue'
 import { externalLinks } from '@/stores/content.js'
 
 const scrolled = ref(false)
@@ -83,6 +84,10 @@ const close = () => (open.value = false)
 
   <Transition name="menu">
     <div v-if="open" class="menu" role="dialog" aria-modal="true" aria-label="Menu">
+      <div class="menu__hex" aria-hidden="true">
+        <HexLattice variant="grid" tone="on-teal" mask="radial" :size="90" :accents="6" :seed="55" />
+      </div>
+
       <div class="menu__head container">
         <a href="#top" class="menu__brand" @click="close">
           <span class="menu__logo" aria-hidden="true">
@@ -287,6 +292,19 @@ const close = () => (open.value = false)
   overflow-y: auto;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+  isolation: isolate;
+}
+
+.menu__hex {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.menu > :not(.menu__hex) {
+  position: relative;
+  z-index: 1;
 }
 
 .menu__head {

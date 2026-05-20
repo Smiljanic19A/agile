@@ -7,7 +7,7 @@ const props = defineProps({
   label: { type: String, default: '' },
 })
 
-const variant = computed(() => ((Math.abs(props.seed) % 8) + 1))
+const variant = computed(() => ((Math.abs(props.seed) % 9) + 1))
 
 const palette = computed(() => {
   if (props.tone === 'cream') {
@@ -112,11 +112,28 @@ const seedTag = computed(() => `AP—${String(props.seed).padStart(3, '0')}`)
       </template>
 
       <!-- v8: orbit -->
-      <template v-else>
+      <template v-else-if="variant === 8">
         <ellipse cx="200" cy="160" rx="160" ry="60" fill="none" :stroke="palette.ink" stroke-width="1" opacity="0.7" />
         <ellipse cx="200" cy="160" rx="160" ry="60" fill="none" :stroke="palette.tealSoft" stroke-width="1" transform="rotate(35 200 160)" />
         <circle cx="200" cy="160" r="26" :fill="palette.teal" />
         <circle cx="360" cy="160" r="6" :fill="palette.ink" />
+      </template>
+
+      <!-- v9: hex cluster (brand motif) -->
+      <template v-else>
+        <g transform="translate(200 150)" :stroke="palette.ink" stroke-width="1" stroke-linejoin="round" fill="none">
+          <!-- center -->
+          <polygon points="34,0 17,29.4 -17,29.4 -34,0 -17,-29.4 17,-29.4" :fill="palette.teal" opacity="0.95" stroke="none" />
+          <polygon points="34,0 17,29.4 -17,29.4 -34,0 -17,-29.4 17,-29.4" />
+          <!-- ring of 6 -->
+          <polygon points="85,0 68,29.4 34,29.4 17,0 34,-29.4 68,-29.4" />
+          <polygon points="-17,58.8 -34,88.2 -68,88.2 -85,58.8 -68,29.4 -34,29.4" />
+          <polygon points="68,58.8 51,88.2 17,88.2 0,58.8 17,29.4 51,29.4" />
+          <polygon points="-17,-58.8 -34,-29.4 -68,-29.4 -85,-58.8 -68,-88.2 -34,-88.2" />
+          <polygon points="68,-58.8 51,-29.4 17,-29.4 0,-58.8 17,-88.2 51,-88.2" />
+          <polygon points="-68,0 -85,29.4 -119,29.4 -136,0 -119,-29.4 -85,-29.4" opacity="0.6" />
+        </g>
+        <line x1="0" y1="40" x2="80" y2="40" :stroke="palette.ink" stroke-width="1" opacity="0.45" />
       </template>
     </svg>
 

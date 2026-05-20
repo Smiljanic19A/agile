@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { useContentStore, externalLinks } from '@/stores/content.js'
 import SectionLabel from '@/components/ui/SectionLabel.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import HexLattice from '@/components/ui/HexLattice.vue'
 
 const content = useContentStore()
 const { threads, communityStats } = storeToRefs(content)
@@ -18,6 +19,9 @@ const initial = (h) => h.charAt(0).toUpperCase()
   >
     <div class="container comm__grid">
       <div class="comm__left">
+        <div class="comm__left-hex" aria-hidden="true">
+          <HexLattice variant="cluster" tone="on-cream" :size="56" :accents="3" :seed="44" :pulse="false" />
+        </div>
         <SectionLabel index="02.5" label="The Center" />
 
         <h2 id="comm-title" class="display-2 comm__title fade-up">
@@ -106,6 +110,32 @@ const initial = (h) => h.charAt(0).toUpperCase()
   flex-direction: column;
   gap: 28px;
   padding-top: 8px;
+  position: relative;
+}
+
+.comm__left-hex {
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 360px;
+  height: 280px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+}
+.comm__left > :not(.comm__left-hex) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 720px) {
+  .comm__left-hex {
+    right: -60px;
+    top: -20px;
+    width: 240px;
+    height: 200px;
+    opacity: 0.7;
+  }
 }
 
 .comm__title {
