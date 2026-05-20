@@ -135,7 +135,7 @@ export const useContentStore = defineStore('content', {
       {
         id: 's5',
         type: 'Template',
-        category: 'templates',
+        category: 'tools',
         title: 'Microcycle Planner',
         blurb: 'A working spreadsheet for laying out a week with intent, then adjusting it on Wednesday.',
         price: '€29',
@@ -145,7 +145,7 @@ export const useContentStore = defineStore('content', {
       {
         id: 's6',
         type: 'Template',
-        category: 'templates',
+        category: 'tools',
         title: 'Athlete Monitoring Log',
         blurb: 'Wellness, load, readiness, and free-text notes in one practical sheet.',
         price: '€19',
@@ -155,7 +155,7 @@ export const useContentStore = defineStore('content', {
       {
         id: 's7',
         type: 'App',
-        category: 'apps',
+        category: 'tools',
         title: 'AthletePulse',
         blurb: 'A lightweight tracking tool for daily readiness and weekly trends.',
         price: '€9 / mo',
@@ -165,7 +165,7 @@ export const useContentStore = defineStore('content', {
       {
         id: 's8',
         type: 'App',
-        category: 'apps',
+        category: 'tools',
         title: 'LoadGraph',
         blurb: 'Plot acute and chronic load with a couple of clicks — built for terminal coaches.',
         price: '€12 / mo',
@@ -175,7 +175,7 @@ export const useContentStore = defineStore('content', {
       {
         id: 's9',
         type: 'Bundle',
-        category: 'bundles',
+        category: 'products',
         title: 'The Practitioner Bundle',
         blurb: 'Foundations course, both planner templates, and a year of AthletePulse.',
         price: '€349',
@@ -185,7 +185,7 @@ export const useContentStore = defineStore('content', {
       {
         id: 's10',
         type: 'Bundle',
-        category: 'bundles',
+        category: 'products',
         title: 'The Library Bundle',
         blurb: 'Every book and every essay collection — a single archive download.',
         price: '€129',
@@ -205,21 +205,33 @@ export const useContentStore = defineStore('content', {
       {
         id: 's12',
         type: 'Template',
-        category: 'templates',
+        category: 'tools',
         title: 'Annual Plan Canvas',
         blurb: 'A printable A2 canvas for sketching a season at the table.',
         price: '€14',
         seed: 22,
         href: externalLinks.payhip,
       },
-    ],
-
-    books: [
-      { id: 'b1', title: 'Strength Training Manual', year: 2020, seed: 31, href: externalLinks.amazon },
-      { id: 'b2', title: 'HIIT Manual', year: 2018, seed: 32, href: externalLinks.amazon },
-      { id: 'b3', title: 'Bayesian Continual Learning', year: 2022, seed: 33, href: externalLinks.amazon },
-      { id: 'b4', title: 'Agile Periodization', year: 2024, seed: 34, href: externalLinks.amazon },
-      { id: 'b5', title: 'Field Notes, Vol. I', year: 2025, seed: 35, href: externalLinks.amazon },
+      {
+        id: 's13',
+        type: 'Print',
+        category: 'products',
+        title: 'Periodization Wall Map',
+        blurb: 'A2 printed map of the framework — for the wall above your desk.',
+        price: '€39',
+        seed: 23,
+        href: externalLinks.payhip,
+      },
+      {
+        id: 's14',
+        type: 'Notebook',
+        category: 'products',
+        title: 'AP Field Notebook',
+        blurb: 'A pocket notebook prompted for session debriefs and weekly reviews.',
+        price: '€24',
+        seed: 24,
+        href: externalLinks.payhip,
+      },
     ],
 
     threads: [
@@ -253,12 +265,10 @@ export const useContentStore = defineStore('content', {
     ],
 
     tabs: [
-      { id: 'all', label: 'All' },
-      { id: 'books', label: 'Books' },
+      { id: 'tools', label: 'Tools' },
+      { id: 'products', label: 'Products' },
       { id: 'courses', label: 'Courses' },
-      { id: 'templates', label: 'Templates' },
-      { id: 'apps', label: 'Apps & Tools' },
-      { id: 'bundles', label: 'Bundles' },
+      { id: 'books', label: 'Books' },
     ],
   }),
   getters: {

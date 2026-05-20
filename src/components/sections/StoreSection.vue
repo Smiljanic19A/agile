@@ -10,12 +10,10 @@ import AppButton from '@/components/ui/AppButton.vue'
 const content = useContentStore()
 const { products, tabs } = storeToRefs(content)
 
-const active = ref('all')
+const active = ref('tools')
 
 const visible = computed(() =>
-  active.value === 'all'
-    ? products.value
-    : products.value.filter((p) => p.category === active.value)
+  products.value.filter((p) => p.category === active.value)
 )
 </script>
 

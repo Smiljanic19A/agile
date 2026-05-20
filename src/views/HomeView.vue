@@ -6,7 +6,6 @@ import AboutSection from '@/components/sections/AboutSection.vue'
 import BlogSection from '@/components/sections/BlogSection.vue'
 import CommunitySection from '@/components/sections/CommunitySection.vue'
 import StoreSection from '@/components/sections/StoreSection.vue'
-import BooksSection from '@/components/sections/BooksSection.vue'
 import NewsletterSection from '@/components/sections/NewsletterSection.vue'
 import AppFooter from '@/components/sections/AppFooter.vue'
 
@@ -37,7 +36,6 @@ onMounted(() => {
       <BlogSection />
       <CommunitySection />
       <StoreSection />
-      <BooksSection />
       <NewsletterSection />
     </main>
     <AppFooter />

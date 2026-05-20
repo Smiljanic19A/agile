@@ -19,7 +19,6 @@ const links = [
   { href: '#writing', label: 'Writing' },
   { href: '#community', label: 'Community' },
   { href: '#store', label: 'Store' },
-  { href: '#books', label: 'Books' },
 ]
 
 const close = () => (open.value = false)
