@@ -1,0 +1,170 @@
+<script setup>
+import { ref } from 'vue'
+
+const email = ref('')
+const submitted = ref(false)
+
+const submit = () => {
+  if (!email.value.trim()) return
+  submitted.value = true
+}
+</script>
+
+<template>
+  <section id="newsletter" class="news section section--teal" aria-labelledby="news-title">
+    <div class="container news__inner">
+      <div class="news__copy">
+        <span class="eyebrow news__eyebrow">Stay connected</span>
+        <h2 id="news-title" class="display-2 news__title fade-up">
+          New essays, tools, and updates — <em>once or twice a month.</em>
+        </h2>
+      </div>
+
+      <form class="news__form fade-up" @submit.prevent="submit">
+        <label for="news-email" class="sr-only">Email</label>
+        <input
+          id="news-email"
+          v-model="email"
+          type="email"
+          required
+          placeholder="you@example.com"
+          class="news__input"
+          :disabled="submitted"
+        />
+        <button type="submit" class="news__submit" :disabled="submitted">
+          <span v-if="!submitted">Get updates</span>
+          <span v-else>Subscribed</span>
+          <span class="news__arrow" aria-hidden="true">→</span>
+        </button>
+        <p class="news__fine">
+          One email at a time. Unsubscribe anytime. No noise.
+        </p>
+      </form>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.news {
+  background: var(--teal);
+  color: var(--cream);
+  padding-top: clamp(60px, 8vw, 120px);
+  padding-bottom: clamp(60px, 8vw, 120px);
+  border-top: 1px solid var(--hairline-light);
+  border-bottom: 1px solid var(--hairline-light);
+}
+
+.news__inner {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 64px;
+  align-items: end;
+}
+
+.news__eyebrow {
+  color: rgba(243, 243, 243, 0.75) !important;
+}
+
+.news__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.news__title {
+  max-width: 20ch;
+  color: var(--cream);
+  font-variation-settings: "SOFT" 40, "opsz" 144;
+}
+.news__title em {
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(243, 243, 243, 0.7);
+  font-variation-settings: "SOFT" 100, "opsz" 144;
+}
+
+.news__form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  position: relative;
+}
+.news__input {
+  background: transparent;
+  border: 1px solid var(--hairline-light-strong);
+  border-radius: 999px;
+  color: var(--cream);
+  padding: 16px 22px;
+  font-size: 15px;
+  font-family: var(--font-body);
+  transition: border-color 200ms var(--ease), background 200ms var(--ease);
+}
+.news__input::placeholder {
+  color: rgba(243, 243, 243, 0.5);
+}
+.news__input:focus {
+  outline: none;
+  border-color: var(--cream);
+  background: rgba(243, 243, 243, 0.04);
+}
+.news__submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--cream);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 16px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--cream);
+  transition: background 200ms var(--ease), color 200ms var(--ease);
+}
+.news__submit:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+.news__submit:hover:not(:disabled) .news__arrow {
+  transform: translateX(3px);
+}
+.news__submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.news__arrow {
+  transition: transform 220ms var(--ease);
+}
+.news__fine {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: rgba(243, 243, 243, 0.6);
+  margin: 6px 4px 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 960px) {
+  .news__inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+}
+@media (max-width: 520px) {
+  .news__form {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
