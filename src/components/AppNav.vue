@@ -9,13 +9,18 @@ const open = ref(false)
 const onScroll = () => {
   scrolled.value = window.scrollY > 40
 }
+const onKey = (e) => {
+  if (e.key === 'Escape' && open.value) open.value = false
+}
 
 onMounted(() => {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('keydown', onKey)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('keydown', onKey)
   document.body.style.overflow = ''
 })
 

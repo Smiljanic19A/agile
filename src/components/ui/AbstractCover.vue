@@ -135,6 +135,11 @@ const seedTag = computed(() => `AP—${String(props.seed).padStart(3, '0')}`)
   overflow: hidden;
   border-radius: var(--radius);
 }
+@media (max-width: 720px) {
+  .cover {
+    aspect-ratio: 16 / 9;
+  }
+}
 .cover svg {
   width: 100%;
   height: 100%;
