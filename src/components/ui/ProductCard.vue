@@ -1,32 +1,37 @@
 <script setup>
+import { computed } from 'vue'
 import AbstractCover from './AbstractCover.vue'
+import { sources } from '@/stores/content.js'
 
-defineProps({
-  product: { type: Object, required: true },
+const props = defineProps({
+  item: { type: Object, required: true },
 })
+
+const sourceName = computed(() => sources[props.item.source]?.name ?? 'Store')
+const displayPrice = computed(() => props.item.price ?? 'Free')
 </script>
 
 <template>
   <a
-    :href="product.href"
+    :href="item.url"
     target="_blank"
     rel="noopener noreferrer"
     class="prod"
   >
     <div class="prod__cover">
-      <AbstractCover :seed="product.seed" tone="cream" :label="product.type" />
+      <AbstractCover :seed="item.cover.seed" tone="cream" :label="item.type" />
     </div>
 
     <div class="prod__body">
       <div class="prod__meta">
-        <span class="prod__type">{{ product.type }}</span>
-        <span class="prod__price">{{ product.price }}</span>
+        <span class="prod__type">{{ item.type }}</span>
+        <span class="prod__price" :class="{ 'prod__price--free': item.price === null }">{{ displayPrice }}</span>
       </div>
-      <h3 class="prod__title">{{ product.title }}</h3>
-      <p class="prod__blurb">{{ product.blurb }}</p>
+      <h3 class="prod__title">{{ item.title }}</h3>
+      <p class="prod__blurb">{{ item.description }}</p>
       <div class="prod__foot">
         <span class="prod__cta">
-          View on Payhip
+          View on {{ sourceName }}
           <span class="prod__arrow" aria-hidden="true">→</span>
         </span>
       </div>
@@ -78,6 +83,9 @@ defineProps({
 }
 .prod__price {
   letter-spacing: 0.04em;
+}
+.prod__price--free {
+  color: var(--teal-soft);
 }
 
 .prod__title {

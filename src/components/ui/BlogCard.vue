@@ -2,38 +2,38 @@
 import AbstractCover from './AbstractCover.vue'
 
 defineProps({
-  post: { type: Object, required: true },
+  item: { type: Object, required: true },
   variant: { type: String, default: 'standard' }, // 'feature' | 'standard' | 'text'
 })
 </script>
 
 <template>
   <a
-    :href="post.href"
+    :href="item.url"
     target="_blank"
     rel="noopener noreferrer"
     class="card"
     :class="[`card--${variant}`]"
   >
     <div v-if="variant !== 'text'" class="card__cover">
-      <AbstractCover :seed="post.seed" tone="cream" :label="post.category" />
+      <AbstractCover :seed="item.cover.seed" tone="cream" :label="item.type" />
     </div>
 
     <div class="card__body">
       <div class="card__meta">
-        <span class="card__chip">{{ post.category }}</span>
+        <span class="card__chip">{{ item.type }}</span>
         <span class="card__dot" aria-hidden="true">·</span>
-        <span class="card__time">{{ post.readTime }}</span>
+        <span class="card__time">{{ item.readTime }}</span>
       </div>
 
       <h3 class="card__title" :class="variant === 'feature' ? 'display-3' : ''">
-        {{ post.title }}
+        {{ item.title }}
       </h3>
 
-      <p v-if="post.dek && variant !== 'text'" class="card__dek">{{ post.dek }}</p>
+      <p v-if="item.description && variant !== 'text'" class="card__dek">{{ item.description }}</p>
 
       <div class="card__foot">
-        <span class="card__date">{{ post.date }}</span>
+        <span class="card__date">{{ item.date }}</span>
         <span class="card__read">
           Read essay
           <span class="card__arrow" aria-hidden="true">→</span>

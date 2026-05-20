@@ -8,13 +8,11 @@ import ProductCard from '@/components/ui/ProductCard.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 
 const content = useContentStore()
-const { products, tabs } = storeToRefs(content)
+const { tabs } = storeToRefs(content)
 
 const active = ref('tools')
 
-const visible = computed(() =>
-  products.value.filter((p) => p.category === active.value)
-)
+const visible = computed(() => content.productsByCategory(active.value))
 </script>
 
 <template>
@@ -22,7 +20,7 @@ const visible = computed(() =>
     <div class="container">
       <header class="store__head">
         <div class="store__head-left">
-          <SectionLabel index="03" label="Tools & Resources" />
+          <SectionLabel index="04" label="Tools & Resources" />
           <h2 id="store-title" class="display-2 store__title fade-up">
             Books, courses, templates, <em>and working material.</em>
           </h2>
@@ -47,7 +45,7 @@ const visible = computed(() =>
           <ProductCard
             v-for="p in visible"
             :key="p.id"
-            :product="p"
+            :item="p"
           />
         </div>
       </Transition>
@@ -57,7 +55,7 @@ const visible = computed(() =>
           <ProductCard
             v-for="p in visible"
             :key="p.id"
-            :product="p"
+            :item="p"
           />
         </div>
       </Transition>

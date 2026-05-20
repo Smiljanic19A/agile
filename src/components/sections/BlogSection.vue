@@ -6,7 +6,7 @@ import BlogCard from '@/components/ui/BlogCard.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 
 const content = useContentStore()
-const { posts, featurePost, standardPosts, textPosts } = storeToRefs(content)
+const { articles, featureArticle, standardArticles, textArticles } = storeToRefs(content)
 </script>
 
 <template>
@@ -14,7 +14,7 @@ const { posts, featurePost, standardPosts, textPosts } = storeToRefs(content)
     <div class="container">
       <header class="blog__head">
         <div class="blog__head-left">
-          <SectionLabel index="02" label="Writing" />
+          <SectionLabel index="03" label="Writing" />
           <h2 id="blog-title" class="display-2 blog__title fade-up">
             Essays, field notes, and tools <em>from the practice.</em>
           </h2>
@@ -33,24 +33,24 @@ const { posts, featurePost, standardPosts, textPosts } = storeToRefs(content)
       </header>
 
       <div class="blog__grid is-desktop-only fade-up">
-        <div v-if="featurePost" class="blog__feature">
-          <BlogCard :post="featurePost" variant="feature" />
+        <div v-if="featureArticle" class="blog__feature">
+          <BlogCard :item="featureArticle" variant="feature" />
         </div>
 
         <div class="blog__row">
           <BlogCard
-            v-for="post in standardPosts"
-            :key="post.id"
-            :post="post"
+            v-for="article in standardArticles"
+            :key="article.id"
+            :item="article"
             variant="standard"
           />
         </div>
 
         <div class="blog__text">
           <BlogCard
-            v-for="post in textPosts"
-            :key="post.id"
-            :post="post"
+            v-for="article in textArticles"
+            :key="article.id"
+            :item="article"
             variant="text"
           />
         </div>
@@ -58,9 +58,9 @@ const { posts, featurePost, standardPosts, textPosts } = storeToRefs(content)
 
       <div class="blog__rail snap-rail is-mobile-only fade-up">
         <BlogCard
-          v-for="post in posts"
-          :key="post.id"
-          :post="post"
+          v-for="article in articles"
+          :key="article.id"
+          :item="article"
           variant="standard"
         />
       </div>
