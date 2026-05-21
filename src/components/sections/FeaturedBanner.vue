@@ -8,31 +8,80 @@ const content = useContentStore()
 const { pinnedHeroItems } = storeToRefs(content)
 
 const idx = ref(0)
-const multi = computed(() => pinnedHeroItems.value.length > 1)
+const n = computed(() => pinnedHeroItems.value.length)
+const multi = computed(() => n.value > 1)
 
-function prev() {
-  idx.value = (idx.value - 1 + pinnedHeroItems.value.length) % pinnedHeroItems.value.length
-}
-function next() {
-  idx.value = (idx.value + 1) % pinnedHeroItems.value.length
-}
-function goTo(i) {
-  idx.value = i
-}
+const dragX = ref(0)
+const dragging = ref(false)
+
+// Track: width = N * 100% of container. Each slide = (100/N)% of track = 100% of container.
+// translateX(-i * 100/N %) moves exactly i container-widths left.
+const trackStyle = computed(() => ({
+  width: `${n.value * 100}%`,
+  transform: `translateX(calc(${-idx.value * (100 / n.value)}% + ${dragX.value}px))`,
+  transition: dragging.value ? 'none' : 'transform 420ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+}))
+
+const slideWidth = computed(() => `${100 / n.value}%`)
+
+function goTo(i) { idx.value = i }
+function prev() { idx.value = (idx.value - 1 + n.value) % n.value }
+function next() { idx.value = (idx.value + 1) % n.value }
 
 function onKey(e) {
   if (e.key === 'ArrowLeft')  prev()
   if (e.key === 'ArrowRight') next()
 }
 
-let touchStartX = 0
+let startX = 0
+let startY = 0
+let isHorizontal = null
+
 function onTouchStart(e) {
-  touchStartX = e.touches[0].clientX
+  startX = e.touches[0].clientX
+  startY = e.touches[0].clientY
+  isHorizontal = null
+  dragging.value = true
+  dragX.value = 0
 }
-function onTouchEnd(e) {
-  const dx = e.changedTouches[0].clientX - touchStartX
-  if (Math.abs(dx) < 40) return
-  dx < 0 ? next() : prev()
+
+function onTouchMove(e) {
+  if (!dragging.value) return
+  const dx = e.touches[0].clientX - startX
+  const dy = e.touches[0].clientY - startY
+
+  // Wait for enough movement to determine intent
+  if (isHorizontal === null) {
+    if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return
+    isHorizontal = Math.abs(dx) > Math.abs(dy)
+  }
+
+  if (!isHorizontal) {
+    dragging.value = false
+    dragX.value = 0
+    return
+  }
+
+  e.preventDefault()
+
+  // Rubber-band resistance at the edges
+  const atStart = idx.value === 0 && dx > 0
+  const atEnd   = idx.value === n.value - 1 && dx < 0
+  dragX.value = (atStart || atEnd) ? dx * 0.18 : dx
+}
+
+function onTouchEnd() {
+  if (!dragging.value) return
+
+  const committed = dragX.value
+  dragging.value = false
+
+  // Let transition kick in before snapping
+  requestAnimationFrame(() => {
+    if (committed < -52) next()
+    else if (committed > 52) prev()
+    dragX.value = 0
+  })
 }
 </script>
 
@@ -46,14 +95,19 @@ function onTouchEnd(e) {
     tabindex="0"
     @keydown="onKey"
     @touchstart.passive="onTouchStart"
+    @touchmove="onTouchMove"
     @touchend.passive="onTouchEnd"
   >
-    <!-- Wrapper div is the transition target — keeps transition CSS in scoped context -->
-    <Transition name="ft" mode="out-in">
-      <div :key="pinnedHeroItems[idx].id" class="featured__slide">
-        <HeroCard :item="pinnedHeroItems[idx]" />
+    <div class="featured__track" :style="trackStyle">
+      <div
+        v-for="item in pinnedHeroItems"
+        :key="item.id"
+        class="featured__slide"
+        :style="{ width: slideWidth }"
+      >
+        <HeroCard :item="item" />
       </div>
-    </Transition>
+    </div>
 
     <template v-if="multi">
       <button class="featured__nav featured__nav--prev" @click="prev" aria-label="Previous">
@@ -88,25 +142,20 @@ function onTouchEnd(e) {
   position: relative;
   overflow: hidden;
   outline: none;
+  /* Prevent text selection during drag */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.featured__track {
+  display: flex;
+  align-items: stretch;
+  will-change: transform;
 }
 
 .featured__slide {
-  width: 100%;
-}
-
-/* Transition — applied to .featured__slide (a scoped div, not the child component) */
-.ft-enter-active {
-  transition: opacity 400ms var(--ease), transform 400ms var(--ease);
-}
-.ft-leave-active {
-  transition: opacity 260ms var(--ease);
-}
-.ft-enter-from {
-  opacity: 0;
-  transform: translateY(12px);
-}
-.ft-leave-to {
-  opacity: 0;
+  flex-shrink: 0;
+  min-height: 100svh;
 }
 
 /* Arrow buttons */
