@@ -1,4 +1,5 @@
 <script setup>
+import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useContentStore, externalLinks } from '@/stores/content.js'
 import SectionLabel from '@/components/ui/SectionLabel.vue'
@@ -6,7 +7,22 @@ import AppButton from '@/components/ui/AppButton.vue'
 import HexLattice from '@/components/ui/HexLattice.vue'
 
 const content = useContentStore()
-const { threads, communityStats } = storeToRefs(content)
+const { threads, channels, communityStats } = storeToRefs(content)
+
+const activeChannel = ref(channels.value[0]?.id ?? 'planning')
+
+const activeThreads = computed(() =>
+  threads.value.filter((t) => t.channel === activeChannel.value)
+)
+
+const countByChannel = computed(() =>
+  Object.fromEntries(
+    channels.value.map((ch) => [
+      ch.id,
+      threads.value.filter((t) => t.channel === ch.id).length,
+    ])
+  )
+)
 
 const initial = (h) => h.charAt(0).toUpperCase()
 </script>
@@ -50,36 +66,46 @@ const initial = (h) => h.charAt(0).toUpperCase()
         </div>
       </div>
 
-      <div class="comm__right is-desktop-only fade-up" aria-hidden="true">
-        <div class="comm__channels">
-          <span class="comm__channel is-active"># planning</span>
-          <span class="comm__channel"># monitoring</span>
-          <span class="comm__channel"># return-to-play</span>
-          <span class="comm__channel"># book-club</span>
+      <div class="comm__right is-desktop-only fade-up">
+        <div class="comm__channels" role="tablist" aria-label="Community channels">
+          <button
+            v-for="ch in channels"
+            :key="ch.id"
+            class="comm__channel"
+            :class="{ 'is-active': activeChannel === ch.id }"
+            role="tab"
+            :aria-selected="activeChannel === ch.id"
+            @click="activeChannel = ch.id"
+          >
+            {{ ch.label }}
+            <span class="comm__channel-count">{{ countByChannel[ch.id] }}</span>
+          </button>
         </div>
 
-        <div class="comm__threads">
-          <article
-            v-for="t in threads"
-            :key="t.id"
-            class="comm__thread"
-          >
-            <div class="comm__avatar">{{ initial(t.handle) }}</div>
-            <div class="comm__thread-body">
-              <header class="comm__thread-head">
-                <span class="comm__handle">@{{ t.handle }}</span>
-                <span class="comm__role">{{ t.role }}</span>
-                <span class="comm__time">{{ t.time }}</span>
-              </header>
-              <p class="comm__text">{{ t.text }}</p>
-              <footer class="comm__thread-foot">
-                <span>Reply</span>
-                <span>·</span>
-                <span>12 in thread</span>
-              </footer>
-            </div>
-          </article>
-        </div>
+        <Transition name="comm-slide" mode="out-in">
+          <div :key="activeChannel" class="comm__threads" role="tabpanel">
+            <article
+              v-for="t in activeThreads"
+              :key="t.id"
+              class="comm__thread"
+            >
+              <div class="comm__avatar">{{ initial(t.handle) }}</div>
+              <div class="comm__thread-body">
+                <header class="comm__thread-head">
+                  <span class="comm__handle">@{{ t.handle }}</span>
+                  <span class="comm__role">{{ t.role }}</span>
+                  <span class="comm__time">{{ t.time }}</span>
+                </header>
+                <p class="comm__text">{{ t.text }}</p>
+                <footer class="comm__thread-foot">
+                  <span class="comm__reply">Reply</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{{ t.replies }} in thread</span>
+                </footer>
+              </div>
+            </article>
+          </div>
+        </Transition>
 
         <div class="comm__floating-card" aria-hidden="true">
           <span class="comm__floating-eyebrow">Live</span>
@@ -197,7 +223,7 @@ const initial = (h) => h.charAt(0).toUpperCase()
   color: var(--mute);
 }
 
-/* right side — mock community panel */
+/* right panel */
 .comm__right {
   position: relative;
   background: var(--cream);
@@ -209,6 +235,7 @@ const initial = (h) => h.charAt(0).toUpperCase()
   gap: 16px;
 }
 
+/* channel tabs */
 .comm__channels {
   display: flex;
   flex-wrap: wrap;
@@ -224,80 +251,137 @@ const initial = (h) => h.charAt(0).toUpperCase()
   border-radius: 999px;
   color: var(--mute);
   border: 1px solid var(--hairline);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 180ms var(--ease), background 180ms var(--ease),
+    border-color 180ms var(--ease);
+}
+.comm__channel:hover:not(.is-active) {
+  color: var(--ink);
+  border-color: var(--hairline-strong);
 }
 .comm__channel.is-active {
-  color: var(--cream);
+  color: #f3f3f3;
   background: var(--teal);
   border-color: var(--teal);
+}
+.comm__channel-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0;
+  background: rgba(0, 0, 0, 0.12);
+  line-height: 1;
+}
+.comm__channel.is-active .comm__channel-count {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* thread list transition */
+.comm-slide-enter-active {
+  transition: opacity 200ms var(--ease), transform 200ms var(--ease);
+}
+.comm-slide-leave-active {
+  transition: opacity 140ms var(--ease);
+}
+.comm-slide-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.comm-slide-leave-to {
+  opacity: 0;
 }
 
 .comm__threads {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .comm__thread {
   display: grid;
   grid-template-columns: 36px 1fr;
-  gap: 14px;
-  padding: 14px;
+  gap: 12px;
+  padding: 12px 14px;
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   background: var(--paper);
+  transition: border-color 180ms var(--ease);
+}
+.comm__thread:hover {
+  border-color: var(--hairline-strong);
 }
 .comm__avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   background: var(--teal);
-  color: var(--cream);
+  color: #f3f3f3;
   display: grid;
   place-items: center;
   font-family: var(--font-display);
   font-weight: 500;
   font-size: 15px;
+  flex-shrink: 0;
 }
 .comm__thread-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
+  min-width: 0;
 }
 .comm__thread-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
   color: var(--mute);
+  flex-wrap: wrap;
 }
 .comm__handle {
   color: var(--ink);
+  font-weight: 500;
 }
 .comm__role::before {
   content: '·';
-  margin-right: 8px;
+  margin-right: 6px;
 }
 .comm__time {
   margin-left: auto;
-  opacity: 0.7;
+  opacity: 0.65;
 }
 .comm__text {
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13.5px;
+  line-height: 1.48;
   color: var(--ink-soft);
   margin: 0;
+  /* limit to 2 lines so all threads have similar height */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .comm__thread-foot {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--mute);
-  padding-top: 6px;
+  padding-top: 4px;
+}
+.comm__reply {
+  color: var(--teal);
 }
 
 .comm__floating-card {
@@ -305,7 +389,7 @@ const initial = (h) => h.charAt(0).toUpperCase()
   right: -10px;
   bottom: -10px;
   background: var(--ink);
-  color: var(--cream);
+  color: #f3f3f3;
   padding: 14px 18px;
   border-radius: var(--radius);
   display: flex;
@@ -382,7 +466,7 @@ const initial = (h) => h.charAt(0).toUpperCase()
   }
   .comm__thread {
     padding: 12px;
-    gap: 12px;
+    gap: 10px;
   }
   .comm__floating-card {
     position: static;

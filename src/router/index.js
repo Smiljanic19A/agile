@@ -21,6 +21,12 @@ const router = createRouter({
       component: HomeView,
       meta: { variant: 'v3' },
     },
+    {
+      path: '/v4',
+      name: 'home-v4',
+      component: HomeView,
+      meta: { variant: 'v4' },
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition

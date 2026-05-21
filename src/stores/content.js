@@ -353,28 +353,30 @@ export const useContentStore = defineStore('content', {
       channelHref: 'https://www.youtube.com/@mladenjovanovic',
     },
 
+    channels: [
+      { id: 'planning',       label: '# planning' },
+      { id: 'monitoring',     label: '# monitoring' },
+      { id: 'return-to-play', label: '# return-to-play' },
+      { id: 'book-club',      label: '# book-club' },
+    ],
+
     threads: [
-      {
-        id: 't1',
-        handle: 'evelyn.k',
-        role: 'S&C, Football',
-        time: '2h',
-        text: 'Anyone using readiness scores to gate sprint volume during in-season? Looking for thresholds that hold up.',
-      },
-      {
-        id: 't2',
-        handle: 'marko.p',
-        role: 'Physio, Track',
-        time: '6h',
-        text: 'Sharing a return-to-play decision log we built off the monitoring template. Feedback welcome.',
-      },
-      {
-        id: 't3',
-        handle: 'jules.t',
-        role: 'Combat sports',
-        time: '14h',
-        text: 'Question on residual fatigue during fight camp — how aggressively are you cutting CNS work in week 2?',
-      },
+      // planning
+      { id: 't1', channel: 'planning', handle: 'evelyn.k',  role: 'S&C · Football',     time: '2h',  replies: 14, text: 'Anyone using readiness scores to gate sprint volume during in-season? Looking for thresholds that actually hold up across a long schedule.' },
+      { id: 't2', channel: 'planning', handle: 'jakob.r',   role: 'Athletics · Throws',  time: '5h',  replies: 8,  text: 'What does your minimum viable week look like when the schedule collapses to 3 days? Asking for the next 6 weeks.' },
+      { id: 't3', channel: 'planning', handle: 'sara.v',    role: 'Hockey · S&C',        time: '1d',  replies: 21, text: 'Has anyone mapped the barbell strategy to block design — safe base block plus small experimental block rather than undulating everything?' },
+      // monitoring
+      { id: 't4', channel: 'monitoring', handle: 'marko.p', role: 'Physio · Track',      time: '6h',  replies: 19, text: 'Sharing a return-to-play decision log we built off the monitoring template. Feedback very welcome.' },
+      { id: 't5', channel: 'monitoring', handle: 'claire.m',role: 'S&C · Rugby',         time: '9h',  replies: 11, text: 'Rolling 28-day load is giving me cleaner signals than ACWR ever did. Anyone else moved away from the ratio entirely?' },
+      { id: 't6', channel: 'monitoring', handle: 'niko.a',  role: 'Basketball · Perf',   time: '2d',  replies: 6,  text: 'We cut subjective wellness to one question — overall feel 1–10. Three months in and it is more actionable than the full questionnaire combo.' },
+      // return-to-play
+      { id: 't7', channel: 'return-to-play', handle: 'jules.t', role: 'Combat sports',   time: '14h', replies: 17, text: 'Question on residual fatigue during fight camp — how aggressively are you cutting CNS work in week 2 of a 4-week camp?' },
+      { id: 't8', channel: 'return-to-play', handle: 'ana.d',   role: 'Physio · Football',time: '1d', replies: 23, text: 'Criteria-based vs time-based RTP — what decision triggers do you actually use in practice vs what the literature says?' },
+      { id: 't9', channel: 'return-to-play', handle: 'liam.f',  role: 'S&C · Cricket',   time: '3d',  replies: 9,  text: 'Anyone have a template for the deload-to-ramp sequence after a soft tissue injury? Something I can hand off to the physio.' },
+      // book-club
+      { id: 't10', channel: 'book-club', handle: 'petra.s', role: 'Sports Sci · Swim',   time: '4h',  replies: 12, text: '"Models are maps, not territory" hits differently each time. Re-reading the Foundations notes from the course this week.' },
+      { id: 't11', channel: 'book-club', handle: 'oskar.l', role: 'Strength Coach',       time: '12h', replies: 7,  text: 'Taleb on robustness vs optimisation — has anyone applied the barbell concept directly to program structure, not just intensity distribution?' },
+      { id: 't12', channel: 'book-club', handle: 'mei.w',   role: 'Tennis · Performance', time: '2d',  replies: 15, text: 'Reading Cynefin for the first time. The sense-respond vs analyse-respond split is exactly what the agile framework is built on.' },
     ],
 
     communityStats: [

@@ -365,6 +365,33 @@ html[data-theme="v3"] body .prod__foot {
 }
 
 /* =============================================
+   COMMUNITY SECTION
+   .comm__right uses background: var(--cream) — dark in v3
+   btn--primary uses color: var(--cream) — same issue
+   ============================================= */
+html[data-theme="v3"] body .comm__right {
+  background: #ffffff !important;
+}
+html[data-theme="v3"] body .comm__channel.is-active {
+  color: #f3f3f3 !important;
+}
+html[data-theme="v3"] body .comm__floating-card {
+  background: var(--teal) !important;
+  color: #f3f3f3 !important;
+  border-color: rgba(243, 243, 243, 0.12) !important;
+}
+html[data-theme="v3"] body .btn--primary {
+  background: var(--teal) !important;
+  color: #ffffff !important;
+  border-color: var(--teal) !important;
+}
+html[data-theme="v3"] body .btn--primary:hover {
+  background: var(--teal-deep) !important;
+  border-color: var(--teal-deep) !important;
+  color: #ffffff !important;
+}
+
+/* =============================================
    HEXLATTICE — teal strokes on white backgrounds
    CSS properties beat SVG presentation attributes regardless of specificity.
    stroke-opacity bumped so teal reads clearly on white.
