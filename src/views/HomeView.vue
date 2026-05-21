@@ -1,12 +1,10 @@
 <script setup>
 import { onMounted, onBeforeUnmount } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useContentStore } from '@/stores/content.js'
 import AppNav from '@/components/AppNav.vue'
 import HeroSection from '@/components/sections/HeroSection.vue'
-import SpotlightSection from '@/components/sections/SpotlightSection.vue'
+import FeaturedBanner from '@/components/sections/FeaturedBanner.vue'
 import AboutSection from '@/components/sections/AboutSection.vue'
-import VideoSection from '@/components/sections/VideoSection.vue'
 import BlogSection from '@/components/sections/BlogSection.vue'
 import CommunitySection from '@/components/sections/CommunitySection.vue'
 import StoreSection from '@/components/sections/StoreSection.vue'
@@ -14,7 +12,6 @@ import NewsletterSection from '@/components/sections/NewsletterSection.vue'
 import AppFooter from '@/components/sections/AppFooter.vue'
 
 const content = useContentStore()
-const { featured } = storeToRefs(content)
 
 let io = null
 onMounted(() => {
@@ -41,9 +38,8 @@ onBeforeUnmount(() => { io?.disconnect() })
     <AppNav />
     <main>
       <HeroSection />
-      <SpotlightSection v-if="featured.length" />
+      <FeaturedBanner />
       <AboutSection />
-      <VideoSection />
       <BlogSection />
       <CommunitySection />
       <StoreSection />

@@ -484,3 +484,88 @@ html[data-theme="v4"] body .ft .hex--on-deep line {
 html[data-theme="v4"] body .ft .hex--on-deep .hex__accents polygon {
   stroke-opacity: unset;
 }
+
+/* =============================================
+   HERO CARD — v4 warm ivory + bronze
+   Text panel uses teal-deep for premium feel.
+   Price badge switches to bronze.
+   var(--cream) is dark in v4 so explicit overrides needed.
+   ============================================= */
+html[data-theme="v4"] body .hcard {
+  color: #f8f7f2 !important;
+}
+html[data-theme="v4"] body .hcard__text-panel {
+  background: var(--teal-deep) !important;
+  color: #f8f7f2 !important;
+}
+html[data-theme="v4"] body .hcard--stacked {
+  background: var(--teal-deep) !important;
+  color: #f8f7f2 !important;
+}
+html[data-theme="v4"] body .hcard--overlay {
+  background: var(--teal-deep) !important;
+}
+html[data-theme="v4"] body .hcard__title,
+html[data-theme="v4"] body .hcard__title :deep(h1),
+html[data-theme="v4"] body .hcard__title :deep(h2) {
+  color: #f8f7f2 !important;
+}
+html[data-theme="v4"] body .hcard__price {
+  color: var(--bronze) !important;
+  border-color: rgba(181, 139, 91, 0.45) !important;
+}
+html[data-theme="v4"] body .hcard__desc :deep(p) {
+  color: rgba(248, 247, 242, 0.76) !important;
+}
+/* Nav arrows */
+html[data-theme="v4"] body .featured__nav {
+  background: rgba(181, 139, 91, 0.15) !important;
+  border-color: rgba(181, 139, 91, 0.3) !important;
+  color: #f8f7f2 !important;
+}
+html[data-theme="v4"] body .featured__nav:hover {
+  background: rgba(181, 139, 91, 0.28) !important;
+  border-color: rgba(181, 139, 91, 0.5) !important;
+}
+html[data-theme="v4"] body .featured__dot.is-active {
+  background: var(--bronze) !important;
+}
+
+/* =============================================
+   ABOUT BIO CARD — warm ivory + bronze accent
+   ============================================= */
+html[data-theme="v4"] body .about__card {
+  background: var(--paper) !important;
+  border-color: var(--bronze) !important;
+}
+html[data-theme="v4"] body .about__card-head {
+  color: var(--mute) !important;
+}
+html[data-theme="v4"] body .about__card-name {
+  color: var(--ink) !important;
+}
+html[data-theme="v4"] body .about__card-role {
+  color: var(--mute) !important;
+}
+html[data-theme="v4"] body .about__creds li {
+  color: var(--bronze) !important;
+}
+html[data-theme="v4"] body .about__creds li + li::before {
+  color: var(--mute) !important;
+}
+html[data-theme="v4"] body .about__list {
+  border-top-color: var(--hairline) !important;
+}
+html[data-theme="v4"] body .about__list li {
+  border-bottom-color: var(--hairline) !important;
+}
+html[data-theme="v4"] body .about__list li span {
+  color: var(--ink-soft) !important;
+}
+html[data-theme="v4"] body .about__list li span:last-child {
+  color: var(--mute) !important;
+}
+html[data-theme="v4"] body .about__quote {
+  border-left-color: var(--bronze) !important;
+  color: var(--ink-soft) !important;
+}

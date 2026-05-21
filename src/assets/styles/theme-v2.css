@@ -19,6 +19,26 @@
   color-scheme: dark light;
 }
 
+/* Hero card — v2 inverted: text panel needs dark teal bg (var(--teal) is now cream/white) */
+[data-theme="v2"] .hcard__text-panel {
+  background: #23615c !important;  /* original teal-deep — keep the panel dark */
+  color: #f3f3f3 !important;
+}
+[data-theme="v2"] .hcard--stacked {
+  background: #23615c !important;
+}
+[data-theme="v2"] .hcard--overlay {
+  background: #0e1a1a !important;
+}
+
+/* About card: no box — text floats on dark teal background */
+[data-theme="v2"] .about__card {
+  background: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+}
+
 /* HexLattice: CSS overrides SVG presentation attributes, so swap stroke colors */
 [data-theme="v2"] .hex--on-cream polygon,
 [data-theme="v2"] .hex--on-cream line {

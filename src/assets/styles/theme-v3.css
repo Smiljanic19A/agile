@@ -429,3 +429,72 @@ html[data-theme="v3"] body .menu .hex--on-teal line {
 html[data-theme="v3"] body .menu .hex--on-teal .hex__accents polygon {
   stroke-opacity: unset;
 }
+
+/* =============================================
+   HERO CARD — v3 white canvas
+   var(--cream) flips to dark ink in v3, so hero text/borders that use --cream
+   need explicit overrides to stay light.
+   ============================================= */
+html[data-theme="v3"] body .hcard {
+  color: #f3f3f3 !important;
+}
+html[data-theme="v3"] body .hcard__text-panel {
+  background: var(--teal) !important;
+  color: #f3f3f3 !important;
+}
+html[data-theme="v3"] body .hcard--stacked {
+  background: var(--teal) !important;
+  color: #f3f3f3 !important;
+}
+html[data-theme="v3"] body .hcard__title,
+html[data-theme="v3"] body .hcard__title :deep(h1),
+html[data-theme="v3"] body .hcard__title :deep(h2) {
+  color: #f3f3f3 !important;
+}
+html[data-theme="v3"] body .hcard__price {
+  color: rgba(243, 243, 243, 0.75) !important;
+  border-color: rgba(243, 243, 243, 0.25) !important;
+}
+/* Nav arrows and dots */
+html[data-theme="v3"] body .featured__nav {
+  background: rgba(55, 136, 130, 0.25) !important;
+  border-color: rgba(55, 136, 130, 0.4) !important;
+  color: #f3f3f3 !important;
+}
+html[data-theme="v3"] body .featured__nav:hover {
+  background: var(--teal) !important;
+}
+html[data-theme="v3"] body .featured__dot.is-active {
+  background: #f3f3f3 !important;
+}
+
+/* =============================================
+   ABOUT BIO CARD — white + teal top bar
+   ============================================= */
+html[data-theme="v3"] body .about__card {
+  background: #ffffff !important;
+  border-color: var(--hairline) !important;
+  border-top: 3px solid var(--teal) !important;
+}
+html[data-theme="v3"] body .about__card-head {
+  color: var(--mute) !important;
+}
+html[data-theme="v3"] body .about__card-name {
+  color: var(--ink) !important;
+}
+html[data-theme="v3"] body .about__card-role {
+  color: var(--mute) !important;
+}
+html[data-theme="v3"] body .about__creds li {
+  color: var(--teal) !important;
+}
+html[data-theme="v3"] body .about__list li span {
+  color: var(--ink-soft) !important;
+}
+html[data-theme="v3"] body .about__list li span:last-child {
+  color: var(--mute) !important;
+}
+html[data-theme="v3"] body .about__quote {
+  color: var(--ink-soft) !important;
+  border-left-color: var(--teal) !important;
+}
