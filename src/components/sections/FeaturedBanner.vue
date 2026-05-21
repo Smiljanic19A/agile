@@ -24,6 +24,16 @@ function onKey(e) {
   if (e.key === 'ArrowLeft')  prev()
   if (e.key === 'ArrowRight') next()
 }
+
+let touchStartX = 0
+function onTouchStart(e) {
+  touchStartX = e.touches[0].clientX
+}
+function onTouchEnd(e) {
+  const dx = e.changedTouches[0].clientX - touchStartX
+  if (Math.abs(dx) < 40) return
+  dx < 0 ? next() : prev()
+}
 </script>
 
 <template>
@@ -35,6 +45,8 @@ function onKey(e) {
     aria-label="Featured"
     tabindex="0"
     @keydown="onKey"
+    @touchstart.passive="onTouchStart"
+    @touchend.passive="onTouchEnd"
   >
     <!-- Wrapper div is the transition target — keeps transition CSS in scoped context -->
     <Transition name="ft" mode="out-in">
