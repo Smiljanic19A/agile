@@ -31,7 +31,7 @@ watch(open, (v) => {
 
 const links = [
   { href: '#work', label: 'Work' },
-  { href: '#watch', label: 'Watch' },
+  { href: '#now', label: 'Now' },
   { href: '#writing', label: 'Writing' },
   { href: '#community', label: 'Community' },
   { href: '#store', label: 'Store' },

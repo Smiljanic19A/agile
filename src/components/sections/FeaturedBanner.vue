@@ -29,6 +29,7 @@ function onKey(e) {
 <template>
   <section
     v-if="pinnedHeroItems.length > 0"
+    id="now"
     class="featured"
     role="region"
     aria-label="Featured"

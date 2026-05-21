@@ -1,548 +1,417 @@
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import SectionLabel from '@/components/ui/SectionLabel.vue'
-
-const route = useRoute()
-const variant = computed(() => route.meta?.variant ?? 'v1')
+import HexLattice from '@/components/ui/HexLattice.vue'
 </script>
 
 <template>
-  <section id="work" class="about section section--cream" aria-labelledby="about-title">
-    <div class="container about__grid">
-      <header class="about__head">
-        <SectionLabel index="01" label="The Work" />
-        <h2 id="about-title" class="display-2 about__title fade-up">
-          Not a fixed program. <em>An operating framework</em> for the messy world coaches actually work in.
+  <section id="about" class="bio" aria-labelledby="bio-name">
+    <div class="bio__hex" aria-hidden="true">
+      <HexLattice variant="grid" tone="on-teal" mask="radial" :size="100" :accents="6" :seed="29" />
+    </div>
+
+    <div class="container bio__inner">
+
+      <!-- ── Header ── -->
+      <header class="bio__header fade-up">
+        <h2 id="bio-name" class="bio__name">
+          Mladen Jovanović<span class="bio__name-phd">, PhD</span>
         </h2>
+        <p class="bio__headline">
+          Performance Manager&nbsp;&nbsp;·&nbsp;&nbsp;Sports Scientist&nbsp;&nbsp;·&nbsp;&nbsp;S&amp;C Coach
+        </p>
       </header>
 
-      <div class="about__copy fade-up">
-        <p class="prose">
-          Agile Periodization is an attempt to build a more useful way of thinking
-          about planning, coaching, monitoring, and decision-making — not in the
-          clean world of textbooks, but in the messy one, where athletes get hurt,
-          schedules change, readiness fluctuates, and coaches still need to make
-          good calls.
-        </p>
-        <p class="prose about__copy-extra">
-          You need enough structure to move forward, and enough flexibility to
-          adapt. Models, but not model worship. Plans, but not attachment to the
-          plan. That intersection — sports science, skill acquisition, physical
-          preparation, and practical coaching — is what this work sits inside.
-        </p>
-        <p class="prose about__copy-extra">
-          For strength and conditioning coaches, sport scientists, physios and
-          rehab practitioners, combat sports coaches, team-sport practitioners,
-          and serious athletes who want the logic behind the training.
-        </p>
+      <!-- ── Body grid ── -->
+      <div class="bio__body">
+
+        <!-- Career timeline -->
+        <div class="bio__col bio__col--career fade-up">
+          <h3 class="bio__col-label">Career</h3>
+          <ul class="bio__timeline">
+            <li class="bio__pos">
+              <span class="bio__pos-year">2024</span>
+              <div class="bio__pos-body">
+                <span class="bio__pos-org">Football Association of Serbia</span>
+                <span class="bio__pos-role">Head of Performance, Serbia Women's NT</span>
+                <span class="bio__pos-loc">Belgrade, Serbia</span>
+              </div>
+            </li>
+            <li class="bio__pos">
+              <span class="bio__pos-year">2017</span>
+              <div class="bio__pos-body">
+                <span class="bio__pos-org">Athlete Software Solutions</span>
+                <span class="bio__pos-role">Founder &amp; Director</span>
+                <span class="bio__pos-loc">Belgrade, Serbia</span>
+              </div>
+            </li>
+            <li class="bio__pos">
+              <span class="bio__pos-year">2015</span>
+              <div class="bio__pos-body">
+                <span class="bio__pos-org">Port Adelaide FC</span>
+                <span class="bio__pos-role">Strength Coach &amp; Data Scientist</span>
+                <span class="bio__pos-loc">Adelaide, Australia</span>
+              </div>
+            </li>
+            <li class="bio__pos">
+              <span class="bio__pos-year">2014</span>
+              <div class="bio__pos-body">
+                <span class="bio__pos-org">Aspire Academy</span>
+                <span class="bio__pos-role">Football Physiologist</span>
+                <span class="bio__pos-loc">Doha, Qatar</span>
+              </div>
+            </li>
+            <li class="bio__pos">
+              <span class="bio__pos-year">2012</span>
+              <div class="bio__pos-body">
+                <span class="bio__pos-org">Hammarby IF</span>
+                <span class="bio__pos-role">Sport Scientist &amp; Head S&amp;C Coach</span>
+                <span class="bio__pos-loc">Stockholm, Sweden</span>
+              </div>
+            </li>
+            <li class="bio__pos bio__pos--minor">
+              <span class="bio__pos-year">2010</span>
+              <div class="bio__pos-body">
+                <span class="bio__pos-org">Mike Boyle Strength &amp; Conditioning</span>
+                <span class="bio__pos-role">Intern Coach</span>
+                <span class="bio__pos-loc">Boston, USA</span>
+              </div>
+            </li>
+            <li class="bio__pos bio__pos--minor">
+              <span class="bio__pos-year">2008</span>
+              <div class="bio__pos-body">
+                <span class="bio__pos-org">Volleyball Club Fenerbahçe</span>
+                <span class="bio__pos-role">Head S&amp;C Coach</span>
+                <span class="bio__pos-loc">Istanbul, Turkey</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Works column -->
+        <div class="bio__col bio__col--works fade-up">
+
+          <div class="bio__works-block">
+            <h3 class="bio__col-label">Books</h3>
+            <ul class="bio__books">
+              <li>
+                <span class="bio__book-title">HIIT Manual</span>
+                <span class="bio__book-meta">High Intensity Interval Training and Agile Periodization · 2018</span>
+              </li>
+              <li>
+                <span class="bio__book-title">Strength Training Manual</span>
+                <span class="bio__book-meta">The Agile Periodization Approach · 2020</span>
+              </li>
+              <li>
+                <span class="bio__book-title">bmbstats</span>
+                <span class="bio__book-meta">Bootstrap Magnitude-based Statistics for Sports Scientists · 2020</span>
+              </li>
+              <li>
+                <span class="bio__book-title">Manual de Entrenamiento de la Fuerza</span>
+                <span class="bio__book-meta">Spanish edition · 2021</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bio__works-block">
+            <h3 class="bio__col-label">R Packages · CRAN</h3>
+            <div class="bio__packages">
+              <span class="bio__pkg">STMr</span>
+              <span class="bio__pkg">shorts</span>
+            </div>
+            <p class="bio__pkg-note">Velocity-based training &amp; sprint modelling tools used by researchers worldwide</p>
+          </div>
+
+          <div class="bio__works-block">
+            <h3 class="bio__col-label">Philosophy</h3>
+            <blockquote class="bio__quote">
+              "The goal isn't the perfect program. It's building a coach who can always make a better one."
+            </blockquote>
+          </div>
+
+        </div>
       </div>
-
-      <aside class="about__card fade-up" aria-label="About Mladen Jovanović">
-
-        <!-- V1 default — File Card -->
-        <template v-if="variant === 'v1'">
-          <div class="about__card-head">
-            <span class="about__card-eyebrow">About</span>
-            <span class="about__card-id">MJ — 001</span>
-          </div>
-          <h3 class="about__card-name">Mladen Jovanović, PhD</h3>
-          <p class="about__card-role">
-            Strength &amp; conditioning coach · Sport scientist · Author
-          </p>
-          <ul class="about__creds" aria-label="Credentials">
-            <li>PhD</li>
-            <li>20+ Years</li>
-            <li>3 Continents</li>
-          </ul>
-          <ul class="about__list">
-            <li>
-              <span>Port Adelaide FC</span>
-              <span>Australia · 2010–14</span>
-            </li>
-            <li>
-              <span>Aspire Academy</span>
-              <span>Qatar · 2014–18</span>
-            </li>
-            <li>
-              <span>Hammarby IF</span>
-              <span>Sweden · 2018–22</span>
-            </li>
-          </ul>
-          <p class="about__quote">
-            "The goal isn't the perfect program. It's building a coach who can
-            always make a better one."
-          </p>
-        </template>
-
-        <!-- V2 — Raw Dossier (no box, floats on dark teal) -->
-        <template v-else-if="variant === 'v2'">
-          <div class="about-v2-namerow">
-            <span class="about-v2-name">Mladen Jovanović</span>
-            <span class="about-v2-phd">PhD</span>
-          </div>
-          <ul class="about-v2-positions">
-            <li>
-              <span class="about-v2-arrow">→</span>
-              <div>
-                <div class="about-v2-club">Port Adelaide FC</div>
-                <div class="about-v2-meta">S&amp;C Coach · Australia · 2010–14</div>
-              </div>
-            </li>
-            <li>
-              <span class="about-v2-arrow">→</span>
-              <div>
-                <div class="about-v2-club">Aspire Academy</div>
-                <div class="about-v2-meta">Performance Director · Qatar · 2014–18</div>
-              </div>
-            </li>
-            <li>
-              <span class="about-v2-arrow">→</span>
-              <div>
-                <div class="about-v2-club">Hammarby IF</div>
-                <div class="about-v2-meta">Head of Science · Sweden · 2018–22</div>
-              </div>
-            </li>
-          </ul>
-          <p class="about-v2-quote">
-            "The goal isn't the perfect program. It's building a coach who can
-            always make a better one."
-          </p>
-        </template>
-
-        <!-- V3 — Numbers First (stats dominate) -->
-        <template v-else-if="variant === 'v3'">
-          <div class="about-v3-stats" aria-label="Key stats">
-            <div class="about-v3-stat">
-              <div class="about-v3-stat-value">20+</div>
-              <div class="about-v3-stat-label">Years</div>
-            </div>
-            <div class="about-v3-stat">
-              <div class="about-v3-stat-value">3</div>
-              <div class="about-v3-stat-label">Continents</div>
-            </div>
-            <div class="about-v3-stat">
-              <div class="about-v3-stat-value">1,200+</div>
-              <div class="about-v3-stat-label">Coaches</div>
-            </div>
-          </div>
-          <h3 class="about-v3-name">Mladen Jovanović, PhD</h3>
-          <p class="about-v3-role">S&amp;C Coach · Sport Scientist · Author</p>
-          <p class="about-v3-positions">Port Adelaide FC · Aspire Academy · Hammarby IF</p>
-        </template>
-
-        <!-- V4 — Career Timeline (bronze dots) -->
-        <template v-else-if="variant === 'v4'">
-          <div class="about-v4-header">
-            <span class="about-v4-eyebrow">Career</span>
-            <span class="about-v4-avatar" aria-hidden="true">MJ</span>
-          </div>
-          <ul class="about-v4-timeline">
-            <li>
-              <div class="about-v4-club">Port Adelaide FC</div>
-              <div class="about-v4-meta">S&amp;C Coach · Australia · 2010–14</div>
-            </li>
-            <li>
-              <div class="about-v4-club">Aspire Academy</div>
-              <div class="about-v4-meta">Performance Director · Qatar · 2014–18</div>
-            </li>
-            <li class="about-v4-timeline-last">
-              <div class="about-v4-club">Hammarby IF</div>
-              <div class="about-v4-meta">Head of Science · Sweden · 2018–22</div>
-            </li>
-          </ul>
-          <p class="about-v4-quote">
-            "The goal isn't the perfect program. It's building a coach who can
-            always make a better one."
-          </p>
-        </template>
-
-      </aside>
     </div>
   </section>
 </template>
 
 <style scoped>
-.about {
-  background: var(--paper);
-  color: var(--ink);
+/* ── Section shell ── */
+.bio {
+  position: relative;
+  background: var(--teal);
+  color: var(--cream);
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(72px, 10vh, 120px) 0;
 }
 
-.about__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  align-items: start;
+.bio__hex {
+  position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.about__head {
-  grid-column: 1 / -1;
+.bio__inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  margin-bottom: 24px;
+  gap: 0;
 }
 
-.about__title {
-  max-width: 22ch;
-  font-variation-settings: "SOFT" 40, "opsz" 144;
-}
-.about__title em {
-  font-style: italic;
-  font-weight: 300;
-  color: var(--teal-deep);
-  font-variation-settings: "SOFT" 100, "opsz" 144;
-}
-
-.about__copy {
+/* ── Header ── */
+.bio__header {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  max-width: 56ch;
+  gap: 16px;
+  padding-bottom: clamp(40px, 5vh, 64px);
+  border-bottom: 1px solid rgba(243, 243, 243, 0.14);
 }
 
-/* ── Card outer (shared wrapper) ── */
-.about__card {
-  background: var(--cream);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius);
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+.bio__name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(48px, 7vw, 108px);
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+  color: var(--cream);
+  font-variation-settings: "SOFT" 0, "opsz" 144;
+  margin: 0;
 }
-
-/* ── V1: File Card ── */
-.about__card-head {
-  display: flex;
-  justify-content: space-between;
+.bio__name-phd {
+  font-size: 0.48em;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  opacity: 0.55;
+  vertical-align: super;
+  font-variation-settings: normal;
+  margin-left: 4px;
+}
+
+.bio__headline {
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1vw, 13px);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--mute);
-}
-.about__card-name {
-  font-family: var(--font-display);
-  font-size: clamp(26px, 2.4vw, 34px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin: 4px 0 0;
-  font-variation-settings: "SOFT" 30, "opsz" 144;
-}
-.about__card-role {
-  color: var(--mute);
-  font-size: 14px;
-  line-height: 1.5;
+  color: var(--cream);
+  opacity: 0.6;
   margin: 0;
 }
-.about__creds {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+
+
+/* ── Body grid ── */
+.bio__body {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(40px, 6vw, 96px);
+  align-items: start;
+  margin-top: clamp(40px, 6vh, 72px);
+}
+
+.bio__col-label {
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--mute);
+  color: var(--cream);
+  opacity: 0.45;
+  margin: 0 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(243, 243, 243, 0.1);
 }
-.about__creds li + li::before {
-  content: '·';
-  margin: 0 8px;
-  opacity: 0.5;
-}
-.about__list {
+
+/* ── Career timeline ── */
+.bio__timeline {
   list-style: none;
-  margin: 8px 0;
   padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
-  border-top: 1px solid var(--hairline);
 }
-.about__list li {
+
+.bio__pos {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 16px;
+  position: relative;
+  padding-bottom: 28px;
+}
+.bio__pos::before {
+  content: '';
+  position: absolute;
+  left: 57px;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cream);
+  opacity: 0.7;
+}
+.bio__pos::after {
+  content: '';
+  position: absolute;
+  left: 60px;
+  top: 14px;
+  width: 1px;
+  height: calc(100% - 14px);
+  background: rgba(243, 243, 243, 0.15);
+}
+.bio__pos:last-child::after {
+  display: none;
+}
+.bio__pos:last-child {
+  padding-bottom: 0;
+}
+
+.bio__pos--minor .bio__pos-org {
+  opacity: 0.65;
+}
+.bio__pos--minor::before {
+  width: 4px;
+  height: 4px;
+  opacity: 0.4;
+  left: 58px;
+  top: 8px;
+}
+
+.bio__pos-year {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--cream);
+  opacity: 0.45;
+  padding-top: 2px;
+  text-align: right;
+}
+
+.bio__pos-body {
   display: flex;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--hairline);
+  flex-direction: column;
+  gap: 3px;
+}
+.bio__pos-org {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cream);
+  line-height: 1.2;
+}
+.bio__pos-role {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--cream);
+  opacity: 0.55;
+}
+.bio__pos-loc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--cream);
+  opacity: 0.35;
+  text-transform: uppercase;
+}
+
+/* ── Works column ── */
+.bio__col--works {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.bio__works-block {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Books */
+.bio__books {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.bio__books li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(243, 243, 243, 0.08);
+}
+.bio__books li:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.bio__book-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cream);
+  line-height: 1.3;
+}
+.bio__book-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--cream);
+  opacity: 0.42;
+}
+
+/* R Packages */
+.bio__packages {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.bio__pkg {
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.04em;
-  color: var(--ink-soft);
+  letter-spacing: 0.06em;
+  color: var(--cream);
+  border: 1px solid rgba(243, 243, 243, 0.25);
+  padding: 4px 12px;
+  border-radius: 3px;
 }
-.about__list li span:last-child {
-  color: var(--mute);
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-}
-.about__quote {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 300;
-  font-size: 17px;
-  line-height: 1.45;
-  color: var(--ink-soft);
-  border-left: 2px solid var(--teal);
-  padding-left: 16px;
-  margin: 6px 0 0;
-  font-variation-settings: "SOFT" 100, "opsz" 144;
-}
-
-/* ── V2: Raw Dossier ── */
-.about-v2-namerow {
-  display: flex;
-  align-items: baseline;
-  gap: 0;
-  flex-wrap: wrap;
-}
-.about-v2-name {
-  font-family: var(--font-mono);
-  font-size: clamp(16px, 1.8vw, 24px);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink);
-  font-weight: 400;
-}
-.about-v2-phd {
-  display: inline-block;
-  margin-left: 12px;
-  border: 1px solid var(--hairline-strong);
-  padding: 2px 8px;
+.bio__pkg-note {
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mute);
-  border-radius: 2px;
-}
-.about-v2-positions {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.about-v2-positions li {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-.about-v2-arrow {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  color: var(--teal);
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.about-v2-club {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink);
-  margin-bottom: 3px;
-}
-.about-v2-meta {
-  font-family: var(--font-mono);
-  font-size: 11px;
   letter-spacing: 0.04em;
-  color: var(--mute);
-}
-.about-v2-quote {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 300;
-  font-size: 16px;
+  color: var(--cream);
+  opacity: 0.38;
   line-height: 1.5;
-  color: var(--ink-soft);
-  margin: 8px 0 0;
-  font-variation-settings: "SOFT" 100, "opsz" 144;
-}
-
-/* ── V3: Numbers First ── */
-.about-v3-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-  padding-bottom: 20px;
-  border-bottom: 2px solid var(--teal);
-}
-.about-v3-stat-value {
-  font-family: var(--font-display);
-  font-size: clamp(32px, 3.2vw, 48px);
-  font-weight: 400;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: var(--ink);
-  font-variation-settings: "SOFT" 0, "opsz" 144;
-}
-.about-v3-stat-label {
-  margin-top: 6px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mute);
-}
-.about-v3-name {
-  font-family: var(--font-display);
-  font-size: clamp(22px, 2vw, 28px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  color: var(--ink);
-  margin: 4px 0 0;
-  font-variation-settings: "SOFT" 30, "opsz" 144;
-}
-.about-v3-role {
-  font-size: 13px;
-  color: var(--mute);
   margin: 0;
 }
-.about-v3-positions {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--mute);
-  margin: 4px 0 0;
-}
 
-/* ── V4: Career Timeline ── */
-.about-v4-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.about-v4-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--mute);
-}
-.about-v4-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--bronze, #b58b5b);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-}
-.about-v4-timeline {
-  list-style: none;
-  padding: 0;
-  margin: 4px 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.about-v4-timeline li {
-  position: relative;
-  padding: 0 0 22px 22px;
-}
-.about-v4-timeline li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 5px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--bronze, #b58b5b);
-}
-.about-v4-timeline li::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 15px;
-  width: 1px;
-  height: calc(100% - 15px);
-  background: var(--bronze, #b58b5b);
-  opacity: 0.28;
-}
-.about-v4-timeline-last {
-  padding-bottom: 4px !important;
-}
-.about-v4-timeline-last::after {
-  display: none !important;
-}
-.about-v4-club {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink);
-  margin-bottom: 3px;
-}
-.about-v4-meta {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--mute);
-}
-.about-v4-quote {
-  border-left: 2px solid var(--bronze, #b58b5b);
-  padding-left: 14px;
+/* Quote */
+.bio__quote {
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 300;
-  font-size: 15px;
+  font-size: clamp(16px, 1.5vw, 20px);
   line-height: 1.48;
-  color: var(--ink-soft);
-  margin: 6px 0 0;
+  color: var(--cream);
+  opacity: 0.75;
+  border-left: 2px solid rgba(243, 243, 243, 0.3);
+  padding-left: 18px;
+  margin: 0;
   font-variation-settings: "SOFT" 100, "opsz" 144;
 }
 
 /* ── Responsive ── */
-@media (max-width: 960px) {
-  .about__grid {
+@media (max-width: 900px) {
+  .bio__body {
     grid-template-columns: 1fr;
-    gap: 40px;
-  }
-  .about__head {
-    gap: 20px;
-    margin-bottom: 8px;
-  }
-  .about__copy {
-    gap: 18px;
-  }
-  .about__card {
-    padding: 24px;
-    gap: 14px;
-  }
-  .about__quote {
-    font-size: 16px;
-    padding-left: 14px;
-  }
-  .about__list li {
-    padding: 12px 0;
+    gap: 48px;
   }
 }
 
-@media (max-width: 720px) {
-  .about__grid {
-    gap: 32px;
-  }
-  .about__copy-extra {
-    display: none;
-  }
-  .about__card {
-    padding: 20px;
-  }
-  .about__quote {
-    font-size: 15px;
-    padding-left: 12px;
-  }
-  .about-v3-stat-value {
-    font-size: clamp(28px, 8vw, 40px);
+@media (max-width: 640px) {
+  .bio__name {
+    font-size: clamp(40px, 11vw, 72px);
   }
 }
 </style>

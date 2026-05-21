@@ -435,10 +435,10 @@ export const useContentStore = defineStore('content', {
       {
         id: 'h4',
         pinned: true,
-        layout: 'stacked',
+        layout: 'split-end',
         title: 'The Practitioner <em>Bundle.</em>',
         description: 'Foundations course, both planner templates, and a year of AthletePulse — everything you need to run a principled training operation.',
-        coverImage: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1600&q=85',
+        coverImage: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=900&q=85',
         videoUrl: null,
         ctaUrl: 'https://payhip.com/mjovanovic',
         ctaLabel: 'See the bundle',

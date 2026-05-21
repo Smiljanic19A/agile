@@ -31,12 +31,18 @@
   background: #0e1a1a !important;
 }
 
-/* About card: no box — text floats on dark teal background */
-[data-theme="v2"] .about__card {
-  background: transparent;
-  border: none;
-  padding: 0;
-  border-radius: 0;
+/* Bio section — pin to original dark teal; v2 flips --teal to cream */
+[data-theme="v2"] .bio {
+  background: #23615c !important;
+  --cream: #f3f3f3;
+}
+
+/* Store tabs — inactive text is hardcoded white; invisible on v2's light teal/cream bg */
+[data-theme="v2"] .tabs__btn {
+  color: rgba(14, 26, 26, 0.5) !important;
+}
+[data-theme="v2"] .tabs-wrap::after {
+  background: linear-gradient(to right, rgba(243, 243, 243, 0), #f3f3f3) !important;
 }
 
 /* HexLattice: CSS overrides SVG presentation attributes, so swap stroke colors */

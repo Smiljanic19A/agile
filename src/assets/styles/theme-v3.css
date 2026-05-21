@@ -151,6 +151,20 @@ html[data-theme="v3"] body .store__lead {
 html[data-theme="v3"] body .store__empty {
   color: var(--mute) !important;
 }
+/* Store tabs — inactive text hardcoded white; invisible on white canvas.
+   Active text (var(--ink)) lands on a dark indicator (--cream flips dark) — also invisible. */
+html[data-theme="v3"] body .tabs__btn {
+  color: var(--mute) !important;
+}
+html[data-theme="v3"] body .tabs__btn:hover:not(.is-active) {
+  color: var(--ink) !important;
+}
+html[data-theme="v3"] body .tabs__btn.is-active {
+  color: #f3f3f3 !important;
+}
+html[data-theme="v3"] body .tabs-wrap::after {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), #ffffff) !important;
+}
 
 /* =============================================
    NEWSLETTER (scoped .news)
@@ -469,32 +483,21 @@ html[data-theme="v3"] body .featured__dot.is-active {
 }
 
 /* =============================================
-   ABOUT BIO CARD — white + teal top bar
+   BIO SECTION — keep dark teal as contrast strip
+   --cream flips to dark ink in v3; re-scope it inside .bio
+   so all child text stays light without per-element overrides
    ============================================= */
-html[data-theme="v3"] body .about__card {
-  background: #ffffff !important;
-  border-color: var(--hairline) !important;
-  border-top: 3px solid var(--teal) !important;
+html[data-theme="v3"] body .bio {
+  background: var(--teal) !important;
+  --cream: #f3f3f3;
 }
-html[data-theme="v3"] body .about__card-head {
-  color: var(--mute) !important;
+/* HexLattice in bio: v3 globally sets hex--on-teal strokes to teal (for white sections).
+   Inside the dark teal bio panel, restore original light strokes. */
+html[data-theme="v3"] body .bio .hex--on-teal polygon,
+html[data-theme="v3"] body .bio .hex--on-teal line {
+  stroke: #9bd0cb;
+  stroke-opacity: unset;
 }
-html[data-theme="v3"] body .about__card-name {
-  color: var(--ink) !important;
-}
-html[data-theme="v3"] body .about__card-role {
-  color: var(--mute) !important;
-}
-html[data-theme="v3"] body .about__creds li {
-  color: var(--teal) !important;
-}
-html[data-theme="v3"] body .about__list li span {
-  color: var(--ink-soft) !important;
-}
-html[data-theme="v3"] body .about__list li span:last-child {
-  color: var(--mute) !important;
-}
-html[data-theme="v3"] body .about__quote {
-  color: var(--ink-soft) !important;
-  border-left-color: var(--teal) !important;
+html[data-theme="v3"] body .bio .hex--on-teal .hex__accents polygon {
+  stroke-opacity: unset;
 }

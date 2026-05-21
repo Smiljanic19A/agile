@@ -179,6 +179,23 @@ html[data-theme="v4"] body .store__lead {
 html[data-theme="v4"] body .store__empty {
   color: var(--mute) !important;
 }
+/* Store tabs — inactive text hardcoded white; invisible on warm ivory.
+   Active text (var(--ink)) on dark charcoal indicator (--cream = charcoal in v4) — also invisible. */
+html[data-theme="v4"] body .tabs__btn {
+  color: var(--mute) !important;
+}
+html[data-theme="v4"] body .tabs__btn:hover:not(.is-active) {
+  color: var(--ink) !important;
+}
+html[data-theme="v4"] body .tabs__btn.is-active {
+  color: #f8f7f2 !important;
+}
+html[data-theme="v4"] body .tabs__indicator {
+  background: var(--teal) !important;
+}
+html[data-theme="v4"] body .tabs-wrap::after {
+  background: linear-gradient(to right, rgba(244, 239, 230, 0), #f4efe6) !important;
+}
 
 /* =============================================
    NEWSLETTER — pale mint section tint
@@ -532,40 +549,28 @@ html[data-theme="v4"] body .featured__dot.is-active {
 }
 
 /* =============================================
-   ABOUT BIO CARD — warm ivory + bronze accent
+   BIO SECTION — deep teal premium bg + warm ivory text + bronze accents
+   --cream is dark in v4; re-scope inside .bio to restore light text
    ============================================= */
-html[data-theme="v4"] body .about__card {
-  background: var(--paper) !important;
-  border-color: var(--bronze) !important;
+html[data-theme="v4"] body .bio {
+  background: var(--teal-deep) !important;
+  --cream: #f8f7f2;
 }
-html[data-theme="v4"] body .about__card-head {
-  color: var(--mute) !important;
-}
-html[data-theme="v4"] body .about__card-name {
-  color: var(--ink) !important;
-}
-html[data-theme="v4"] body .about__card-role {
-  color: var(--mute) !important;
-}
-html[data-theme="v4"] body .about__creds li {
-  color: var(--bronze) !important;
-}
-html[data-theme="v4"] body .about__creds li + li::before {
-  color: var(--mute) !important;
-}
-html[data-theme="v4"] body .about__list {
-  border-top-color: var(--hairline) !important;
-}
-html[data-theme="v4"] body .about__list li {
-  border-bottom-color: var(--hairline) !important;
-}
-html[data-theme="v4"] body .about__list li span {
-  color: var(--ink-soft) !important;
-}
-html[data-theme="v4"] body .about__list li span:last-child {
-  color: var(--mute) !important;
-}
-html[data-theme="v4"] body .about__quote {
+/* Bronze accent on quote bar */
+html[data-theme="v4"] body .bio__quote {
   border-left-color: var(--bronze) !important;
-  color: var(--ink-soft) !important;
+}
+/* R package pill: bronze border instead of plain cream */
+html[data-theme="v4"] body .bio__pkg {
+  border-color: rgba(181, 139, 91, 0.4) !important;
+  color: #f8f7f2 !important;
+}
+/* HexLattice: v4 globally remaps hex--on-teal strokes; restore light inside bio */
+html[data-theme="v4"] body .bio .hex--on-teal polygon,
+html[data-theme="v4"] body .bio .hex--on-teal line {
+  stroke: #6fa29a;
+  stroke-opacity: unset;
+}
+html[data-theme="v4"] body .bio .hex--on-teal .hex__accents polygon {
+  stroke-opacity: unset;
 }

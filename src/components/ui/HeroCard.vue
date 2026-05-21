@@ -91,10 +91,17 @@ const embedUrl = computed(() =>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════ STACKED ══ -->
-  <div v-else class="hcard hcard--stacked">
-    <div class="hcard__stacked-text">
-      <div class="container hcard__stacked-inner">
+  <!-- fallback: treat unknown layout as overlay -->
+  <div v-else class="hcard hcard--overlay">
+    <div class="hcard__bg" aria-hidden="true">
+      <img v-if="hasImage" class="hcard__bg-img" :src="item.coverImage" alt="" />
+      <div v-else class="hcard__bg-hex">
+        <HexLattice variant="grid" tone="on-teal" mask="radial" :size="110" :accents="7" :seed="42" />
+      </div>
+    </div>
+    <div class="hcard__scrim" aria-hidden="true" />
+    <div class="container hcard__overlay-body">
+      <div class="hcard__overlay-content">
         <p v-if="item.price" class="hcard__price-badge">{{ item.price }}</p>
         <div v-if="item.title" class="hcard__title" v-html="item.title" />
         <div v-if="item.description" class="hcard__desc" v-html="item.description" />
@@ -103,22 +110,6 @@ const embedUrl = computed(() =>
             {{ item.ctaLabel ?? 'Learn more' }}
           </AppButton>
         </div>
-      </div>
-    </div>
-    <div class="hcard__stacked-media">
-      <img v-if="hasImage" class="hcard__media-img" :src="item.coverImage" alt="" />
-      <div v-else-if="hasVideo" class="hcard__stacked-video">
-        <iframe
-          :src="embedUrl"
-          frameborder="0"
-          allow="autoplay; encrypted-media; picture-in-picture"
-          allowfullscreen
-          loading="lazy"
-          title="Video"
-        />
-      </div>
-      <div v-else class="hcard__stacked-hex" aria-hidden="true">
-        <HexLattice variant="grid" tone="on-teal" mask="radial" :size="90" :accents="6" :seed="55" />
       </div>
     </div>
   </div>
@@ -322,72 +313,6 @@ const embedUrl = computed(() =>
   opacity: 0.5;
 }
 
-/* ═══════════════════════════════════════════════ STACKED ═══════ */
-.hcard--stacked {
-  display: flex;
-  flex-direction: column;
-  background: var(--hcard-bg);
-}
-.hcard__stacked-text {
-  flex: 0 0 auto;
-  position: relative;
-  overflow: hidden;
-  padding: clamp(80px, 12vh, 140px) 0 clamp(48px, 6vh, 72px);
-  text-align: center;
-}
-.hcard__stacked-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.hcard__stacked-inner .hcard__title {
-  max-width: 18ch;
-  text-align: center;
-}
-.hcard__stacked-inner .hcard__desc {
-  text-align: center;
-}
-.hcard__stacked-inner .hcard__actions {
-  justify-content: center;
-}
-.hcard__stacked-media {
-  flex: 1;
-  min-height: 40vh;
-  max-height: 56vh;
-  position: relative;
-  overflow: hidden;
-}
-.hcard__stacked-media .hcard__media-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-}
-.hcard__stacked-video {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px clamp(32px, 8vw, 160px);
-  background: var(--hcard-bg-deep);
-}
-.hcard__stacked-video iframe {
-  width: 100%;
-  max-width: 960px;
-  aspect-ratio: 16 / 9;
-  border-radius: 12px;
-  box-shadow: 0 40px 120px rgba(0,0,0,0.55);
-}
-.hcard__stacked-hex {
-  position: absolute;
-  inset: 0;
-  opacity: 0.35;
-  pointer-events: none;
-}
-
 /* ─── Responsive ────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .hcard--split {
@@ -407,10 +332,6 @@ const embedUrl = computed(() =>
     min-height: 50vw;
     max-height: 420px;
   }
-  .hcard__stacked-media {
-    min-height: 44vw;
-    max-height: 360px;
-  }
 }
 
 @media (max-width: 640px) {
@@ -420,15 +341,6 @@ const embedUrl = computed(() =>
   }
   .hcard__title {
     font-size: clamp(32px, 9vw, 52px);
-  }
-  .hcard__stacked-inner .hcard__title {
-    text-align: left;
-  }
-  .hcard__stacked-inner .hcard__desc {
-    text-align: left;
-  }
-  .hcard__stacked-inner .hcard__actions {
-    justify-content: flex-start;
   }
   .hcard__media-video {
     padding: 28px 20px;
