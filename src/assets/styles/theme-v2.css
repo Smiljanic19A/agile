@@ -1,0 +1,30 @@
+/* V2 theme: inverted palette — teal ↔ cream, teal-deep ↔ paper */
+[data-theme="v2"] {
+  --teal:      #f3f3f3;   /* was cream — teal sections get cream bg */
+  --teal-deep: #faf9f4;   /* was paper — footer gets paper bg */
+  --teal-soft: #d0d0d0;   /* soft cream to replace soft teal */
+  --cream:     #0e1a1a;   /* was ink — text in teal sections goes dark */
+  --paper:     #23615c;   /* was teal-deep — cream sections get deep teal bg */
+  --ink:       #f3f3f3;   /* was cream — text in paper sections goes light */
+  --ink-soft:  rgba(243, 243, 243, 0.85);
+  --mute:      rgba(243, 243, 243, 0.6);
+  --mute-2:    rgba(243, 243, 243, 0.45);
+
+  /* hairlines flip: dark-on-light ↔ light-on-dark */
+  --hairline:              rgba(243, 243, 243, 0.12);
+  --hairline-strong:       rgba(243, 243, 243, 0.2);
+  --hairline-light:        rgba(14, 26, 26, 0.1);
+  --hairline-light-strong: rgba(14, 26, 26, 0.18);
+
+  color-scheme: dark light;
+}
+
+/* HexLattice: CSS overrides SVG presentation attributes, so swap stroke colors */
+[data-theme="v2"] .hex--on-cream polygon,
+[data-theme="v2"] .hex--on-cream line {
+  stroke: #5ba39d;
+}
+[data-theme="v2"] .hex--on-deep polygon,
+[data-theme="v2"] .hex--on-deep line {
+  stroke: #0e1a1a;
+}

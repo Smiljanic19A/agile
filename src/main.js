@@ -5,6 +5,8 @@ import App from './App.vue'
 import router from './router'
 
 import './assets/styles/base.css'
+import './assets/styles/theme-v2.css'
+import './assets/styles/theme-v3.css'
 
 const app = createApp(App)
 
