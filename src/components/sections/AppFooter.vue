@@ -147,7 +147,7 @@ const connect = [
 .ft__brand-title {
   font-family: var(--font-display);
   font-size: 22px;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.018em;
   margin: 0;
 }

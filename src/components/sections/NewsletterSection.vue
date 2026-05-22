@@ -89,13 +89,11 @@ const submit = () => {
 .news__title {
   max-width: 20ch;
   color: var(--cream);
-  font-variation-settings: "SOFT" 40, "opsz" 144;
 }
 .news__title em {
   font-style: italic;
-  font-weight: 300;
-  color: rgba(243, 243, 243, 0.7);
-  font-variation-settings: "SOFT" 100, "opsz" 144;
+  font-weight: 500;
+  color: rgba(243, 243, 243, 0.78);
 }
 
 .news__form {

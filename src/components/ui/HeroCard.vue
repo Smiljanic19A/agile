@@ -149,23 +149,21 @@ const embedUrl = computed(() =>
 /* ─── Title (v-html — styles the div itself + any em inside) ───── */
 .hcard__title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(38px, 5vw, 76px);
   line-height: 1.02;
   letter-spacing: -0.025em;
   color: var(--hcard-text);
-  font-variation-settings: "SOFT" 50, "opsz" 144;
   margin: 0 0 22px;
   max-width: 16ch;
 }
 .hcard__title :deep(em) {
   font-style: italic;
-  font-weight: 300;
-  opacity: 0.82;
-  font-variation-settings: "SOFT" 100, "opsz" 144;
+  font-weight: 500;
+  opacity: 0.88;
 }
 .hcard__title :deep(strong) {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ─── Description ──────────────────────────────────────────────── */

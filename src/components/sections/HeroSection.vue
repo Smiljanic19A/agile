@@ -138,16 +138,14 @@ import { externalLinks } from '@/stores/content.js'
 
 .hero__title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 700;
   color: var(--cream);
   margin: 0 0 32px;
   max-width: 18ch;
-  font-variation-settings: "SOFT" 60, "opsz" 144;
 }
 .hero__title em {
   font-style: italic;
-  font-weight: 300;
-  font-variation-settings: "SOFT" 100, "opsz" 144;
+  font-weight: 500;
   color: var(--cream);
   opacity: 0.88;
 }

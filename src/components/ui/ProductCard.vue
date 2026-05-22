@@ -91,11 +91,10 @@ const displayPrice = computed(() => props.item.price ?? 'Free')
 .prod__title {
   font-family: var(--font-display);
   font-size: 22px;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.12;
   letter-spacing: -0.018em;
   margin: 0 0 10px;
-  font-variation-settings: "SOFT" 30, "opsz" 144;
 }
 
 .prod__blurb {

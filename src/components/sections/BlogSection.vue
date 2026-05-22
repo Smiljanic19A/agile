@@ -101,13 +101,11 @@ const { articles, featureArticle, standardArticles, textArticles } = storeToRefs
 .blog__title {
   max-width: 16ch;
   color: var(--cream);
-  font-variation-settings: "SOFT" 40, "opsz" 144;
 }
 .blog__title em {
   font-style: italic;
-  font-weight: 300;
-  color: rgba(243, 243, 243, 0.7);
-  font-variation-settings: "SOFT" 100, "opsz" 144;
+  font-weight: 500;
+  color: rgba(243, 243, 243, 0.78);
 }
 .blog__lead {
   color: rgba(243, 243, 243, 0.78);

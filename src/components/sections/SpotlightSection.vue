@@ -287,7 +287,6 @@ watch(featured, () => { current.value = 0; stopTimer(); startTimer() })
 .spot__title {
   max-width: 22ch;
   color: var(--cream);
-  font-variation-settings: "SOFT" 40, "opsz" 144;
   margin: 0;
 }
 

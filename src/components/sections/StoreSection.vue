@@ -92,13 +92,11 @@ const visible = computed(() => content.productsByCategory(active.value))
 .store__title {
   max-width: 18ch;
   color: var(--cream);
-  font-variation-settings: "SOFT" 40, "opsz" 144;
 }
 .store__title em {
   font-style: italic;
-  font-weight: 300;
-  color: rgba(243, 243, 243, 0.7);
-  font-variation-settings: "SOFT" 100, "opsz" 144;
+  font-weight: 500;
+  color: rgba(243, 243, 243, 0.78);
 }
 .store__lead {
   color: rgba(243, 243, 243, 0.78);

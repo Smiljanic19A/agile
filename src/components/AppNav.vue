@@ -386,10 +386,9 @@ const close = () => (open.value = false)
 .menu__link-label {
   font-family: var(--font-display);
   font-size: clamp(36px, 9vw, 56px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1;
-  font-variation-settings: "SOFT" 50, "opsz" 144;
 }
 .menu__link--minor .menu__link-label {
   font-size: clamp(22px, 5.4vw, 30px);

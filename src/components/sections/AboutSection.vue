@@ -171,12 +171,11 @@ import HexLattice from '@/components/ui/HexLattice.vue'
 
 .bio__name {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 700;
   font-size: clamp(48px, 7vw, 108px);
   line-height: 0.96;
   letter-spacing: -0.03em;
   color: var(--cream);
-  font-variation-settings: "SOFT" 0, "opsz" 144;
   margin: 0;
 }
 .bio__name-phd {
@@ -184,9 +183,8 @@ import HexLattice from '@/components/ui/HexLattice.vue'
   font-family: var(--font-mono);
   font-weight: 400;
   letter-spacing: 0.06em;
-  opacity: 0.55;
+  opacity: 0.65;
   vertical-align: super;
-  font-variation-settings: normal;
   margin-left: 4px;
 }
 
@@ -212,11 +210,11 @@ import HexLattice from '@/components/ui/HexLattice.vue'
 
 .bio__col-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--cream);
-  opacity: 0.45;
+  opacity: 0.6;
   margin: 0 0 20px;
   padding-bottom: 10px;
   border-bottom: 1px solid rgba(243, 243, 243, 0.1);
@@ -282,7 +280,7 @@ import HexLattice from '@/components/ui/HexLattice.vue'
   font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--cream);
-  opacity: 0.45;
+  opacity: 0.62;
   padding-top: 2px;
   text-align: right;
 }
@@ -303,14 +301,14 @@ import HexLattice from '@/components/ui/HexLattice.vue'
   font-size: 11px;
   letter-spacing: 0.04em;
   color: var(--cream);
-  opacity: 0.55;
+  opacity: 0.72;
 }
 .bio__pos-loc {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--cream);
-  opacity: 0.35;
+  opacity: 0.52;
   text-transform: uppercase;
 }
 
@@ -354,10 +352,10 @@ import HexLattice from '@/components/ui/HexLattice.vue'
 }
 .bio__book-meta {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
+  font-size: 11px;
+  letter-spacing: 0.04em;
   color: var(--cream);
-  opacity: 0.42;
+  opacity: 0.58;
 }
 
 /* R Packages */
@@ -378,10 +376,10 @@ import HexLattice from '@/components/ui/HexLattice.vue'
 }
 .bio__pkg-note {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.04em;
+  font-size: 11px;
+  letter-spacing: 0.03em;
   color: var(--cream);
-  opacity: 0.38;
+  opacity: 0.58;
   line-height: 1.5;
   margin: 0;
 }
@@ -390,15 +388,14 @@ import HexLattice from '@/components/ui/HexLattice.vue'
 .bio__quote {
   font-family: var(--font-display);
   font-style: italic;
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(16px, 1.5vw, 20px);
-  line-height: 1.48;
+  line-height: 1.52;
   color: var(--cream);
-  opacity: 0.75;
-  border-left: 2px solid rgba(243, 243, 243, 0.3);
+  opacity: 0.82;
+  border-left: 2px solid rgba(243, 243, 243, 0.35);
   padding-left: 18px;
   margin: 0;
-  font-variation-settings: "SOFT" 100, "opsz" 144;
 }
 
 /* ── Responsive ── */

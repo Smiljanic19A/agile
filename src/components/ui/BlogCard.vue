@@ -93,11 +93,10 @@ defineProps({
 .card__title {
   font-family: var(--font-display);
   font-size: clamp(22px, 2.4vw, 30px);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.018em;
   margin: 0 0 10px;
-  font-variation-settings: "SOFT" 30, "opsz" 144;
 }
 
 .card__dek {

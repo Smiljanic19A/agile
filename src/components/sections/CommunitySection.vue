@@ -166,13 +166,11 @@ const initial = (h) => h.charAt(0).toUpperCase()
 
 .comm__title {
   max-width: 18ch;
-  font-variation-settings: "SOFT" 40, "opsz" 144;
 }
 .comm__title em {
   font-style: italic;
-  font-weight: 300;
+  font-weight: 500;
   color: var(--teal-deep);
-  font-variation-settings: "SOFT" 100, "opsz" 144;
 }
 
 .comm__stats {
@@ -193,11 +191,10 @@ const initial = (h) => h.charAt(0).toUpperCase()
 .comm__stat-value {
   font-family: var(--font-display);
   font-size: clamp(32px, 3vw, 44px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1;
   color: var(--ink);
-  font-variation-settings: "SOFT" 30, "opsz" 144;
 }
 .comm__stat-label {
   margin-top: 8px;
