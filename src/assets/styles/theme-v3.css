@@ -167,42 +167,20 @@ html[data-theme="v3"] body .tabs-wrap::after {
 }
 
 /* =============================================
-   NEWSLETTER (scoped .news)
+   CONNECT SECTION — hardcoded panel colors, no overrides needed.
+   The .connect__left is #0e1a1a and .connect__right is #f3f8f7 in
+   the component CSS — both read fine on v3's white canvas context.
+   Only the HexLattice inside the dark panel needs the exception so
+   v3's global hex--on-teal override (teal strokes) doesn't get
+   washed out on the dark background.
    ============================================= */
-html[data-theme="v3"] body .news {
-  background: #f3f8f7 !important;
-  color: var(--ink) !important;
-  border-top-color: var(--hairline) !important;
-  border-bottom-color: var(--hairline) !important;
+html[data-theme="v3"] body .connect__left .hex--on-teal polygon,
+html[data-theme="v3"] body .connect__left .hex--on-teal line {
+  stroke: #9bd0cb;
+  stroke-opacity: unset;
 }
-html[data-theme="v3"] body .news__eyebrow {
-  color: var(--teal) !important;
-}
-html[data-theme="v3"] body .news__title {
-  color: var(--ink) !important;
-}
-html[data-theme="v3"] body .news__title em {
-  color: var(--teal) !important;
-}
-html[data-theme="v3"] body .news__input::placeholder {
-  color: var(--mute) !important;
-}
-html[data-theme="v3"] body .news__input:focus {
-  background: rgba(55, 136, 130, 0.06) !important;
-  border-color: var(--teal) !important;
-}
-html[data-theme="v3"] body .news__submit {
-  background: var(--teal) !important;
-  color: #ffffff !important;
-  border-color: var(--teal) !important;
-}
-html[data-theme="v3"] body .news__submit:hover:not(:disabled) {
-  background: var(--teal-deep) !important;
-  border-color: var(--teal-deep) !important;
-  color: #ffffff !important;
-}
-html[data-theme="v3"] body .news__fine {
-  color: var(--mute) !important;
+html[data-theme="v3"] body .connect__left .hex--on-teal .hex__accents polygon {
+  stroke-opacity: unset;
 }
 
 /* =============================================
