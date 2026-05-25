@@ -107,9 +107,9 @@ const { articles, featureArticle, standardArticles, textArticles } = storeToRefs
   color: rgba(243, 243, 243, 0.78);
 }
 .blog__lead {
-  color: rgba(243, 243, 243, 0.78);
-  font-size: 16px;
-  line-height: 1.6;
+  color: rgba(243, 243, 243, 0.88);
+  font-size: clamp(15px, 1.05vw, 17px);
+  line-height: 1.65;
   max-width: 48ch;
   margin: 0;
 }

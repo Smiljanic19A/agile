@@ -129,8 +129,8 @@ import { externalLinks } from '@/stores/content.js'
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cream);
-  opacity: 0.55;
-  margin: 0 0 24px;
+  opacity: 0.68;
+  margin: 0 0 20px;
 }
 
 /* ══════════════════════════════════════════
@@ -148,7 +148,7 @@ import { externalLinks } from '@/stores/content.js'
   grid-template-columns: 1.15fr 0.85fr;
   gap: clamp(40px, 6vw, 88px);
   align-items: start;
-  margin-bottom: clamp(48px, 7vh, 80px);
+  margin-bottom: clamp(32px, 5vh, 52px);
 }
 
 .about__question {
@@ -174,7 +174,7 @@ import { externalLinks } from '@/stores/content.js'
   font-size: clamp(15px, 1.15vw, 17px);
   line-height: 1.7;
   color: var(--cream);
-  opacity: 0.82;
+  opacity: 0.88;
   margin: 0;
 }
 
@@ -220,7 +220,7 @@ import { externalLinks } from '@/stores/content.js'
   grid-template-columns: repeat(3, 1fr);
   gap: clamp(24px, 4vw, 48px);
   border-top: 1px solid rgba(243, 243, 243, 0.1);
-  padding-top: clamp(32px, 5vh, 56px);
+  padding-top: clamp(20px, 3vh, 36px);
 }
 
 .about__principle {
@@ -231,12 +231,12 @@ import { externalLinks } from '@/stores/content.js'
 
 .about__principle-num {
   font-family: var(--font-mono);
-  font-size: clamp(42px, 5vw, 72px);
+  font-size: clamp(18px, 2vw, 26px);
   font-weight: 400;
-  letter-spacing: -0.04em;
+  letter-spacing: 0.04em;
   line-height: 1;
   color: var(--cream);
-  opacity: 0.1;
+  opacity: 0.28;
   display: block;
   user-select: none;
 }
@@ -257,10 +257,10 @@ import { externalLinks } from '@/stores/content.js'
 
 .about__principle-desc {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.65;
   color: var(--cream);
-  opacity: 0.62;
+  opacity: 0.9;
   margin: 0;
 }
 
@@ -271,7 +271,7 @@ import { externalLinks } from '@/stores/content.js'
 .about__divider {
   height: 1px;
   background: rgba(243, 243, 243, 0.1);
-  margin: clamp(56px, 8vh, 96px) 0;
+  margin: clamp(36px, 5vh, 60px) 0;
 }
 
 /* ══════════════════════════════════════════
@@ -306,7 +306,7 @@ import { externalLinks } from '@/stores/content.js'
   font-family: var(--font-mono);
   font-weight: 400;
   letter-spacing: 0.06em;
-  opacity: 0.6;
+  opacity: 0.72;
   vertical-align: super;
   margin-left: 3px;
 }
@@ -345,7 +345,7 @@ import { externalLinks } from '@/stores/content.js'
   font-size: clamp(15px, 1.15vw, 17px);
   line-height: 1.72;
   color: var(--cream);
-  opacity: 0.82;
+  opacity: 0.88;
   margin: 0;
 }
 
@@ -356,7 +356,7 @@ import { externalLinks } from '@/stores/content.js'
   font-size: clamp(16px, 1.4vw, 20px);
   line-height: 1.52;
   color: var(--cream);
-  opacity: 0.78;
+  opacity: 0.88;
   border-left: 2px solid rgba(243, 243, 243, 0.3);
   padding-left: 20px;
   margin: 8px 0 0;

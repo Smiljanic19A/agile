@@ -215,7 +215,7 @@ function submit() {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(64px, 9vw, 112px) clamp(32px, 5vw, 80px);
+  padding: clamp(52px, 7vw, 88px) clamp(28px, 4vw, 64px);
 }
 
 /* ── Vertical divider ────────────────────────────────────────── */
@@ -247,9 +247,9 @@ function submit() {
 
 .ctc__desc {
   font-family: var(--font-body);
-  font-size: clamp(14px, 1.05vw, 16px);
+  font-size: clamp(15px, 1.1vw, 17px);
   line-height: 1.65;
-  color: rgba(243, 243, 243, 0.52);
+  color: rgba(243, 243, 243, 0.88);
   margin: 0 0 40px;
   max-width: 38ch;
 }

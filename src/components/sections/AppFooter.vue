@@ -153,7 +153,7 @@ const connect = [
 .ft__brand-tag {
   font-size: 14px;
   line-height: 1.55;
-  color: rgba(243, 243, 243, 0.7);
+  color: rgba(243, 243, 243, 0.82);
   margin: 0;
 }
 
@@ -167,7 +167,7 @@ const connect = [
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(243, 243, 243, 0.6);
+  color: rgba(243, 243, 243, 0.78);
   margin: 0;
   font-weight: 500;
 }
@@ -185,7 +185,7 @@ const connect = [
   gap: 6px;
   font-size: 14px;
   color: var(--cream);
-  opacity: 0.86;
+  opacity: 0.95;
   transition: opacity 200ms var(--ease);
 }
 .ft__col li a:hover {
@@ -236,7 +236,7 @@ const connect = [
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.06em;
-  color: rgba(243, 243, 243, 0.55);
+  color: rgba(243, 243, 243, 0.72);
   margin: 0;
 }
 
@@ -263,7 +263,7 @@ const connect = [
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(243, 243, 243, 0.6);
+  color: rgba(243, 243, 243, 0.7);
   flex-wrap: wrap;
 }
 .ft__build {

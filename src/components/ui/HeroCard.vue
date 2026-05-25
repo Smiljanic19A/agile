@@ -125,7 +125,7 @@ const embedUrl = computed(() =>
   overflow: hidden;
   /* Always light text — dark teal bg on both split and overlay */
   --hcard-text: #f3f3f3;
-  --hcard-text-soft: rgba(243, 243, 243, 0.72);
+  --hcard-text-soft: rgba(243, 243, 243, 0.92);
   --hcard-bg: #23615c;
   --hcard-bg-deep: #0e1a1a;
   color: var(--hcard-text);
@@ -173,8 +173,8 @@ const embedUrl = computed(() =>
 }
 .hcard__desc :deep(p),
 .hcard__desc :deep(*) {
-  font-size: clamp(15px, 1.2vw, 18px);
-  line-height: 1.62;
+  font-size: clamp(16px, 1.25vw, 19px);
+  line-height: 1.65;
   color: var(--hcard-text-soft);
   margin: 0;
 }

@@ -19,7 +19,7 @@
 
   --container: 1280px;
   --gutter: clamp(22px, 4vw, 56px);
-  --section-y: clamp(56px, 11vw, 160px);
+  --section-y: clamp(48px, 7vw, 104px);
 
   --radius-sm: 6px;
   --radius: 14px;
@@ -174,7 +174,7 @@ input {
 }
 
 .section--teal .prose {
-  color: rgba(243, 243, 243, 0.86);
+  color: rgba(243, 243, 243, 0.9);
 }
 
 .fade-up {
