@@ -22,12 +22,11 @@ const visible = computed(() => content.productsByCategory(active.value))
         <div class="store__head-left">
           <SectionLabel index="05" label="Tools & Resources" />
           <h2 id="store-title" class="display-2 store__title fade-up">
-            Books, courses, templates, <em>and working material.</em>
+            Books, courses, <em>and working tools.</em>
           </h2>
         </div>
         <p class="store__lead fade-up">
-          Practical resources for coaches who want things they can actually use.
-          Hosted on Payhip and Amazon — this is just where you start.
+          Practical resources built to be used, not collected. Spreadsheets, courses, books — pick what fits your practice.
         </p>
       </header>
 

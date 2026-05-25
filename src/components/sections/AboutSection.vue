@@ -21,10 +21,10 @@ import { externalLinks } from '@/stores/content.js'
           </h2>
           <div class="about__definition">
             <p class="about__def-text">
-              Agile Periodization is a training philosophy built for the real world — where plans break, athletes get sick, and games pile up. Borrowing from iterative software development, it replaces rigid long-term blueprints with a responsive, data-driven process that adapts week to week.
+              Your plan looks perfect on paper. Then real athletes happen. Agile Periodization is the operating framework for what comes next — how to plan with intent, adjust without panic, and make better decisions under uncertainty.
             </p>
             <p class="about__def-text">
-              Instead of forcing athletes to fit the program, the program fits the athlete. Load, intensity, and structure are continuously re-evaluated based on what the numbers — and the athlete — actually say.
+              Short cycles. Feedback loops. And the discipline to update your model when reality says otherwise.
             </p>
             <a
               :href="externalLinks.substack"
@@ -42,21 +42,21 @@ import { externalLinks } from '@/stores/content.js'
             <span class="about__principle-num" aria-hidden="true">01</span>
             <div class="about__principle-body">
               <strong class="about__principle-title">Adaptive Planning</strong>
-              <p class="about__principle-desc">Plans are living documents — revised each week based on athlete readiness, schedule shifts, and performance data rather than fixed periodization blocks.</p>
+              <p class="about__principle-desc">Revised weekly based on readiness, schedule, and what the data says — not a fixed block template.</p>
             </div>
           </div>
           <div class="about__principle">
             <span class="about__principle-num" aria-hidden="true">02</span>
             <div class="about__principle-body">
               <strong class="about__principle-title">Probabilistic Thinking</strong>
-              <p class="about__principle-desc">Outcomes are distributions, not certainties. Uncertainty is treated as information, not a planning failure — decisions are made with confidence intervals, not false precision.</p>
+              <p class="about__principle-desc">Uncertainty is information, not a planning failure. Work with it.</p>
             </div>
           </div>
           <div class="about__principle">
             <span class="about__principle-num" aria-hidden="true">03</span>
             <div class="about__principle-body">
               <strong class="about__principle-title">Emergent Structure</strong>
-              <p class="about__principle-desc">The best programs aren't fully designed upfront — they emerge from ongoing assessment, coach intuition, and small course corrections compounded over time.</p>
+              <p class="about__principle-desc">The best programs aren't designed upfront. They emerge from ongoing assessment and small corrections.</p>
             </div>
           </div>
         </div>
@@ -81,10 +81,10 @@ import { externalLinks } from '@/stores/content.js'
         </div>
         <div class="about__me-right">
           <p class="about__bio-text">
-            I'm a sports scientist and strength &amp; conditioning coach from Belgrade, Serbia, with over two decades working at the intersection of performance science and elite sport. I've helped athletes and teams across three continents — from AFL football in Australia to national teams in Europe — solve real-world training problems with data, critical thinking, and practical programming.
+            Sports scientist, S&amp;C coach, and author. Twenty years across professional sport in Australia, Qatar, and Sweden.
           </p>
           <p class="about__bio-text">
-            My work lives between the whiteboard and the spreadsheet: coaching philosophy, statistical modelling, and the messy reality of what actually happens when a program meets the training week.
+            My work lives between the whiteboard and the spreadsheet — coaching philosophy, statistical modelling, and the gap between theory and a real training week.
           </p>
           <blockquote class="about__quote">
             "The goal isn't the perfect program. It's building a coach who can always make a better one."

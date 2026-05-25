@@ -16,17 +16,16 @@ const { articles, featureArticle, standardArticles, textArticles } = storeToRefs
         <div class="blog__head-left">
           <SectionLabel index="03" label="Writing" />
           <h2 id="blog-title" class="display-2 blog__title fade-up">
-            Essays, field notes, and tools <em>from the practice.</em>
+            Writing from <em>inside the practice.</em>
           </h2>
         </div>
         <div class="blog__head-right fade-up">
           <p class="blog__lead">
-            Long-form pieces on training, planning, skill acquisition, monitoring,
-            testing, and coaching philosophy. Published on Substack, archived here.
+            Not theory for its own sake. Essays on planning, monitoring, and coaching judgment — written the way a coach talks to another coach.
           </p>
           <div class="is-desktop-only">
             <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>
-              Read all essays on Substack
+              Read on Substack
             </AppButton>
           </div>
         </div>
@@ -67,7 +66,7 @@ const { articles, featureArticle, standardArticles, textArticles } = storeToRefs
 
       <div class="blog__mobile-cta is-mobile-only">
         <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>
-          Read all on Substack
+          Read on Substack
         </AppButton>
       </div>
     </div>

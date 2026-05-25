@@ -45,10 +45,7 @@ const initial = (h) => h.charAt(0).toUpperCase()
         </h2>
 
         <p class="prose fade-up">
-          Coaches and practitioners share ideas, ask questions, discuss
-          implementation, and get access to ongoing work, course material, and
-          tools. It is where the real conversation happens — and where most of
-          this work gets pressure-tested before it ends up in an essay.
+          Ideas get pressure-tested by practitioners before they end up in writing. Discussion, course material, tools, and ongoing work — in one place.
         </p>
 
         <div class="comm__stats fade-up">

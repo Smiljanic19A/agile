@@ -16,7 +16,7 @@ const subjectOptions = [
   'Other',
 ]
 
-const isOther     = computed(() => subject.value === 'Other')
+const isOther      = computed(() => subject.value === 'Other')
 const finalSubject = computed(() => isOther.value ? customSub.value.trim() : subject.value)
 
 // ── Focus trap refs ──────────────────────────────────────────
@@ -55,8 +55,8 @@ function handleKey(e) {
   }
 }
 
-onMounted(()        => document.addEventListener('keydown', handleKey))
-onBeforeUnmount(()  => document.removeEventListener('keydown', handleKey))
+onMounted(()       => document.addEventListener('keydown', handleKey))
+onBeforeUnmount(() => document.removeEventListener('keydown', handleKey))
 
 // ── Submit ───────────────────────────────────────────────────
 function submit() {
@@ -72,53 +72,38 @@ function submit() {
 
 <template>
   <!-- ── Section ──────────────────────────────────────────── -->
-  <section id="newsletter" class="ctc" aria-label="Contact">
-    <div class="ctc__inner">
+  <section id="newsletter" class="ctc" aria-label="Contact and Newsletter">
+    <div class="container ctc__grid">
 
-      <p class="ctc__eyebrow">Get in touch</p>
+      <!-- Contact panel -->
+      <div class="ctc__panel fade-up">
+        <p class="ctc__label">Contact</p>
+        <h2 class="ctc__heading">Get in<br>touch.</h2>
+        <p class="ctc__desc">A question, a collaboration, or something worth thinking through.</p>
+        <button class="ctc__btn ctc__btn--solid" @click="openModal">
+          Send a message <span aria-hidden="true">→</span>
+        </button>
+      </div>
 
-      <h2 class="ctc__title">
-        Let's talk<br><em>coaching.</em>
-      </h2>
+      <!-- Divider -->
+      <div class="ctc__divider" aria-hidden="true"></div>
 
-      <p class="ctc__sub">
-        Training questions, collaboration, or something worth thinking through — reach out.
-      </p>
+      <!-- Newsletter panel -->
+      <div class="ctc__panel fade-up">
+        <p class="ctc__label">Newsletter</p>
+        <h2 class="ctc__heading">Read the<br>writing.</h2>
+        <p class="ctc__desc">Essays on training, planning, and coaching judgment. Published on Substack.</p>
+        <a
+          :href="externalLinks.substack"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="ctc__btn ctc__btn--ghost"
+        >
+          Subscribe on Substack <span aria-hidden="true">↗</span>
+        </a>
+      </div>
 
-      <!-- Contact detail rows -->
-      <ul class="ctc__details" aria-label="Contact details">
-        <li>
-          <span class="ctc__detail-label">Email</span>
-          <a href="mailto:mladen@agileperiodization.com" class="ctc__detail-value">
-            mladen@agileperiodization.com
-          </a>
-        </li>
-        <li>
-          <span class="ctc__detail-label">Based in</span>
-          <span class="ctc__detail-value">Belgrade, Serbia — working globally</span>
-        </li>
-        <li>
-          <span class="ctc__detail-label">Newsletter</span>
-          <a :href="externalLinks.substack" target="_blank" rel="noopener noreferrer" class="ctc__detail-value">
-            Substack ↗
-          </a>
-        </li>
-        <li>
-          <span class="ctc__detail-label">Community</span>
-          <a :href="externalLinks.skool" target="_blank" rel="noopener noreferrer" class="ctc__detail-value">
-            Skool ↗
-          </a>
-        </li>
-      </ul>
-
-      <button class="ctc__cta" @click="openModal">
-        Get in Touch
-        <span class="ctc__cta-arrow" aria-hidden="true">→</span>
-      </button>
     </div>
-
-    <!-- ── Decorative stripe ─────────────────────────────── -->
-    <div class="ctc__stripe" aria-hidden="true"></div>
   </section>
 
   <!-- ── Modal ────────────────────────────────────────────── -->
@@ -204,9 +189,7 @@ function submit() {
               <span aria-hidden="true">→</span>
             </button>
 
-            <p class="modal__fine">
-              Opens your mail client. Also subscribes you to the newsletter.
-            </p>
+            <p class="modal__fine">Opens your mail client.</p>
           </form>
         </div>
       </div>
@@ -219,143 +202,100 @@ function submit() {
 .ctc {
   background: #0e1a1a;
   color: #f3f3f3;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: 520px;
-  position: relative;
-  overflow: hidden;
 }
 
-.ctc__inner {
-  grid-column: 1;
+.ctc__grid {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  min-height: 480px;
+}
+
+/* ── Panels ──────────────────────────────────────────────────── */
+.ctc__panel {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(72px, 9vw, 120px) clamp(40px, 5.5vw, 88px);
-  position: relative;
-  z-index: 1;
+  padding: clamp(64px, 9vw, 112px) clamp(32px, 5vw, 80px);
 }
 
-/* Decorative right stripe */
-.ctc__stripe {
-  grid-column: 2;
-  background: linear-gradient(135deg, #0e2e2b 0%, #134340 40%, #0e1a1a 100%);
-  position: relative;
-}
-.ctc__stripe::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 28px,
-    rgba(255,255,255,0.018) 28px,
-    rgba(255,255,255,0.018) 29px
-  );
+/* ── Vertical divider ────────────────────────────────────────── */
+.ctc__divider {
+  width: 1px;
+  background: rgba(243, 243, 243, 0.1);
+  align-self: stretch;
 }
 
 /* ── Typography ─────────────────────────────────────────────── */
-.ctc__eyebrow {
+.ctc__label {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(91, 163, 157, 0.9);
   margin: 0 0 20px;
 }
 
-.ctc__title {
+.ctc__heading {
   font-family: var(--font-display);
-  font-size: clamp(44px, 5.5vw, 80px);
+  font-size: clamp(40px, 5vw, 76px);
   font-weight: 700;
-  line-height: 1.02;
-  letter-spacing: -0.03em;
+  line-height: 1.0;
+  letter-spacing: -0.032em;
   color: #f3f3f3;
-  margin: 0 0 24px;
-}
-.ctc__title em {
-  font-style: italic;
-  font-weight: 500;
-  color: #5ba39d;
+  margin: 0 0 20px;
 }
 
-.ctc__sub {
-  font-size: clamp(15px, 1.1vw, 17px);
-  line-height: 1.65;
-  color: rgba(243, 243, 243, 0.58);
-  margin: 0 0 48px;
-  max-width: 44ch;
-}
-
-/* ── Detail list ─────────────────────────────────────────────── */
-.ctc__details {
-  list-style: none;
-  margin: 0 0 56px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.ctc__details li {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  align-items: baseline;
-  gap: 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-}
-.ctc__details li:first-child {
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.ctc__detail-label {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(243, 243, 243, 0.38);
-}
-
-.ctc__detail-value {
-  font-size: 14px;
-  color: rgba(243, 243, 243, 0.82);
+.ctc__desc {
   font-family: var(--font-body);
-  line-height: 1.4;
-  transition: color 180ms ease;
-}
-a.ctc__detail-value:hover {
-  color: #5ba39d;
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 1.65;
+  color: rgba(243, 243, 243, 0.52);
+  margin: 0 0 40px;
+  max-width: 38ch;
 }
 
-/* ── CTA button ──────────────────────────────────────────────── */
-.ctc__cta {
+/* ── Buttons ─────────────────────────────────────────────────── */
+.ctc__btn {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
-  padding: 20px 36px;
-  background: #378882;
-  color: #f3f3f3;
-  border: none;
-  border-radius: 10px;
+  gap: 12px;
+  padding: 16px 28px;
+  border-radius: 8px;
   font-family: var(--font-display);
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.01em;
   cursor: pointer;
   align-self: flex-start;
-  transition: background 200ms ease, transform 160ms ease;
+  text-decoration: none;
+  transition: background 180ms ease, color 180ms ease, transform 150ms ease, border-color 180ms ease;
 }
-.ctc__cta:hover {
-  background: #2f7672;
-  transform: translateY(-2px);
-}
-.ctc__cta-arrow {
-  font-size: 20px;
+.ctc__btn span {
   transition: transform 200ms ease;
 }
-.ctc__cta:hover .ctc__cta-arrow {
-  transform: translateX(4px);
+.ctc__btn:hover span {
+  transform: translateX(3px);
+}
+
+.ctc__btn--solid {
+  background: #378882;
+  color: #f3f3f3;
+  border: 1.5px solid #378882;
+}
+.ctc__btn--solid:hover {
+  background: #2f7672;
+  border-color: #2f7672;
+  transform: translateY(-2px);
+}
+
+.ctc__btn--ghost {
+  background: transparent;
+  color: #f3f3f3;
+  border: 1.5px solid rgba(243, 243, 243, 0.22);
+}
+.ctc__btn--ghost:hover {
+  border-color: rgba(243, 243, 243, 0.5);
+  transform: translateY(-2px);
 }
 
 /* ── Modal backdrop ──────────────────────────────────────────── */
@@ -563,7 +503,7 @@ a.ctc__detail-value:hover {
 
 .slide-down-enter-active,
 .slide-down-leave-active {
-  transition: opacity 180ms ease, max-height 220ms ease, margin-top 220ms ease;
+  transition: opacity 180ms ease, max-height 220ms ease;
   overflow: hidden;
   max-height: 100px;
 }
@@ -574,18 +514,24 @@ a.ctc__detail-value:hover {
 }
 
 /* ── Responsive ──────────────────────────────────────────────── */
-@media (max-width: 860px) {
-  .ctc {
+@media (max-width: 720px) {
+  .ctc__grid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1px auto;
   }
-  .ctc__stripe {
-    display: none;
+
+  .ctc__divider {
+    width: auto;
+    height: 1px;
+    align-self: auto;
   }
-  .ctc__inner {
-    padding: clamp(56px, 10vw, 88px) clamp(24px, 6vw, 48px);
+
+  .ctc__panel {
+    padding: clamp(48px, 10vw, 72px) clamp(24px, 6vw, 48px);
   }
-  .ctc__cta {
-    width: 100%;
+
+  .ctc__btn {
+    align-self: stretch;
     justify-content: space-between;
   }
 }
@@ -594,10 +540,6 @@ a.ctc__detail-value:hover {
   .modal {
     padding: 32px 22px;
     border-radius: 12px;
-  }
-  .ctc__details li {
-    grid-template-columns: 100px 1fr;
-    gap: 12px;
   }
 }
 </style>

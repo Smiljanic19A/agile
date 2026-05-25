@@ -33,17 +33,14 @@ import { externalLinks } from '@/stores/content.js'
         <img src="/logo.png" alt="Agile Periodization" />
       </div>
 
-      <p class="hero__eyebrow fade-up">For coaches working in the real world</p>
+      <p class="hero__eyebrow fade-up">Coaching under uncertainty</p>
 
       <h1 id="hero-title" class="hero__title display-1 fade-up">
-        Coaching, periodization, <em>and decision-making</em> in the real world.
+        The plan is a hypothesis.<br><em>Reality is the feedback loop.</em>
       </h1>
 
       <p class="hero__sub prose fade-up">
-        <span>The operating framework for practitioners who need enough structure to move forward and enough flexibility to adapt.</span>
-        <span class="hero__sub-extra">
-          This is the hub for the writing, the community, the tools, and the books.
-        </span>
+        <span>Writing, tools, and a community — for coaches who plan with intent and adapt without panic.</span>
       </p>
 
       <div class="hero__cta fade-up">

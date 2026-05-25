@@ -35,8 +35,7 @@ const connect = [
         </div>
         <h3 class="ft__brand-title">Agile Periodization</h3>
         <p class="ft__brand-tag is-desktop-only">
-          For coaches working in the real world. Training systems that adapt to
-          feedback, constraints, and the athletes in front of you.
+          For practitioners who plan with intent and adapt without panic.
         </p>
       </div>
 
