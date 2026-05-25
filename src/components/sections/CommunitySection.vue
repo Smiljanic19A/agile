@@ -307,10 +307,11 @@ const initial = (h) => h.charAt(0).toUpperCase()
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   background: var(--paper);
-  transition: border-color 180ms var(--ease);
+  transition: border-color 180ms var(--ease), background 180ms var(--ease);
 }
 .comm__thread:hover {
   border-color: var(--hairline-strong);
+  background: rgba(14, 26, 26, 0.03);
 }
 .comm__avatar {
   width: 36px;

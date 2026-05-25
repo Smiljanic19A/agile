@@ -461,6 +461,27 @@ html[data-theme="v3"] body .featured__dot.is-active {
 }
 
 /* =============================================
+   NEWSLETTER / CONTACT SECTION — split panels
+   Teal panel stays teal; white panel stays white.
+   Restore light hex strokes on the teal panel.
+   ============================================= */
+html[data-theme="v3"] body .ctc__panel--teal {
+  background: var(--teal) !important;
+}
+html[data-theme="v3"] body .ctc__panel--white {
+  background: #ffffff !important;
+  color: var(--ink) !important;
+}
+html[data-theme="v3"] body .ctc__panel--teal .hex--on-teal polygon,
+html[data-theme="v3"] body .ctc__panel--teal .hex--on-teal line {
+  stroke: #9bd0cb;
+  stroke-opacity: unset;
+}
+html[data-theme="v3"] body .ctc__panel--teal .hex--on-teal .hex__accents polygon {
+  stroke-opacity: unset;
+}
+
+/* =============================================
    ABOUT SECTION — keep dark teal as contrast strip
    --cream flips to dark ink in v3; re-scope it inside .about
    so all child text stays light without per-element overrides

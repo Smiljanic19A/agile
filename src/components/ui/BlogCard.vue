@@ -60,6 +60,7 @@ defineProps({
 .card:hover {
   background: rgba(243, 243, 243, 0.08);
   border-color: var(--hairline-light-strong);
+  transform: translateY(-2px);
 }
 .card:hover .card__arrow {
   transform: translateX(4px);
@@ -100,7 +101,7 @@ defineProps({
 }
 
 .card__dek {
-  color: rgba(243, 243, 243, 0.74);
+  color: rgba(243, 243, 243, 0.82);
   font-size: 15px;
   line-height: 1.55;
   margin: 0 0 28px;

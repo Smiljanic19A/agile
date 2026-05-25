@@ -482,7 +482,7 @@ const close = () => (open.value = false)
     background: var(--teal);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    border-bottom-color: transparent;
+    border-bottom-color: var(--hairline-light);
   }
 }
 

@@ -171,10 +171,10 @@ import { externalLinks } from '@/stores/content.js'
 
 .about__def-text {
   font-family: var(--font-body);
-  font-size: clamp(15px, 1.15vw, 17px);
-  line-height: 1.7;
+  font-size: clamp(16px, 1.2vw, 18px);
+  line-height: 1.68;
   color: var(--cream);
-  opacity: 0.88;
+  opacity: 0.94;
   margin: 0;
 }
 
@@ -203,15 +203,16 @@ import { externalLinks } from '@/stores/content.js'
   height: 1px;
   background: var(--cream);
   opacity: 0.35;
-  transform: scaleX(1);
+  transform: scaleX(0.55);
   transform-origin: left;
-  transition: opacity 0.2s var(--ease), transform 0.25s var(--ease);
+  transition: opacity 200ms var(--ease), transform 260ms var(--ease);
 }
 .about__read-more:hover {
   opacity: 1;
 }
 .about__read-more:hover::after {
-  opacity: 0.7;
+  opacity: 0.75;
+  transform: scaleX(1);
 }
 
 /* Principles: 3-col grid */
@@ -342,10 +343,10 @@ import { externalLinks } from '@/stores/content.js'
 
 .about__bio-text {
   font-family: var(--font-body);
-  font-size: clamp(15px, 1.15vw, 17px);
-  line-height: 1.72;
+  font-size: clamp(16px, 1.2vw, 18px);
+  line-height: 1.68;
   color: var(--cream);
-  opacity: 0.88;
+  opacity: 0.94;
   margin: 0;
 }
 

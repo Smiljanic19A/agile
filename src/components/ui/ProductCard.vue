@@ -49,12 +49,13 @@ const displayPrice = computed(() => props.item.price ?? 'Free')
   border: 1px solid var(--hairline-light);
   border-radius: var(--radius);
   padding: 18px;
-  transition: background 220ms var(--ease), border-color 220ms var(--ease);
+  transition: background 220ms var(--ease), border-color 220ms var(--ease), transform 220ms var(--ease);
   height: 100%;
 }
 .prod:hover {
   background: rgba(243, 243, 243, 0.08);
   border-color: var(--hairline-light-strong);
+  transform: translateY(-2px);
 }
 .prod:hover .prod__arrow {
   transform: translateX(4px);
@@ -98,7 +99,7 @@ const displayPrice = computed(() => props.item.price ?? 'Free')
 }
 
 .prod__blurb {
-  color: rgba(243, 243, 243, 0.74);
+  color: rgba(243, 243, 243, 0.82);
   font-size: 14px;
   line-height: 1.55;
   margin: 0 0 22px;

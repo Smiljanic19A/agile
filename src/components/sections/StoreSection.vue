@@ -98,9 +98,9 @@ const visible = computed(() => content.productsByCategory(active.value))
   color: rgba(243, 243, 243, 0.78);
 }
 .store__lead {
-  color: rgba(243, 243, 243, 0.78);
-  font-size: 16px;
-  line-height: 1.6;
+  color: rgba(243, 243, 243, 0.92);
+  font-size: clamp(16px, 1.15vw, 18px);
+  line-height: 1.68;
   max-width: 46ch;
   margin: 0 0 6px;
 }

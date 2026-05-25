@@ -148,9 +148,9 @@ import { externalLinks } from '@/stores/content.js'
 }
 
 .hero__sub {
-  font-size: clamp(15px, 1.15vw, 18px);
-  line-height: 1.6;
-  color: rgba(243, 243, 243, 0.78);
+  font-size: clamp(16px, 1.2vw, 18px);
+  line-height: 1.65;
+  color: rgba(243, 243, 243, 0.92);
   max-width: 58ch;
   margin: 0 0 40px;
 }
@@ -175,7 +175,7 @@ import { externalLinks } from '@/stores/content.js'
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.62;
+  opacity: 0.70;
 }
 .hero__scroll-line {
   width: 1px;

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { externalLinks } from '@/stores/content.js'
+import HexLattice from '@/components/ui/HexLattice.vue'
 
 // ── Modal state ──────────────────────────────────────────────
 const modalOpen = ref(false)
@@ -73,23 +74,25 @@ function submit() {
 <template>
   <!-- ── Section ──────────────────────────────────────────── -->
   <section id="newsletter" class="ctc" aria-label="Contact and Newsletter">
-    <div class="container ctc__grid">
 
-      <!-- Contact panel -->
-      <div class="ctc__panel fade-up">
+    <!-- Contact panel — teal -->
+    <div class="ctc__panel ctc__panel--teal fade-up">
+      <div class="ctc__panel-hex" aria-hidden="true">
+        <HexLattice variant="grid" tone="on-teal" mask="radial" :size="110" :accents="7" :seed="22" />
+      </div>
+      <div class="ctc__panel-inner">
         <p class="ctc__label">Contact</p>
         <h2 class="ctc__heading">Get in<br>touch.</h2>
         <p class="ctc__desc">A question, a collaboration, or something worth thinking through.</p>
-        <button class="ctc__btn ctc__btn--solid" @click="openModal">
+        <button class="ctc__btn ctc__btn--onTeal" @click="openModal">
           Send a message <span aria-hidden="true">→</span>
         </button>
       </div>
+    </div>
 
-      <!-- Divider -->
-      <div class="ctc__divider" aria-hidden="true"></div>
-
-      <!-- Newsletter panel -->
-      <div class="ctc__panel fade-up">
+    <!-- Newsletter panel — white -->
+    <div class="ctc__panel ctc__panel--white fade-up">
+      <div class="ctc__panel-inner">
         <p class="ctc__label">Newsletter</p>
         <h2 class="ctc__heading">Read the<br>writing.</h2>
         <p class="ctc__desc">Essays on training, planning, and coaching judgment. Published on Substack.</p>
@@ -97,13 +100,13 @@ function submit() {
           :href="externalLinks.substack"
           target="_blank"
           rel="noopener noreferrer"
-          class="ctc__btn ctc__btn--ghost"
+          class="ctc__btn ctc__btn--onWhite"
         >
           Subscribe on Substack <span aria-hidden="true">↗</span>
         </a>
       </div>
-
     </div>
+
   </section>
 
   <!-- ── Modal ────────────────────────────────────────────── -->
@@ -200,29 +203,45 @@ function submit() {
 <style scoped>
 /* ── Section shell ──────────────────────────────────────────── */
 .ctc {
-  background: #0e1a1a;
-  color: #f3f3f3;
-}
-
-.ctc__grid {
   display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  min-height: 480px;
+  grid-template-columns: 1fr 1fr;
+  min-height: 520px;
 }
 
 /* ── Panels ──────────────────────────────────────────────────── */
 .ctc__panel {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: clamp(52px, 7vw, 88px) clamp(28px, 4vw, 64px);
+  align-items: center;
+  overflow: hidden;
 }
 
-/* ── Vertical divider ────────────────────────────────────────── */
-.ctc__divider {
-  width: 1px;
-  background: rgba(243, 243, 243, 0.1);
-  align-self: stretch;
+.ctc__panel--teal {
+  background: var(--teal);
+  color: #f3f3f3;
+  isolation: isolate;
+}
+
+.ctc__panel--white {
+  background: #ffffff;
+  color: var(--ink);
+}
+
+.ctc__panel-hex {
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ctc__panel-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(52px, 7vw, 88px) clamp(36px, 5vw, 80px);
+  width: 100%;
 }
 
 /* ── Typography ─────────────────────────────────────────────── */
@@ -231,9 +250,10 @@ function submit() {
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(91, 163, 157, 0.9);
   margin: 0 0 20px;
 }
+.ctc__panel--teal .ctc__label { color: rgba(155, 208, 203, 0.88); }
+.ctc__panel--white .ctc__label { color: var(--teal); }
 
 .ctc__heading {
   font-family: var(--font-display);
@@ -241,18 +261,20 @@ function submit() {
   font-weight: 700;
   line-height: 1.0;
   letter-spacing: -0.032em;
-  color: #f3f3f3;
   margin: 0 0 20px;
 }
+.ctc__panel--teal .ctc__heading { color: #f3f3f3; }
+.ctc__panel--white .ctc__heading { color: var(--ink); }
 
 .ctc__desc {
   font-family: var(--font-body);
-  font-size: clamp(15px, 1.1vw, 17px);
-  line-height: 1.65;
-  color: rgba(243, 243, 243, 0.88);
+  font-size: clamp(16px, 1.15vw, 18px);
+  line-height: 1.68;
   margin: 0 0 40px;
   max-width: 38ch;
 }
+.ctc__panel--teal .ctc__desc { color: rgba(243, 243, 243, 0.92); }
+.ctc__panel--white .ctc__desc { color: var(--ink-soft); }
 
 /* ── Buttons ─────────────────────────────────────────────────── */
 .ctc__btn {
@@ -260,7 +282,7 @@ function submit() {
   align-items: center;
   gap: 12px;
   padding: 16px 28px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-family: var(--font-display);
   font-size: 15px;
   font-weight: 600;
@@ -268,33 +290,38 @@ function submit() {
   cursor: pointer;
   align-self: flex-start;
   text-decoration: none;
-  transition: background 180ms ease, color 180ms ease, transform 150ms ease, border-color 180ms ease;
+  transition: background 200ms var(--ease), color 200ms var(--ease),
+    transform 200ms var(--ease), border-color 200ms var(--ease);
 }
 .ctc__btn span {
-  transition: transform 200ms ease;
+  transition: transform 200ms var(--ease);
 }
 .ctc__btn:hover span {
   transform: translateX(3px);
 }
 
-.ctc__btn--solid {
-  background: #378882;
-  color: #f3f3f3;
-  border: 1.5px solid #378882;
+/* Cream on teal panel */
+.ctc__btn--onTeal {
+  background: #f3f3f3;
+  color: var(--ink);
+  border: 1.5px solid #f3f3f3;
 }
-.ctc__btn--solid:hover {
-  background: #2f7672;
-  border-color: #2f7672;
+.ctc__btn--onTeal:hover {
+  background: transparent;
+  color: #f3f3f3;
+  border-color: rgba(243, 243, 243, 0.65);
   transform: translateY(-2px);
 }
 
-.ctc__btn--ghost {
-  background: transparent;
+/* Teal on white panel */
+.ctc__btn--onWhite {
+  background: var(--teal);
   color: #f3f3f3;
-  border: 1.5px solid rgba(243, 243, 243, 0.22);
+  border: 1.5px solid var(--teal);
 }
-.ctc__btn--ghost:hover {
-  border-color: rgba(243, 243, 243, 0.5);
+.ctc__btn--onWhite:hover {
+  background: var(--teal-deep);
+  border-color: var(--teal-deep);
   transform: translateY(-2px);
 }
 
@@ -316,7 +343,7 @@ function submit() {
 .modal {
   background: #ffffff;
   color: #0e1a1a;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: clamp(36px, 5vw, 56px) clamp(28px, 4vw, 48px);
   width: 100%;
   max-width: 480px;
@@ -337,7 +364,7 @@ function submit() {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: background 160ms ease, color 160ms ease;
+  transition: background 180ms var(--ease), color 180ms var(--ease);
 }
 .modal__close:hover {
   background: rgba(14, 26, 26, 0.12);
@@ -395,13 +422,13 @@ function submit() {
 .modal__input {
   background: #f8f8f8;
   border: 1.5px solid rgba(14, 26, 26, 0.12);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 14px 16px;
   font-size: 15px;
   font-family: var(--font-body);
   color: #0e1a1a;
   width: 100%;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition: border-color 180ms var(--ease), box-shadow 180ms var(--ease);
 }
 .modal__input:focus {
   outline: none;
@@ -420,14 +447,14 @@ function submit() {
   -webkit-appearance: none;
   background: #f8f8f8;
   border: 1.5px solid rgba(14, 26, 26, 0.12);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 14px 44px 14px 16px;
   font-size: 15px;
   font-family: var(--font-body);
   color: #0e1a1a;
   width: 100%;
   cursor: pointer;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition: border-color 180ms var(--ease), box-shadow 180ms var(--ease);
 }
 .modal__select:focus {
   outline: none;
@@ -452,17 +479,17 @@ function submit() {
   background: #0e1a1a;
   color: #f3f3f3;
   border: none;
-  border-radius: 9px;
+  border-radius: var(--radius);
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.01em;
   cursor: pointer;
   margin-top: 4px;
-  transition: opacity 180ms ease, transform 150ms ease;
+  transition: background 200ms var(--ease), transform 180ms var(--ease);
 }
 .modal__submit:hover:not(:disabled) {
-  opacity: 0.88;
+  background: var(--ink-soft);
   transform: translateY(-1px);
 }
 .modal__submit:disabled {
@@ -482,7 +509,7 @@ function submit() {
 /* ── Transitions ─────────────────────────────────────────────── */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity 240ms ease;
+  transition: opacity 240ms var(--ease);
 }
 .modal-enter-active .modal,
 .modal-leave-active .modal {
@@ -503,7 +530,7 @@ function submit() {
 
 .slide-down-enter-active,
 .slide-down-leave-active {
-  transition: opacity 180ms ease, max-height 220ms ease;
+  transition: opacity 180ms var(--ease), max-height 220ms var(--ease);
   overflow: hidden;
   max-height: 100px;
 }
@@ -515,18 +542,11 @@ function submit() {
 
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 720px) {
-  .ctc__grid {
+  .ctc {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1px auto;
   }
 
-  .ctc__divider {
-    width: auto;
-    height: 1px;
-    align-self: auto;
-  }
-
-  .ctc__panel {
+  .ctc__panel-inner {
     padding: clamp(48px, 10vw, 72px) clamp(24px, 6vw, 48px);
   }
 

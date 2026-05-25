@@ -167,14 +167,14 @@ input {
 }
 
 .prose {
-  font-size: clamp(15px, 1.05vw, 17px);
-  line-height: 1.65;
+  font-size: clamp(16px, 1.2vw, 18px);
+  line-height: 1.68;
   color: var(--ink-soft);
   max-width: 62ch;
 }
 
 .section--teal .prose {
-  color: rgba(243, 243, 243, 0.9);
+  color: rgba(243, 243, 243, 0.92);
 }
 
 .fade-up {
