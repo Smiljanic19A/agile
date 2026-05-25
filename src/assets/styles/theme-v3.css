@@ -461,21 +461,21 @@ html[data-theme="v3"] body .featured__dot.is-active {
 }
 
 /* =============================================
-   BIO SECTION — keep dark teal as contrast strip
-   --cream flips to dark ink in v3; re-scope it inside .bio
+   ABOUT SECTION — keep dark teal as contrast strip
+   --cream flips to dark ink in v3; re-scope it inside .about
    so all child text stays light without per-element overrides
    ============================================= */
-html[data-theme="v3"] body .bio {
+html[data-theme="v3"] body .about {
   background: var(--teal) !important;
   --cream: #f3f3f3;
 }
-/* HexLattice in bio: v3 globally sets hex--on-teal strokes to teal (for white sections).
-   Inside the dark teal bio panel, restore original light strokes. */
-html[data-theme="v3"] body .bio .hex--on-teal polygon,
-html[data-theme="v3"] body .bio .hex--on-teal line {
+/* HexLattice in about: v3 globally sets hex--on-teal strokes to teal (for white sections).
+   Inside the dark teal about panel, restore original light strokes. */
+html[data-theme="v3"] body .about .hex--on-teal polygon,
+html[data-theme="v3"] body .about .hex--on-teal line {
   stroke: #9bd0cb;
   stroke-opacity: unset;
 }
-html[data-theme="v3"] body .bio .hex--on-teal .hex__accents polygon {
+html[data-theme="v3"] body .about .hex--on-teal .hex__accents polygon {
   stroke-opacity: unset;
 }
