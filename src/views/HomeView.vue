@@ -1,11 +1,18 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { sources, useContentStore, itemUrl, sourceLabel } from '@/stores/content.js'
+import FeaturedBanner from '@/components/sections/FeaturedBanner.vue'
 
-const SKOOL_URL = 'https://www.skool.com/agileperiodization'
-const SUBSTACK_URL = 'https://agileperiodization.substack.com'
-const PAYHIP_URL = 'https://payhip.com/mjovanovic'
-const AMAZON_URL = 'https://www.amazon.com/stores/author/B07MYX4Y13'
+const content = useContentStore()
+const { articles, resources, books } = storeToRefs(content)
 
+const SKOOL_URL    = sources.skool.url
+const SUBSTACK_URL = sources.substack.url
+const PAYHIP_URL   = sources.payhip.url
+const AMAZON_URL   = sources.amazon.url
+
+// ── Nav state ─────────────────────────────────────────────
 const navOpen = ref(false)
 function toggleNav() {
   navOpen.value = !navOpen.value
@@ -17,53 +24,60 @@ function closeNav() {
   document.body.classList.remove('nav-open')
 }
 
-const products = ref([])
-const productsFallback = [
-  { title: 'Philosophical Foundations', type: 'Course', tag: 'Philosophy', description: 'The mental models behind Agile Periodization.', image: '/assets/images/philosophical-foundations.png', url: PAYHIP_URL },
-  { title: 'Endurance Map Builder',   type: 'Tool',   tag: 'Conditioning', description: 'Map domains, thresholds, CP/W′, MAS, and conditioning decisions.', image: '/assets/images/endurance-map-builder.png', url: PAYHIP_URL },
-  { title: 'Badger Protocol',         type: 'PDF',    tag: 'Strength',     description: 'Simple, flexible loading ideas and isoSandwich variations.', image: '/assets/images/badger-protocol.png', url: PAYHIP_URL },
-  { title: 'Conditioning for MMA',    type: 'Course', tag: 'Conditioning', description: 'Agile microcycle planning and conditioning under combat sport constraints.', image: '/assets/images/conditioning-mma.png', url: PAYHIP_URL },
-]
-
-onMounted(async () => {
-  try {
-    const res = await fetch('/assets/data/products.json', { cache: 'no-cache' })
-    if (!res.ok) throw new Error('bad status')
-    const data = await res.json()
-    const featured = data.filter((p) => p.featured)
-    const list = (featured.length ? featured : data).slice(0, 6)
-    products.value = list.length ? list : productsFallback
-  } catch {
-    products.value = productsFallback
-  }
-})
-
+// ── Forms ─────────────────────────────────────────────────
 const newsletter = ref({ name: '', email: '', interest: '' })
-const newsletterNote = ref('No spam. Just useful updates from the Agile Periodization ecosystem.')
+const newsletterNote = ref('No spam. Useful updates only.')
 const newsletterSent = ref(false)
 function submitNewsletter() {
   if (!newsletter.value.email) return
-  newsletterNote.value = `Thanks${newsletter.value.name ? ', ' + newsletter.value.name : ''}. You're on the list — useful updates only.`
+  newsletterNote.value = `You're on the list${newsletter.value.name ? ', ' + newsletter.value.name : ''}. Useful updates only.`
   newsletterSent.value = true
 }
 
 const inquiry = ref({ name: '', email: '', role: '', interest: '', message: '' })
-const inquiryNote = ref('Share the context, constraints, and what you are trying to improve. The more specific you are, the easier it is to see whether I can help.')
+const inquiryNote = ref('Share the context, constraints, and what you are trying to improve.')
 const inquirySent = ref(false)
 function submitInquiry() {
   if (!inquiry.value.name || !inquiry.value.email) return
-  inquiryNote.value = `Thanks, ${inquiry.value.name}. Your inquiry has been received. I will get back to you if it looks like a good fit.`
+  inquiryNote.value = `Thanks, ${inquiry.value.name}. Inquiry received — I will be in touch if it looks like a good fit.`
   inquirySent.value = true
+}
+
+// ── Scroll-reveal ─────────────────────────────────────────
+let io = null
+onMounted(() => {
+  if (typeof IntersectionObserver === 'undefined') return
+  io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible')
+          io.unobserve(e.target)
+        }
+      }
+    },
+    { rootMargin: '0px 0px -8% 0px', threshold: 0.06 }
+  )
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el))
+})
+onBeforeUnmount(() => { io?.disconnect() })
+
+// ── Per-item helpers ──────────────────────────────────────
+function resourceCta(item) {
+  if (item.source === 'amazon') return 'View on Amazon'
+  if (item.source === 'payhip') return 'View Resource'
+  return 'Open'
 }
 </script>
 
 <template>
   <a class="skip-link" href="#main">Skip to content</a>
 
+  <!-- ═══════════════════════════════ NAV ═══════ -->
   <header class="site-header">
     <nav class="site-nav" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="Agile Periodization home" @click="closeNav">
-        <img class="brand-logo" src="/assets/images/ap-logo.svg" alt="Agile Periodization logo" />
+      <a class="brand" href="#top" @click="closeNav">
+        <img class="brand-logo" src="/assets/images/ap-logo.svg" alt="" />
         <span>Agile Periodization</span>
       </a>
       <button class="nav-toggle" type="button"
@@ -79,34 +93,42 @@ function submitInquiry() {
         <a href="#resources" @click="closeNav">Resources</a>
         <a href="#contact" @click="closeNav">Contact</a>
       </div>
-      <a class="button button-small button-primary nav-cta" :href="SKOOL_URL" target="_blank" rel="noopener">Join Skool</a>
+      <a class="button button-primary button-small nav-cta" :href="SKOOL_URL" target="_blank" rel="noopener">
+        Join Skool
+      </a>
     </nav>
   </header>
 
   <main id="main">
-    <!-- HERO -->
+    <!-- ═══════════════════════════════ HERO ═══════ -->
     <section class="hero" id="top">
-      <div class="section-inner hero-grid">
-        <div class="hero-copy">
+      <div class="container hero-grid">
+        <div class="hero-copy reveal">
           <p class="eyebrow">Agile Periodization</p>
-          <h1>Build training systems that survive contact with reality.</h1>
-          <p class="hero-subtitle">
-            Agile Periodization helps coaches, sport scientists, physios, and performance teams turn fragile plans into adaptive systems: plan, train, monitor, review, adapt, repeat.
+          <h1>Build training systems that survive contact with <em>reality.</em></h1>
+          <p class="lead hero-subtitle">
+            For coaches, sport scientists, physios, and performance teams — Agile Periodization turns fragile plans into adaptive systems: plan, train, monitor, review, adapt, repeat.
           </p>
           <div class="hero-actions">
-            <a class="button button-primary" :href="SKOOL_URL" target="_blank" rel="noopener">Join the Community</a>
+            <a class="button button-primary" :href="SKOOL_URL" target="_blank" rel="noopener">
+              Join the Community
+              <span class="arrow" aria-hidden="true">→</span>
+            </a>
             <a class="button button-secondary" href="#updates">Get Updates</a>
           </div>
-          <p class="hero-note">Tired of annual plans dying after the first injury, travel week, fatigue spike, or staff meeting?</p>
           <div class="value-strip" aria-label="What Agile Periodization provides">
             <span>Philosophy</span><span>Frameworks</span><span>Tools</span>
             <span>Education</span><span>Community</span><span>Field notes</span>
           </div>
+          <p class="hero-note">Tired of annual plans dying after the first injury, travel week, or fatigue spike?</p>
         </div>
 
-        <div class="hero-visual" aria-label="Adaptive operating system visual">
+        <div class="hero-visual reveal" aria-label="Adaptive operating system visual">
           <div class="system-board">
-            <p class="board-kicker">Adaptive operating system</p>
+            <div class="board-kicker">
+              <span>Adaptive operating system</span>
+              <span class="pulse-dot" aria-hidden="true"></span>
+            </div>
             <div class="loop-map" aria-hidden="true">
               <span class="loop-node node-plan">Plan</span>
               <span class="loop-node node-train">Train</span>
@@ -114,7 +136,10 @@ function submitInquiry() {
               <span class="loop-node node-review">Review</span>
               <span class="loop-node node-adapt">Adapt</span>
               <span class="loop-node node-repeat">Repeat</span>
-              <span class="loop-center">Decision<br />Loop</span>
+              <span class="loop-center">
+                Decision
+                <small>loop</small>
+              </span>
             </div>
             <div class="reality-panel">
               <strong>Reality pushing in</strong>
@@ -124,149 +149,140 @@ function submitInquiry() {
               </div>
             </div>
           </div>
-          <div class="product-stack" aria-hidden="true">
-            <img src="/assets/images/philosophical-foundations.png" alt="" />
-            <img src="/assets/images/strength-training-manual.png" alt="" />
-            <img src="/assets/images/endurance-map-builder.png" alt="" />
-          </div>
         </div>
       </div>
     </section>
 
-    <!-- FEATURED -->
-    <section class="featured section-tight" id="featured">
-      <div class="section-inner">
-        <div class="section-header narrow">
-          <p class="eyebrow">Featured</p>
-          <h2>One thing worth your attention right now.</h2>
-          <p>One image. One message. One action. Update it when the current priority changes.</p>
-        </div>
-        <article class="featured-panel">
-          <div class="featured-panel-copy">
-            <span class="badge">Video orientation</span>
-            <h3>What is Agile Periodization?</h3>
-            <p>A short overview of the idea: why fixed plans break, why training needs feedback loops, and how Agile Periodization turns planning into a learning system.</p>
-            <div class="featured-actions">
-              <a class="button button-primary button-small" href="#what-is-ap">See the overview</a>
-              <a class="text-link" href="#updates">Get future updates →</a>
-            </div>
-          </div>
-          <figure class="featured-panel-media">
-            <img src="/assets/images/philosophical-foundations.png" alt="Agile Periodization featured orientation visual" />
-          </figure>
-        </article>
-      </div>
-    </section>
+    <!-- ═══════════════════════════ FEATURED BANNER ═══════ -->
+    <FeaturedBanner />
 
-    <!-- WHAT IS AP -->
-    <section class="ap-definition section-tight" id="what-is-ap">
-      <div class="section-inner ap-grid">
-        <div class="ap-copy">
-          <p class="eyebrow">What is Agile Periodization?</p>
-          <h2>Your problem is not that you need another template.</h2>
-          <p class="lead">Most training systems are built for a clean world. Coaching happens in a messy one. The annual plan dies early. Monitoring becomes decoration. Rehab does not follow a straight line. Conditioning does not transfer automatically. Athletes respond differently. And the staff still needs to make a decision by Monday morning.</p>
+    <!-- ═══════════════════════════ WHAT IS AP ═══════ -->
+    <section class="ap-definition section" id="what-is-ap">
+      <div class="container ap-grid">
+        <div class="ap-copy reveal">
+          <p class="eyebrow">01 — What is AP?</p>
+          <h2>Your problem is not that you need <em>another template.</em></h2>
+          <p class="lead">Most training systems are built for a clean world. Coaching happens in a messy one. The annual plan dies early. Monitoring becomes decoration. Rehab does not follow a straight line. Conditioning does not transfer automatically. And the staff still needs to make a decision by Monday morning.</p>
 
-          <div class="problem-strip" aria-label="Common problems Agile Periodization addresses">
-            <span>The annual plan dies early</span>
-            <span>Monitoring becomes decoration</span>
-            <span>Dose becomes the religion</span>
-            <span>Transfer is assumed</span>
-            <span>The coach carries the system</span>
+          <div class="problem-grid">
+            <div class="problem-card"><span class="num">P · 01</span><span class="body">The annual plan dies early.</span></div>
+            <div class="problem-card"><span class="num">P · 02</span><span class="body">Monitoring becomes decoration.</span></div>
+            <div class="problem-card"><span class="num">P · 03</span><span class="body">Dose becomes the religion.</span></div>
+            <div class="problem-card"><span class="num">P · 04</span><span class="body">Transfer is assumed.</span></div>
+            <div class="problem-card"><span class="num">P · 05</span><span class="body">The coach carries the system.</span></div>
           </div>
 
-          <h3>Agile Periodization is planning under uncertainty.</h3>
+          <h3>Agile Periodization is <em>planning under uncertainty.</em></h3>
           <p>It turns the plan from a prediction into a learning system. Instead of pretending we can control the whole season in advance, AP uses short iterative cycles, review rhythms, simple decision rules, and practical tools to keep the system moving without becoming random.</p>
-          <div class="pillars compact">
-            <article><strong>Philosophy</strong><span>Mental models for uncertainty, robustness, adaptation, transfer, and decision-making.</span></article>
-            <article><strong>Frameworks</strong><span>Microcycles, reviews, pivots, decision rules, and structures that adapt without becoming random.</span></article>
-            <article><strong>Tools</strong><span>Courses, books, templates, software, articles, and community experiments that turn ideas into practice.</span></article>
+
+          <div class="pillars">
+            <article>
+              <strong>Philosophy</strong>
+              <span>Mental models for uncertainty, robustness, adaptation, transfer, and decision-making.</span>
+            </article>
+            <article>
+              <strong>Frameworks</strong>
+              <span>Microcycles, reviews, pivots, decision rules, and structures that adapt without becoming random.</span>
+            </article>
+            <article>
+              <strong>Tools</strong>
+              <span>Courses, books, templates, software, articles, and community experiments that turn ideas into practice.</span>
+            </article>
           </div>
         </div>
-        <aside class="reframe-card sticky-card">
+
+        <aside class="reframe-card reveal">
+          <p class="eyebrow">The reframe</p>
           <h3>Stop worshipping the plan. Improve the system.</h3>
-          <div class="compare simple-compare">
+          <div class="compare">
             <div>
-              <b>Traditional planning</b>
+              <b>Traditional</b>
               <span>Locks in the season too early</span>
-              <span>Starts with blocks, dose, and calendar</span>
+              <span>Starts with blocks, dose, calendar</span>
               <span>Reacts after the plan breaks</span>
             </div>
             <div>
-              <b>Agile Periodization</b>
+              <b>Agile</b>
               <span>Plans in short, rolling cycles</span>
               <span>Starts with the problem to solve</span>
-              <span>Reviews, learns, and adapts the next step</span>
+              <span>Reviews, learns, adapts the next step</span>
             </div>
           </div>
         </aside>
       </div>
     </section>
 
-    <!-- ECOSYSTEM -->
-    <section class="ecosystem section-tight" id="ecosystem">
-      <div class="section-inner">
-        <div class="section-header narrow">
-          <p class="eyebrow">The Ecosystem</p>
-          <h2>One philosophy. Multiple doors in.</h2>
-          <p>Skool is the main door. Articles, products, books, updates, and direct work support the journey.</p>
+    <!-- ═══════════════════════════ ECOSYSTEM ═══════ -->
+    <section class="section surface-paper" id="ecosystem">
+      <div class="container">
+        <div class="section-header reveal">
+          <p class="eyebrow">02 — Ecosystem</p>
+          <h2>One philosophy. <em>Multiple doors in.</em></h2>
+          <p class="lead">Skool is the main door. Articles, products, books, updates, and direct work support the journey.</p>
         </div>
+
         <div class="ecosystem-grid">
-          <article class="eco-card primary">
-            <span>Main door</span>
+          <article class="eco-card primary reveal">
+            <div class="eco-label"><span>Main door</span><span class="eco-num">01</span></div>
             <h3>Skool Community</h3>
             <p>The main workshop for discussions, Q&amp;As, early-access resources, tools, drafts, and implementation.</p>
-            <a :href="SKOOL_URL" target="_blank" rel="noopener">Join Skool →</a>
+            <a class="text-link" :href="SKOOL_URL" target="_blank" rel="noopener">Join Skool →</a>
           </article>
-          <article class="eco-card">
-            <span>Articles</span>
+          <article class="eco-card reveal">
+            <div class="eco-label"><span>Articles</span><span class="eco-num">02</span></div>
             <h3>Substack</h3>
             <p>Long-form essays and field notes on planning, conditioning, monitoring, skill acquisition, and coaching under uncertainty.</p>
-            <a href="#articles">Read Articles →</a>
+            <a class="text-link" href="#articles">Read Articles →</a>
           </article>
-          <article class="eco-card">
-            <span>Digital resources</span>
+          <article class="eco-card reveal">
+            <div class="eco-label"><span>Digital</span><span class="eco-num">03</span></div>
             <h3>Payhip</h3>
             <p>Courses, PDFs, tools, templates, and working resources.</p>
-            <a href="#resources">Browse Resources →</a>
+            <a class="text-link" href="#resources">Browse Resources →</a>
           </article>
-          <article class="eco-card">
-            <span>Paperback books</span>
+          <article class="eco-card reveal">
+            <div class="eco-label"><span>Paperback</span><span class="eco-num">04</span></div>
             <h3>Amazon</h3>
-            <p>Physical/manual formats for long-form reading.</p>
-            <a href="#books">View Books →</a>
+            <p>Physical manuals for long-form reading and field margins.</p>
+            <a class="text-link" href="#books">View Books →</a>
           </article>
-          <article class="eco-card">
-            <span>Updates</span>
+          <article class="eco-card reveal">
+            <div class="eco-label"><span>Updates</span><span class="eco-num">05</span></div>
             <h3>Stay in the loop</h3>
             <p>New articles, tools, releases, rehab/RTP work, workshops, and community updates.</p>
-            <a href="#updates">Get Updates →</a>
+            <a class="text-link" href="#updates">Get Updates →</a>
           </article>
-          <article class="eco-card">
-            <span>Direct work</span>
+          <article class="eco-card reveal">
+            <div class="eco-label"><span>Direct</span><span class="eco-num">06</span></div>
             <h3>Contact</h3>
-            <p>Consulting, workshops, staff education, athlete programming, individual performance management, and audits.</p>
-            <a href="#contact">Work With Me →</a>
+            <p>Consulting, workshops, staff education, athlete programming, and performance audits.</p>
+            <a class="text-link" href="#contact">Work With Me →</a>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- SKOOL -->
-    <section class="platform-section skool-section section-tight" id="skool">
-      <div class="section-inner split-section">
-        <div>
-          <p class="eyebrow">Skool Community</p>
-          <h2>The workshop, not just another content library.</h2>
-          <p class="lead">Join the Agile Periodization community for discussions, Q&amp;As, early-access resources, working drafts, implementation questions, and the practical mess of applying these ideas with real athletes and real constraints.</p>
+    <!-- ═══════════════════════════ SKOOL ═══════ -->
+    <section class="section surface-cream" id="skool">
+      <div class="container split-section">
+        <div class="reveal">
+          <p class="eyebrow">03 — Skool Community</p>
+          <h2>The workshop, not just <em>another content library.</em></h2>
+          <p class="lead">Join Agile Periodization for discussions, Q&amp;As, early-access resources, working drafts, implementation questions, and the practical mess of applying these ideas with real athletes and real constraints.</p>
           <div class="mini-list">
             <span>Weekly discussions</span><span>Early-access resources</span>
-            <span>Courses and drafts</span><span>Community feedback</span>
+            <span>Courses &amp; drafts</span><span>Community feedback</span>
           </div>
-          <a class="button button-primary" :href="SKOOL_URL" target="_blank" rel="noopener">Join the Community</a>
+          <a class="button button-primary" :href="SKOOL_URL" target="_blank" rel="noopener">
+            Join the Community
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
         </div>
-        <div class="visual-panel">
-          <img src="/assets/images/philosophical-foundations.png" alt="Agile Periodization Philosophical Foundations course cover" />
-          <div>
+        <div class="visual-panel reveal">
+          <div class="panel-media">
+            <img src="/assets/images/philosophical-foundations.png" alt="Philosophical Foundations cover" />
+          </div>
+          <div class="panel-note">
             <strong>Best first door</strong>
             <p>If someone wants context, discussion, and implementation help, send them here first.</p>
           </div>
@@ -274,118 +290,155 @@ function submitInquiry() {
       </div>
     </section>
 
-    <!-- ARTICLES -->
-    <section class="platform-section section-tight" id="articles">
-      <div class="section-inner">
-        <div class="section-header row-header">
+    <!-- ═══════════════════════════ ARTICLES ═══════ -->
+    <section class="section surface-paper" id="articles">
+      <div class="container">
+        <div class="row-header reveal">
           <div>
-            <p class="eyebrow">Substack Articles</p>
-            <h2>Latest from the blog.</h2>
+            <p class="eyebrow">04 — Articles</p>
+            <h2>Field notes from <em>inside the practice.</em></h2>
+            <p class="lead">Long-form essays on planning, conditioning, monitoring, skill acquisition, and coaching under uncertainty.</p>
           </div>
-          <a class="button button-secondary" :href="SUBSTACK_URL" target="_blank" rel="noopener">Read all articles</a>
+          <a class="button button-secondary" :href="SUBSTACK_URL" target="_blank" rel="noopener">
+            Read all on Substack
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
         </div>
         <div class="article-grid">
-          <article class="article-card">
-            <img src="/assets/images/conditioning-mma.png" alt="Conditioning for MMA cover" />
-            <div class="article-body">
-              <span>Field note</span>
-              <h3>Problemming, practice design, and messy transfer</h3>
-              <p>Why "transfer" is rarely a property of the gym exercise itself, and what to do about it on Monday.</p>
-              <a :href="SUBSTACK_URL" target="_blank" rel="noopener">Read article →</a>
+          <article class="article-card reveal" v-for="a in articles" :key="a.id">
+            <div class="article-media">
+              <img :src="a.image" :alt="''" />
             </div>
-          </article>
-          <article class="article-card">
-            <img src="/assets/images/endurance-map-builder.png" alt="Endurance Map Builder cover" />
             <div class="article-body">
-              <span>Conditioning</span>
-              <h3>Thresholds, domains, and practical endurance maps</h3>
-              <p>An applied take on intensity domains, CP/W′, and how to use them without becoming a lab.</p>
-              <a :href="SUBSTACK_URL" target="_blank" rel="noopener">Read article →</a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="/assets/images/decoding-fatigue.png" alt="Decoding Fatigue cover" />
-            <div class="article-body">
-              <span>Theory</span>
-              <h3>Fatigue, monitoring, and decisions under uncertainty</h3>
-              <p>Monitoring is not decision-making. Here is how to bridge the gap on the staff whiteboard.</p>
-              <a :href="SUBSTACK_URL" target="_blank" rel="noopener">Read article →</a>
+              <div class="article-meta">
+                <span class="type">{{ a.type }}</span>
+                <span class="dot">·</span>
+                <span class="meta">{{ a.date }}</span>
+                <span v-if="a.readTime" class="dot">·</span>
+                <span v-if="a.readTime" class="meta">{{ a.readTime }}</span>
+              </div>
+              <h3>{{ a.title }}</h3>
+              <p>{{ a.description }}</p>
+              <a class="text-link" :href="itemUrl(a)" target="_blank" rel="noopener">
+                Read on {{ sourceLabel(a) }} →
+              </a>
             </div>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- PAYHIP -->
-    <section class="platform-section section-tight product-section" id="resources">
-      <div class="section-inner">
-        <div class="section-header row-header">
+    <!-- ═══════════════════════════ RESOURCES ═══════ -->
+    <section class="section surface-cream" id="resources">
+      <div class="container">
+        <div class="row-header reveal">
           <div>
-            <p class="eyebrow">Payhip Resources</p>
-            <h2>Courses, tools, PDFs, and working resources.</h2>
+            <p class="eyebrow">05 — Resources</p>
+            <h2>Courses, tools, PDFs, and <em>working resources.</em></h2>
+            <p class="lead">Practical resources built around the Agile Periodization framework — for use this week, not next season.</p>
           </div>
-          <a class="button button-primary" :href="PAYHIP_URL" target="_blank" rel="noopener">Browse all resources</a>
+          <a class="button button-primary" :href="PAYHIP_URL" target="_blank" rel="noopener">
+            Browse all on Payhip
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
         </div>
         <div class="resource-grid">
-          <article class="resource-card" v-for="product in products" :key="product.title">
-            <img :src="product.image" :alt="product.title + ' cover'" />
-            <span class="resource-meta">{{ product.type }}{{ product.tag ? ' · ' + product.tag : '' }}</span>
-            <h3>{{ product.title }}</h3>
-            <p>{{ product.description }}</p>
-            <a :href="product.url" target="_blank" rel="noopener">View Resource →</a>
+          <article class="resource-card reveal" v-for="r in resources" :key="r.id">
+            <div class="res-media">
+              <img :src="r.image" :alt="''" />
+            </div>
+            <div class="res-meta">
+              <span>{{ r.type }}</span>
+              <span v-if="r.tag" class="dot">·</span>
+              <span v-if="r.tag">{{ r.tag }}</span>
+            </div>
+            <h3>{{ r.title }}</h3>
+            <p>{{ r.description }}</p>
+            <a class="text-link" :href="itemUrl(r)" target="_blank" rel="noopener">
+              {{ resourceCta(r) }} →
+            </a>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- AMAZON -->
-    <section class="platform-section section-tight" id="books">
-      <div class="section-inner split-section reverse">
-        <div class="book-row">
-          <img src="/assets/images/strength-training-manual.png" alt="Strength Training Manual cover" />
-          <img src="/assets/images/hiit-manual.jpg" alt="HIIT Manual cover" />
-        </div>
-        <div>
-          <p class="eyebrow">Amazon Paperback Books</p>
-          <h2>Long-form manuals for people who still like paper.</h2>
+    <!-- ═══════════════════════════ BOOKS ═══════ -->
+    <section class="section surface-paper" id="books">
+      <div class="container split-section reverse">
+        <div class="reveal">
+          <p class="eyebrow">06 — Books</p>
+          <h2>Long-form manuals for people who <em>still like paper.</em></h2>
           <p class="lead">Some resources are available as paperback for coaches and practitioners who prefer reading, annotating, and destroying margins with notes.</p>
           <div class="mini-list">
             <span>Strength Training Manual</span><span>HIIT Manual</span><span>bmbstats</span>
           </div>
-          <a class="button button-secondary" :href="AMAZON_URL" target="_blank" rel="noopener">View Books on Amazon</a>
+          <a class="button button-secondary" :href="AMAZON_URL" target="_blank" rel="noopener">
+            View Books on Amazon
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+        <div class="book-stage reveal">
+          <div class="book-row">
+            <img v-for="b in books" :key="b.id" :src="b.image" :alt="b.title + ' cover'" />
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- UPDATES -->
-    <section class="updates-section section-tight" id="updates">
-      <div class="section-inner updates-card">
-        <div>
-          <p class="eyebrow eyebrow-light">Updates</p>
-          <h2>Stay in the loop.</h2>
-          <p>Get new articles, tools, product releases, rehab/RTP work, workshops, and community updates. No spam.</p>
+    <!-- ═══════════════════════════ UPDATES ═══════ -->
+    <section class="updates-section section" id="updates">
+      <div class="container updates-grid">
+        <div class="reveal">
+          <p class="eyebrow">07 — Stay in the loop</p>
+          <h2>New work, before it gets <em>noisy elsewhere.</em></h2>
+          <p class="lead">New articles, tools, product releases, rehab/RTP work, workshops, and community updates. No daily noise.</p>
         </div>
-        <form class="newsletter-form" @submit.prevent="submitNewsletter">
+        <form class="newsletter-form reveal" @submit.prevent="submitNewsletter">
           <label>Name
-            <input v-model="newsletter.name" name="name" type="text" placeholder="Your name" />
+            <input v-model="newsletter.name" type="text" placeholder="Your name" />
           </label>
           <label>Email
-            <input v-model="newsletter.email" name="email" type="email" placeholder="you@example.com" required />
+            <input v-model="newsletter.email" type="email" placeholder="you@example.com" required />
           </label>
-          <button class="button button-primary" type="submit">Get Updates</button>
-          <p class="form-note" :class="{ submitted: newsletterSent }">{{ newsletterNote }}</p>
+          <label class="full">Main interest
+            <select v-model="newsletter.interest">
+              <option value="">Pick what you care about most</option>
+              <option>Planning under uncertainty</option>
+              <option>Strength training</option>
+              <option>Conditioning and endurance</option>
+              <option>Skill acquisition / problemming</option>
+              <option>Monitoring, testing, and data</option>
+              <option>Rehab / return-to-play</option>
+              <option>Philosophy and decision-making</option>
+              <option>Tools and templates</option>
+              <option>Workshops / direct work</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <p class="form-note" :class="{ submitted: newsletterSent }">{{ newsletterNote }}</p>
+            <button class="button button-primary" type="submit">
+              Get Updates
+              <span class="arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
         </form>
       </div>
     </section>
 
-    <!-- CONTACT + ABOUT -->
-    <section class="contact-about section-tight" id="contact">
-      <div class="section-inner contact-grid">
-        <div class="about-card">
-          <img src="/assets/images/mladen-profile.jpg" alt="Mladen Jovanović" />
+    <!-- ═══════════════════════════ CONTACT + ABOUT ═══════ -->
+    <section class="section surface-cream" id="contact">
+      <div class="container contact-grid">
+        <div class="about-card reveal">
+          <div class="about-portrait">
+            <img src="/assets/images/mladen-profile.jpg" alt="Mladen Jovanović" />
+            <div>
+              <strong>Mladen Jovanović, PhD</strong>
+              <span>Coach · Sport scientist · Toolmaker</span>
+            </div>
+          </div>
           <p class="eyebrow">Why trust this?</p>
           <h2>Built by a coach, sport scientist, and toolmaker.</h2>
-          <p>Mladen Jovanović, PhD, works at the intersection of coaching, sport science, software, and performance management.</p>
+          <p>Twenty years across professional and national-team environments. Books, courses, software, and research on sprint profiling, monitoring, modeling, and training decision-making.</p>
           <ul>
             <li>Head of Performance, Serbia Women's National Football Team</li>
             <li>Former Port Adelaide FC, Aspire Academy, Hammarby IF</li>
@@ -395,22 +448,23 @@ function submitInquiry() {
             <li>R package author: shorts and STMr</li>
           </ul>
         </div>
-        <div class="contact-card">
-          <p class="eyebrow">Direct work</p>
-          <h2>Work with me directly.</h2>
-          <p>If you want help applying Agile Periodization inside your team, club, clinic, or individual performance environment, get in touch.</p>
+
+        <div class="contact-card reveal">
+          <p class="eyebrow">08 — Direct work</p>
+          <h2>Work with me <em>directly.</em></h2>
+          <p>If you want help applying Agile Periodization inside your team, club, clinic, or individual performance environment — get in touch.</p>
           <form class="contact-form" @submit.prevent="submitInquiry">
             <label>Name
-              <input v-model="inquiry.name" name="name" type="text" placeholder="Your name" required />
+              <input v-model="inquiry.name" type="text" placeholder="Your name" required />
             </label>
             <label>Email
-              <input v-model="inquiry.email" name="email" type="email" placeholder="you@example.com" required />
+              <input v-model="inquiry.email" type="email" placeholder="you@example.com" required />
             </label>
             <label>Role / organization
-              <input v-model="inquiry.role" name="role" type="text" placeholder="Coach, physio, athlete, club..." />
+              <input v-model="inquiry.role" type="text" placeholder="Coach, physio, athlete, club..." />
             </label>
-            <label>What are you interested in?
-              <select v-model="inquiry.interest" name="interest" required>
+            <label>Interest
+              <select v-model="inquiry.interest" required>
                 <option value="">Select one</option>
                 <option>Consulting</option>
                 <option>Workshop / staff education</option>
@@ -424,33 +478,54 @@ function submitInquiry() {
               </select>
             </label>
             <label class="full">Message
-              <textarea v-model="inquiry.message" name="message" rows="4" placeholder="Tell me what you are trying to solve."></textarea>
+              <textarea v-model="inquiry.message" rows="4" placeholder="Tell me what you are trying to solve."></textarea>
             </label>
-            <button class="button button-primary" type="submit">Send Inquiry</button>
-            <p class="form-note" :class="{ submitted: inquirySent }">{{ inquiryNote }}</p>
+            <div class="form-actions">
+              <p class="form-note" :class="{ submitted: inquirySent }">{{ inquiryNote }}</p>
+              <button class="button button-primary" type="submit">
+                Send Inquiry
+                <span class="arrow" aria-hidden="true">→</span>
+              </button>
+            </div>
           </form>
         </div>
       </div>
     </section>
 
-    <!-- FINAL CTA -->
-    <section class="final-cta" id="join">
-      <div class="section-inner final-card">
-        <p class="eyebrow eyebrow-light">Final Call</p>
-        <h2>Reality will break the plan. Build a system that learns.</h2>
-        <p>Join coaches, sport scientists, physios, and performance practitioners building better training systems through discussion, tools, courses, and shared experiments.</p>
-        <div class="hero-actions center">
-          <a class="button button-primary light" :href="SKOOL_URL" target="_blank" rel="noopener">Join the Agile Periodization Community</a>
-          <a class="button button-secondary dark" href="#updates">Get Updates</a>
+    <!-- ═══════════════════════════ FINAL CTA ═══════ -->
+    <section class="final-cta">
+      <div class="container">
+        <p class="eyebrow no-rule reveal">Final Call</p>
+        <h2 class="reveal">Reality will break the plan. <em>Build a system that learns.</em></h2>
+        <p class="reveal">Join coaches, sport scientists, physios, and performance practitioners building better training systems through discussion, tools, courses, and shared experiments.</p>
+        <div class="hero-actions center reveal">
+          <a class="button button-primary" :href="SKOOL_URL" target="_blank" rel="noopener">
+            Join the Community
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="button button-secondary" href="#updates">Get Updates</a>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div class="section-inner footer-grid">
-      <span>© Agile Periodization</span>
-      <span>Skool · Substack · Payhip · Amazon · Updates · Contact</span>
+    <div class="container footer-grid">
+      <span>© Agile Periodization · Mladen Jovanović</span>
+      <nav class="footer-links" aria-label="Footer">
+        <a :href="SKOOL_URL" target="_blank" rel="noopener">Skool</a>
+        <a :href="SUBSTACK_URL" target="_blank" rel="noopener">Substack</a>
+        <a :href="PAYHIP_URL" target="_blank" rel="noopener">Payhip</a>
+        <a :href="AMAZON_URL" target="_blank" rel="noopener">Amazon</a>
+        <a href="#updates">Updates</a>
+        <a href="#contact">Contact</a>
+      </nav>
     </div>
   </footer>
+
+  <!-- Mobile sticky CTA -->
+  <div class="mobile-cta-bar" aria-hidden="false">
+    <a class="button button-primary" :href="SKOOL_URL" target="_blank" rel="noopener">Join Skool</a>
+    <a class="button button-secondary" href="#updates">Updates</a>
+  </div>
 </template>

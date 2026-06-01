@@ -1,0 +1,474 @@
+<script setup>
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useContentStore, itemUrl, sourceLabel } from '@/stores/content.js'
+
+const content = useContentStore()
+const { featuredItems } = storeToRefs(content)
+
+const idx = ref(0)
+const n = computed(() => featuredItems.value.length)
+const hasMany = computed(() => n.value > 1)
+
+const dragX = ref(0)
+const dragging = ref(false)
+const containerWidth = ref(0)
+const trackEl = ref(null)
+
+function measure() {
+  if (trackEl.value) containerWidth.value = trackEl.value.clientWidth
+}
+
+onMounted(() => {
+  measure()
+  window.addEventListener('resize', measure)
+  if (hasMany.value) startAutoplay()
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', measure)
+  stopAutoplay()
+})
+
+const trackStyle = computed(() => ({
+  width: `${n.value * 100}%`,
+  transform: `translateX(calc(${-idx.value * (100 / n.value)}% + ${dragX.value}px))`,
+  transition: dragging.value ? 'none' : 'transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1)',
+}))
+const slideWidth = computed(() => `${100 / Math.max(1, n.value)}%`)
+
+function goTo(i) { idx.value = (i + n.value) % n.value; restartAutoplay() }
+function next()  { goTo(idx.value + 1) }
+function prev()  { goTo(idx.value - 1) }
+
+let autoplayId = null
+function startAutoplay() {
+  if (!hasMany.value) return
+  stopAutoplay()
+  autoplayId = setInterval(() => { idx.value = (idx.value + 1) % n.value }, 7500)
+}
+function stopAutoplay() {
+  if (autoplayId) { clearInterval(autoplayId); autoplayId = null }
+}
+function restartAutoplay() { stopAutoplay(); startAutoplay() }
+
+function onKey(e) {
+  if (e.key === 'ArrowLeft')  prev()
+  if (e.key === 'ArrowRight') next()
+}
+
+let startX = 0, startY = 0, isHorizontal = null
+function onTouchStart(e) {
+  startX = e.touches[0].clientX
+  startY = e.touches[0].clientY
+  isHorizontal = null
+  dragging.value = true
+  dragX.value = 0
+  stopAutoplay()
+}
+function onTouchMove(e) {
+  if (!dragging.value) return
+  const dx = e.touches[0].clientX - startX
+  const dy = e.touches[0].clientY - startY
+  if (isHorizontal === null) {
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return
+    isHorizontal = Math.abs(dx) > Math.abs(dy)
+  }
+  if (!isHorizontal) {
+    dragging.value = false
+    dragX.value = 0
+    return
+  }
+  e.preventDefault()
+  const atStart = idx.value === 0 && dx > 0
+  const atEnd   = idx.value === n.value - 1 && dx < 0
+  dragX.value = (atStart || atEnd) ? dx * 0.2 : dx
+}
+function onTouchEnd() {
+  if (!dragging.value) return
+  const committed = dragX.value
+  dragging.value = false
+  requestAnimationFrame(() => {
+    if (committed < -56) next()
+    else if (committed > 56) prev()
+    else dragX.value = 0
+    if (committed >= -56 && committed <= 56) dragX.value = 0
+  })
+  restartAutoplay()
+}
+
+watch(idx, () => { dragX.value = 0 })
+
+function ctaLabel(item) {
+  if (item.ctaLabel) return item.ctaLabel
+  if (item.source === 'amazon') return 'View on Amazon'
+  if (item.source === 'payhip') return 'Get it on Payhip'
+  if (item.source === 'youtube') return 'Watch on YouTube'
+  if (item.source === 'skool') return 'Open in Skool'
+  return 'Learn more'
+}
+</script>
+
+<template>
+  <section
+    v-if="hasMany || n === 1"
+    id="featured"
+    class="banner"
+    role="region"
+    aria-label="Featured spotlight"
+    tabindex="0"
+    @keydown="onKey"
+    @mouseenter="stopAutoplay"
+    @mouseleave="startAutoplay"
+    @touchstart.passive="onTouchStart"
+    @touchmove="onTouchMove"
+    @touchend.passive="onTouchEnd"
+  >
+    <div class="banner__viewport" ref="trackEl">
+      <div class="banner__track" :style="trackStyle">
+        <article
+          v-for="item in featuredItems"
+          :key="item.id"
+          class="banner__slide"
+          :class="['layout-' + (item.layout || 'overlay')]"
+          :style="{ width: slideWidth }"
+        >
+          <!-- ── OVERLAY ─────────────────────────────────────── -->
+          <template v-if="item.layout === 'overlay' || !item.layout">
+            <div class="banner__bg" aria-hidden="true">
+              <img v-if="item.image" :src="item.image" :alt="''" />
+              <div class="banner__scrim" />
+            </div>
+            <div class="container banner__overlay-body">
+              <div class="banner__meta">
+                <span v-if="item.badge" class="banner__badge">{{ item.badge }}</span>
+                <span v-if="item.type" class="banner__type">{{ item.type }}</span>
+              </div>
+              <h2 class="banner__title" v-html="item.title"></h2>
+              <p v-if="item.description" class="banner__desc">{{ item.description }}</p>
+              <div class="banner__actions">
+                <a class="button button-primary" :href="itemUrl(item)" target="_blank" rel="noopener">
+                  {{ ctaLabel(item) }}
+                  <span class="arrow" aria-hidden="true">→</span>
+                </a>
+                <span v-if="item.source" class="banner__source">via {{ sourceLabel(item) }}</span>
+              </div>
+            </div>
+          </template>
+
+          <!-- ── SPLIT RIGHT (text left, media right) ────────── -->
+          <template v-else-if="item.layout === 'split-right'">
+            <div class="container banner__split">
+              <div class="banner__split-text">
+                <div class="banner__meta">
+                  <span v-if="item.badge" class="banner__badge">{{ item.badge }}</span>
+                  <span v-if="item.type" class="banner__type">{{ item.type }}</span>
+                </div>
+                <h2 class="banner__title" v-html="item.title"></h2>
+                <p v-if="item.description" class="banner__desc">{{ item.description }}</p>
+                <div class="banner__actions">
+                  <a class="button button-primary" :href="itemUrl(item)" target="_blank" rel="noopener">
+                    {{ ctaLabel(item) }}
+                    <span class="arrow" aria-hidden="true">→</span>
+                  </a>
+                  <span v-if="item.source" class="banner__source">via {{ sourceLabel(item) }}</span>
+                </div>
+              </div>
+              <figure class="banner__split-media">
+                <img v-if="item.image" :src="item.image" :alt="''" />
+              </figure>
+            </div>
+          </template>
+
+          <!-- ── SPLIT LEFT (media left, text right) ────────── -->
+          <template v-else-if="item.layout === 'split-left'">
+            <div class="container banner__split reverse">
+              <figure class="banner__split-media">
+                <img v-if="item.image" :src="item.image" :alt="''" />
+              </figure>
+              <div class="banner__split-text">
+                <div class="banner__meta">
+                  <span v-if="item.badge" class="banner__badge">{{ item.badge }}</span>
+                  <span v-if="item.type" class="banner__type">{{ item.type }}</span>
+                </div>
+                <h2 class="banner__title" v-html="item.title"></h2>
+                <p v-if="item.description" class="banner__desc">{{ item.description }}</p>
+                <div class="banner__actions">
+                  <a class="button button-primary" :href="itemUrl(item)" target="_blank" rel="noopener">
+                    {{ ctaLabel(item) }}
+                    <span class="arrow" aria-hidden="true">→</span>
+                  </a>
+                  <span v-if="item.source" class="banner__source">via {{ sourceLabel(item) }}</span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </article>
+      </div>
+    </div>
+
+    <!-- ── Controls ─────────────────────────────────────────── -->
+    <template v-if="hasMany">
+      <button class="banner__nav banner__nav--prev" @click="prev" aria-label="Previous slide">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="banner__nav banner__nav--next" @click="next" aria-label="Next slide">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="banner__dots" role="tablist" aria-label="Slides">
+        <button
+          v-for="(item, i) in featuredItems"
+          :key="item.id"
+          class="banner__dot"
+          :class="{ 'is-active': i === idx }"
+          role="tab"
+          :aria-selected="i === idx"
+          :aria-label="`Go to slide ${i + 1}`"
+          @click="goTo(i)"
+        />
+      </div>
+      <div class="banner__counter">
+        <span>{{ String(idx + 1).padStart(2, '0') }}</span>
+        <span class="sep">/</span>
+        <span>{{ String(n).padStart(2, '0') }}</span>
+      </div>
+    </template>
+  </section>
+</template>
+
+<style scoped>
+.banner {
+  position: relative;
+  background: linear-gradient(135deg, #1a302d 0%, var(--ink) 100%);
+  color: var(--paper);
+  overflow: hidden;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  --section-pad-y: clamp(72px, 9vw, 132px);
+}
+.banner__viewport {
+  width: 100%;
+  overflow: hidden;
+}
+.banner__track {
+  display: flex;
+  align-items: stretch;
+  will-change: transform;
+}
+.banner__slide {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  min-height: clamp(560px, 80svh, 760px);
+  padding-block: var(--section-pad-y);
+  position: relative;
+}
+
+/* ── Overlay layout ─────────────────────────────────────── */
+.banner__bg {
+  position: absolute; inset: 0; z-index: 0;
+  overflow: hidden;
+}
+.banner__bg img {
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.45;
+  filter: saturate(0.85) contrast(0.96);
+}
+.banner__scrim {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 12% 92%, rgba(0, 0, 0, 0.7), transparent 65%),
+    linear-gradient(180deg, rgba(17, 32, 30, 0.45) 0%, rgba(17, 32, 30, 0.78) 70%, rgba(17, 32, 30, 0.86) 100%);
+  pointer-events: none;
+}
+.layout-overlay .banner__overlay-body {
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
+}
+
+/* ── Split layouts ──────────────────────────────────────── */
+.banner__split {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(36px, 6vw, 88px);
+  align-items: center;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+.banner__split.reverse { grid-template-columns: 0.95fr 1.05fr; }
+.banner__split-text { max-width: 600px; }
+.banner__split-media {
+  margin: 0;
+  position: relative;
+  display: grid; place-items: center;
+  padding: 24px;
+  border-radius: var(--radius-xl);
+  background: rgba(247, 242, 233, 0.04);
+  border: 1px solid rgba(247, 242, 233, 0.1);
+  aspect-ratio: 4 / 5;
+  max-height: 560px;
+}
+.banner__split-media::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 30% 30%, rgba(111, 165, 160, 0.12), transparent 65%);
+  pointer-events: none;
+}
+.banner__split-media img {
+  max-height: 100%;
+  width: auto;
+  max-width: 100%;
+  border-radius: var(--radius);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Content typography ─────────────────────────────────── */
+.banner__meta {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.banner__badge {
+  display: inline-flex;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(111, 165, 160, 0.22);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(111, 165, 160, 0.35);
+}
+.banner__type {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 233, 0.7);
+}
+.banner__title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 5.4vw, 4.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.026em;
+  color: var(--paper);
+  margin: 0 0 22px;
+  max-width: 16ch;
+}
+.banner__title :deep(em) {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--teal-soft);
+}
+.banner__desc {
+  margin: 0 0 30px;
+  max-width: 54ch;
+  color: rgba(247, 242, 233, 0.86);
+  font-size: clamp(1rem, 1.3vw, 1.18rem);
+  line-height: 1.6;
+}
+.banner__actions {
+  display: flex; align-items: center; gap: 18px;
+  flex-wrap: wrap;
+}
+.banner__source {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 233, 0.6);
+}
+
+/* ── Nav buttons ────────────────────────────────────────── */
+.banner__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(247, 242, 233, 0.08);
+  border: 1px solid rgba(247, 242, 233, 0.18);
+  color: var(--paper);
+  display: grid; place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.banner__nav:hover {
+  background: rgba(247, 242, 233, 0.18);
+  border-color: rgba(247, 242, 233, 0.4);
+  transform: translateY(-50%) scale(1.06);
+}
+.banner__nav--prev { left: clamp(16px, 2.5vw, 36px); }
+.banner__nav--next { right: clamp(16px, 2.5vw, 36px); }
+
+/* ── Dots ───────────────────────────────────────────────── */
+.banner__dots {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex; gap: 8px; align-items: center;
+}
+.banner__dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(247, 242, 233, 0.32);
+  padding: 0;
+  cursor: pointer;
+  transition: background var(--t-mid) var(--ease), width var(--t-mid) var(--ease);
+}
+.banner__dot.is-active {
+  width: 28px;
+  background: var(--paper);
+  border-radius: 4px;
+}
+
+/* ── Slide counter ──────────────────────────────────────── */
+.banner__counter {
+  position: absolute;
+  top: clamp(20px, 3vw, 36px);
+  right: clamp(20px, 3vw, 36px);
+  z-index: 10;
+  display: flex; gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: rgba(247, 242, 233, 0.7);
+}
+.banner__counter .sep { color: rgba(247, 242, 233, 0.3); }
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .banner__split,
+  .banner__split.reverse { grid-template-columns: 1fr; }
+  .banner__split-media { max-height: 360px; aspect-ratio: 4/3; order: -1; }
+  .banner__slide { min-height: clamp(640px, auto, none); }
+}
+@media (max-width: 720px) {
+  .banner__nav { display: none; }
+  .banner__dots { bottom: 22px; }
+  .banner__title { font-size: clamp(2.1rem, 8vw, 3rem); max-width: none; }
+  .banner__desc { font-size: 1rem; }
+  .banner__slide { padding-block: clamp(60px, 12vw, 84px); padding-inline: 0; }
+  .banner__counter { top: 18px; right: 18px; font-size: 0.7rem; }
+}
+</style>
