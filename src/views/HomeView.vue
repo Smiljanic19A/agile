@@ -164,13 +164,43 @@ function resourceCta(item) {
           <h2>Your problem is not that you need <em>another template.</em></h2>
           <p class="lead">Most training systems are built for a clean world. Coaching happens in a messy one. The annual plan dies early. Monitoring becomes decoration. Rehab does not follow a straight line. Conditioning does not transfer automatically. And the staff still needs to make a decision by Monday morning.</p>
 
-          <div class="problem-grid">
-            <div class="problem-card"><span class="num">P · 01</span><span class="body">The annual plan dies early.</span></div>
-            <div class="problem-card"><span class="num">P · 02</span><span class="body">Monitoring becomes decoration.</span></div>
-            <div class="problem-card"><span class="num">P · 03</span><span class="body">Dose becomes the religion.</span></div>
-            <div class="problem-card"><span class="num">P · 04</span><span class="body">Transfer is assumed.</span></div>
-            <div class="problem-card"><span class="num">P · 05</span><span class="body">The coach carries the system.</span></div>
-          </div>
+          <ol class="pain-list" aria-label="Recurring problems Agile Periodization addresses">
+            <li>
+              <span class="pain-num">01</span>
+              <div class="pain-body">
+                <p class="pain-head">The annual plan <em>dies early.</em></p>
+                <p class="pain-sub">It looked beautiful in October. Then injuries, travel, selection, and the actual schedule got involved.</p>
+              </div>
+            </li>
+            <li>
+              <span class="pain-num">02</span>
+              <div class="pain-body">
+                <p class="pain-head">Monitoring becomes <em>decoration.</em></p>
+                <p class="pain-sub">The dashboard is full. The decision rule is empty. The data does not tell you what to do on Monday.</p>
+              </div>
+            </li>
+            <li>
+              <span class="pain-num">03</span>
+              <div class="pain-body">
+                <p class="pain-head">Dose becomes <em>the religion.</em></p>
+                <p class="pain-sub">Sets, reps, zones, workloads — important, but not the whole problem. The system stops asking better questions.</p>
+              </div>
+            </li>
+            <li>
+              <span class="pain-num">04</span>
+              <div class="pain-body">
+                <p class="pain-head">Transfer is <em>assumed.</em></p>
+                <p class="pain-sub">Gym, conditioning, rehab, and practice live in separate rooms. Everyone hopes it transfers. Nobody designs for it.</p>
+              </div>
+            </li>
+            <li>
+              <span class="pain-num">05</span>
+              <div class="pain-body">
+                <p class="pain-head">The coach <em>carries the system.</em></p>
+                <p class="pain-sub">If the process only exists in one person's head, the system does not scale — and it does not survive their absence.</p>
+              </div>
+            </li>
+          </ol>
 
           <h3>Agile Periodization is <em>planning under uncertainty.</em></h3>
           <p>It turns the plan from a prediction into a learning system. Instead of pretending we can control the whole season in advance, AP uses short iterative cycles, review rhythms, simple decision rules, and practical tools to keep the system moving without becoming random.</p>

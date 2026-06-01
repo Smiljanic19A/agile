@@ -206,31 +206,33 @@ function ctaLabel(item) {
       </div>
     </div>
 
-    <!-- ── Controls ─────────────────────────────────────────── -->
+    <!-- ── Controls (single bottom-center cluster) ─────────── -->
     <template v-if="hasMany">
-      <button class="banner__nav banner__nav--prev" @click="prev" aria-label="Previous slide">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <button class="banner__nav banner__nav--next" @click="next" aria-label="Next slide">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div class="banner__dots" role="tablist" aria-label="Slides">
-        <button
-          v-for="(item, i) in featuredItems"
-          :key="item.id"
-          class="banner__dot"
-          :class="{ 'is-active': i === idx }"
-          role="tab"
-          :aria-selected="i === idx"
-          :aria-label="`Go to slide ${i + 1}`"
-          @click="goTo(i)"
-        />
+      <div class="banner__controls" role="group" aria-label="Slide controls">
+        <button class="banner__nav" @click="prev" aria-label="Previous slide">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="banner__dots" role="tablist" aria-label="Slides">
+          <button
+            v-for="(item, i) in featuredItems"
+            :key="item.id"
+            class="banner__dot"
+            :class="{ 'is-active': i === idx }"
+            role="tab"
+            :aria-selected="i === idx"
+            :aria-label="`Go to slide ${i + 1}`"
+            @click="goTo(i)"
+          />
+        </div>
+        <button class="banner__nav" @click="next" aria-label="Next slide">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
-      <div class="banner__counter">
+      <div class="banner__counter" aria-hidden="true">
         <span>{{ String(idx + 1).padStart(2, '0') }}</span>
         <span class="sep">/</span>
         <span>{{ String(n).padStart(2, '0') }}</span>
@@ -264,9 +266,11 @@ function ctaLabel(item) {
   display: flex;
   align-items: center;
   min-height: clamp(560px, 80svh, 760px);
-  padding-block: var(--section-pad-y);
+  padding-block: var(--section-pad-y) calc(var(--section-pad-y) + 56px);
+  padding-inline: clamp(20px, 4vw, 56px);
   position: relative;
 }
+.banner__slide > .container { padding: 0; }
 
 /* ── Overlay layout ─────────────────────────────────────── */
 .banner__bg {
@@ -361,17 +365,18 @@ function ctaLabel(item) {
 .banner__title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(2.4rem, 5.4vw, 4.6rem);
-  line-height: 1.02;
-  letter-spacing: -0.026em;
+  font-size: clamp(2rem, 4.6vw, 4rem);
+  line-height: 1.04;
+  letter-spacing: -0.024em;
   color: var(--paper);
   margin: 0 0 22px;
-  max-width: 16ch;
+  max-width: 13ch;
+  overflow-wrap: break-word;
 }
 .banner__title :deep(em) {
   font-style: italic;
   font-weight: 500;
-  color: var(--teal-soft);
+  color: var(--accent-on-dark);
 }
 .banner__desc {
   margin: 0 0 30px;
@@ -393,50 +398,53 @@ function ctaLabel(item) {
   color: rgba(247, 242, 233, 0.6);
 }
 
-/* ── Nav buttons ────────────────────────────────────────── */
-.banner__nav {
+/* ── Controls cluster (bottom-center) ──────────────────── */
+.banner__controls {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 50%;
+  bottom: clamp(20px, 3vw, 32px);
+  transform: translateX(-50%);
   z-index: 10;
-  width: 48px; height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(14, 26, 24, 0.5);
+  border: 1px solid rgba(247, 242, 233, 0.16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.banner__nav {
+  width: 34px; height: 34px;
   border-radius: 50%;
-  background: rgba(247, 242, 233, 0.08);
+  background: rgba(247, 242, 233, 0.06);
   border: 1px solid rgba(247, 242, 233, 0.18);
   color: var(--paper);
   display: grid; place-items: center;
   cursor: pointer;
-  backdrop-filter: blur(8px);
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .banner__nav:hover {
   background: rgba(247, 242, 233, 0.18);
-  border-color: rgba(247, 242, 233, 0.4);
-  transform: translateY(-50%) scale(1.06);
+  border-color: rgba(247, 242, 233, 0.42);
+  transform: scale(1.05);
 }
-.banner__nav--prev { left: clamp(16px, 2.5vw, 36px); }
-.banner__nav--next { right: clamp(16px, 2.5vw, 36px); }
-
-/* ── Dots ───────────────────────────────────────────────── */
 .banner__dots {
-  position: absolute;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
   display: flex; gap: 8px; align-items: center;
+  padding: 0 4px;
 }
 .banner__dot {
-  width: 8px; height: 8px;
+  width: 7px; height: 7px;
   border-radius: 50%;
   border: none;
-  background: rgba(247, 242, 233, 0.32);
+  background: rgba(247, 242, 233, 0.36);
   padding: 0;
   cursor: pointer;
   transition: background var(--t-mid) var(--ease), width var(--t-mid) var(--ease);
 }
 .banner__dot.is-active {
-  width: 28px;
+  width: 22px;
   background: var(--paper);
   border-radius: 4px;
 }
@@ -459,16 +467,34 @@ function ctaLabel(item) {
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 960px) {
   .banner__split,
-  .banner__split.reverse { grid-template-columns: 1fr; }
-  .banner__split-media { max-height: 360px; aspect-ratio: 4/3; order: -1; }
-  .banner__slide { min-height: clamp(640px, auto, none); }
+  .banner__split.reverse {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .banner__split.reverse > .banner__split-text { order: 2; }
+  .banner__split.reverse > .banner__split-media { order: 1; }
+  .banner__split-media {
+    max-height: 320px;
+    aspect-ratio: 4/3;
+    padding: 18px;
+  }
+  .banner__slide { min-height: auto; }
 }
 @media (max-width: 720px) {
-  .banner__nav { display: none; }
-  .banner__dots { bottom: 22px; }
-  .banner__title { font-size: clamp(2.1rem, 8vw, 3rem); max-width: none; }
-  .banner__desc { font-size: 1rem; }
-  .banner__slide { padding-block: clamp(60px, 12vw, 84px); padding-inline: 0; }
+  .banner__title {
+    font-size: clamp(1.9rem, 9vw, 2.6rem);
+    max-width: 18ch;
+  }
+  .banner__desc { font-size: 0.98rem; line-height: 1.55; }
+  .banner__slide {
+    padding-block: clamp(72px, 14vw, 96px) calc(clamp(72px, 14vw, 96px) + 64px);
+    padding-inline: 22px;
+  }
+  .banner__split-media { max-height: 240px; aspect-ratio: 16/10; }
   .banner__counter { top: 18px; right: 18px; font-size: 0.7rem; }
+  .banner__controls { padding: 6px 10px; gap: 10px; }
+  .banner__nav { width: 32px; height: 32px; }
+  .banner__actions { gap: 12px; }
+  .banner__actions .button { width: 100%; }
 }
 </style>
