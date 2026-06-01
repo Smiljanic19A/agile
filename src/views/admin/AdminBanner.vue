@@ -6,6 +6,7 @@ import { currentAdmin, logout } from '@/lib/auth.js'
 import { useContentStore } from '@/stores/content.js'
 import { useFeaturedStore, entryFromItem } from '@/stores/featured.js'
 import RichEditor from '@/components/admin/RichEditor.vue'
+import AssetPicker from '@/components/admin/AssetPicker.vue'
 
 const router  = useRouter()
 const content = useContentStore()
@@ -130,6 +131,42 @@ function stripTags(html) {
 }
 
 function markDirty() { dirty.value = true }
+
+// ── Inline color overrides ──────────────────────────────────
+const titleStyle = computed(() => {
+  if (!draft.value) return {}
+  const s = {}
+  if (draft.value.titleColor)  s.color = draft.value.titleColor
+  if (draft.value.accentColor) s['--em-color'] = draft.value.accentColor
+  return s
+})
+const descStyle = computed(() => {
+  if (!draft.value) return {}
+  const s = {}
+  if (draft.value.descColor)   s.color = draft.value.descColor
+  if (draft.value.accentColor) s['--em-color'] = draft.value.accentColor
+  return s
+})
+function clearColor(key) {
+  if (!draft.value) return
+  draft.value[key] = ''
+  markDirty()
+}
+
+// ── Asset picker ────────────────────────────────────────────
+const pickerOpen = ref(false)
+function openPicker() { pickerOpen.value = true }
+function closePicker() { pickerOpen.value = false }
+function onAssetSelected(url) {
+  if (!draft.value) return
+  draft.value.image = url
+  markDirty()
+}
+function clearImage() {
+  if (!draft.value) return
+  draft.value.image = ''
+  markDirty()
+}
 </script>
 
 <template>
@@ -250,8 +287,8 @@ function markDirty() { dirty.value = true }
                     <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
                     <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
                   </div>
-                  <div class="preview__title" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
-                  <div v-if="draft.description" class="preview__desc" v-html="draft.description"></div>
+                  <div class="preview__title" :style="titleStyle" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
+                  <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
                   <span v-if="draft.ctaUrl || draft.ctaLabel" class="preview__cta">
                     {{ draft.ctaLabel || 'Learn more' }} →
                   </span>
@@ -265,8 +302,8 @@ function markDirty() { dirty.value = true }
                     <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
                     <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
                   </div>
-                  <div class="preview__title" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
-                  <div v-if="draft.description" class="preview__desc" v-html="draft.description"></div>
+                  <div class="preview__title" :style="titleStyle" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
+                  <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
                   <span v-if="draft.ctaUrl || draft.ctaLabel" class="preview__cta">
                     {{ draft.ctaLabel || 'Learn more' }} →
                   </span>
@@ -288,8 +325,8 @@ function markDirty() { dirty.value = true }
                     <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
                     <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
                   </div>
-                  <div class="preview__title" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
-                  <div v-if="draft.description" class="preview__desc" v-html="draft.description"></div>
+                  <div class="preview__title" :style="titleStyle" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
+                  <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
                   <span v-if="draft.ctaUrl || draft.ctaLabel" class="preview__cta">
                     {{ draft.ctaLabel || 'Learn more' }} →
                   </span>
@@ -343,12 +380,91 @@ function markDirty() { dirty.value = true }
           </fieldset>
 
           <fieldset class="field">
-            <legend>Image URL</legend>
-            <input v-model="draft.image" type="text"
-                   placeholder="/assets/images/your-image.png"
-                   @input="markDirty" />
-            <p class="field__hint">Relative paths under <code>/assets/images/</code> or absolute URLs. The preview updates on input.</p>
+            <legend>Text colors (optional)</legend>
+            <div class="color-row">
+              <div class="color-field">
+                <span class="color-label">Title</span>
+                <div class="color-input">
+                  <input type="color"
+                         :value="draft.titleColor || '#faf8f3'"
+                         @input="draft.titleColor = $event.target.value; markDirty()" />
+                  <input type="text"
+                         class="color-hex"
+                         placeholder="default"
+                         :value="draft.titleColor"
+                         @input="draft.titleColor = $event.target.value; markDirty()" />
+                  <button type="button" class="color-clear"
+                          :disabled="!draft.titleColor"
+                          @click="clearColor('titleColor')" title="Use default">×</button>
+                </div>
+              </div>
+              <div class="color-field">
+                <span class="color-label">Description</span>
+                <div class="color-input">
+                  <input type="color"
+                         :value="draft.descColor || '#dbe2df'"
+                         @input="draft.descColor = $event.target.value; markDirty()" />
+                  <input type="text"
+                         class="color-hex"
+                         placeholder="default"
+                         :value="draft.descColor"
+                         @input="draft.descColor = $event.target.value; markDirty()" />
+                  <button type="button" class="color-clear"
+                          :disabled="!draft.descColor"
+                          @click="clearColor('descColor')" title="Use default">×</button>
+                </div>
+              </div>
+              <div class="color-field">
+                <span class="color-label">Accent (italic)</span>
+                <div class="color-input">
+                  <input type="color"
+                         :value="draft.accentColor || '#c8e2dc'"
+                         @input="draft.accentColor = $event.target.value; markDirty()" />
+                  <input type="text"
+                         class="color-hex"
+                         placeholder="default"
+                         :value="draft.accentColor"
+                         @input="draft.accentColor = $event.target.value; markDirty()" />
+                  <button type="button" class="color-clear"
+                          :disabled="!draft.accentColor"
+                          @click="clearColor('accentColor')" title="Use default">×</button>
+                </div>
+              </div>
+            </div>
+            <p class="field__hint">Blank fields fall back to brand defaults. The accent applies to italic emphasis inside title and description.</p>
           </fieldset>
+
+          <fieldset class="field">
+            <legend>Image</legend>
+            <div class="image-row">
+              <div class="image-row__thumb" :class="{ 'is-empty': !draft.image }">
+                <img v-if="draft.image" :src="draft.image" alt="" />
+                <span v-else>—</span>
+              </div>
+              <div class="image-row__main">
+                <input v-model="draft.image" type="text"
+                       placeholder="/assets/images/your-image.png or paste a URL"
+                       @input="markDirty" />
+                <div class="image-row__actions">
+                  <button type="button" class="button button-secondary button-small" @click="openPicker">
+                    Browse / Upload
+                  </button>
+                  <button type="button" class="button button-ghost button-small"
+                          :disabled="!draft.image" @click="clearImage">
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+            <p class="field__hint">
+              Type a path, click <strong>Browse / Upload</strong> to pick from the gallery, or upload a file (browser-only until backend).
+            </p>
+          </fieldset>
+
+          <AssetPicker :open="pickerOpen"
+                       :current-value="draft.image"
+                       @close="closePicker"
+                       @selected="onAssetSelected" />
 
           <fieldset class="field">
             <legend>Layout preset</legend>
@@ -430,14 +546,17 @@ function markDirty() { dirty.value = true }
 
 <style scoped>
 .admin {
-  min-height: 100svh;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
   background: var(--cream);
   color: var(--ink);
+  overflow: hidden;
 }
 
 /* ── Top bar ─────────────────────────────────── */
 .admin__topbar {
-  position: sticky; top: 0; z-index: 30;
+  flex-shrink: 0;
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 24px;
   background: var(--ink);
@@ -483,9 +602,14 @@ function markDirty() { dirty.value = true }
 
 /* ═══════════════════════ LIST VIEW ═══════════════════════ */
 .admin__main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 28px 24px 80px;
+}
+.admin__main > .admin__panel {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 28px 24px 80px;
 }
 .admin__panel {
   background: var(--paper);
@@ -618,14 +742,14 @@ function markDirty() { dirty.value = true }
 
 /* ═══════════════════════ EDITOR VIEW ═══════════════════════ */
 .editor {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  min-height: calc(100svh - 56px);
+  overflow: hidden;
 }
 .editor__head {
-  position: sticky;
-  top: 56px;
-  z-index: 20;
+  flex-shrink: 0;
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 18px;
@@ -634,6 +758,7 @@ function markDirty() { dirty.value = true }
   background: var(--paper);
   border-bottom: 1px solid var(--line);
   box-shadow: var(--shadow-sm);
+  z-index: 5;
 }
 .editor__back {
   padding: 8px 14px;
@@ -674,8 +799,10 @@ function markDirty() { dirty.value = true }
 }
 .editor__head-actions .button.danger:hover { background: rgba(196, 106, 58, 0.08); }
 
-/* ── Editor body: 2-col layout ─────────────── */
+/* ── Editor body: 2-col, only form scrolls ─── */
 .editor__body {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
   gap: 24px;
@@ -683,23 +810,24 @@ function markDirty() { dirty.value = true }
   max-width: 1480px;
   width: 100%;
   margin: 0 auto;
-  align-items: start;
+  align-items: stretch;
+  overflow: hidden;
 }
 
-@media (max-width: 1080px) {
-  .editor__body { grid-template-columns: 1fr; }
+/* ── LEFT: live preview — locked, never scrolls ─── */
+.editor__preview-col {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
 }
-
-/* ── LEFT: live preview (sticky) ───────────── */
-.editor__preview-col { min-width: 0; }
 .editor__preview-sticky {
-  position: sticky;
-  top: 132px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
-}
-@media (max-width: 1080px) {
-  .editor__preview-sticky { position: static; }
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 .editor__preview-sticky .eyebrow { margin-bottom: 0; }
 .editor__preview-meta {
@@ -718,11 +846,12 @@ function markDirty() { dirty.value = true }
 .preview {
   position: relative;
   display: flex;
+  flex: 1;
+  min-height: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: linear-gradient(135deg, #1a302d 0%, var(--ink) 100%);
   color: var(--paper);
-  min-height: 480px;
   box-shadow: var(--shadow-lg);
   border: 1px solid rgba(247, 242, 233, 0.08);
 }
@@ -802,10 +931,15 @@ function markDirty() { dirty.value = true }
 .preview--align-center .preview__desc { margin-left: auto; margin-right: auto; }
 .preview--align-right .preview__title,
 .preview--align-right .preview__desc { margin-left: auto; }
-.preview--align-center .preview__meta,
-.preview--align-center .preview__cta { justify-content: center; }
-.preview--align-right .preview__meta,
-.preview--align-right .preview__cta { justify-content: flex-end; }
+
+/* Meta is a flex container, so justify-content centers its children. */
+.preview--align-center .preview__meta { justify-content: center; }
+.preview--align-right  .preview__meta { justify-content: flex-end; }
+
+/* CTA is a single grid child — must use justify-self for own placement. */
+.preview--align-left   .preview__cta { justify-self: start; }
+.preview--align-center .preview__cta { justify-self: center; }
+.preview--align-right  .preview__cta { justify-self: end; }
 
 .preview__meta {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
@@ -834,7 +968,7 @@ function markDirty() { dirty.value = true }
 }
 .preview__title :deep(em) {
   font-style: italic; font-weight: 500;
-  color: var(--accent-on-dark);
+  color: var(--em-color, var(--accent-on-dark));
 }
 .preview__title :deep(.placeholder) {
   color: rgba(247, 242, 233, 0.4);
@@ -846,8 +980,8 @@ function markDirty() { dirty.value = true }
   color: rgba(247, 242, 233, 0.86);
   max-width: 54ch;
 }
-.preview__desc :deep(em) { font-style: italic; color: var(--accent-on-dark); font-weight: 500; }
-.preview__desc :deep(strong) { font-weight: 700; color: var(--paper); }
+.preview__desc :deep(em) { font-style: italic; color: var(--em-color, var(--accent-on-dark)); font-weight: 500; }
+.preview__desc :deep(strong) { font-weight: 700; color: inherit; }
 .preview__cta {
   display: inline-flex;
   align-items: center; gap: 8px;
@@ -879,7 +1013,7 @@ function markDirty() { dirty.value = true }
   .preview__title { font-size: 1.5rem; max-width: none; }
 }
 
-/* ── RIGHT: form ────────────────────────────── */
+/* ── RIGHT: form (only thing that scrolls) ─── */
 .editor__form {
   background: var(--paper);
   border: 1px solid var(--line);
@@ -888,7 +1022,136 @@ function markDirty() { dirty.value = true }
   display: grid;
   gap: 22px;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  align-content: start;
 }
+.editor__form::-webkit-scrollbar { width: 10px; }
+.editor__form::-webkit-scrollbar-thumb { background: rgba(17, 32, 30, 0.18); border-radius: 999px; }
+.editor__form::-webkit-scrollbar-thumb:hover { background: rgba(17, 32, 30, 0.32); }
+.editor__form::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Image field row ────────────────────────── */
+.image-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.image-row__thumb {
+  width: 88px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(135deg, var(--cream), var(--paper-warm));
+  overflow: hidden;
+  display: grid; place-items: center;
+}
+.image-row__thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.image-row__thumb.is-empty {
+  background: var(--cream);
+  color: var(--ink-quiet);
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+}
+.image-row__main {
+  display: flex; flex-direction: column; gap: 8px;
+  min-width: 0;
+}
+.image-row__main input { width: 100%; }
+.image-row__actions {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.image-row__actions .button { min-height: 36px; padding: 8px 14px; font-size: 0.84rem; }
+.image-row__actions .button.button-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ink-quiet);
+}
+.image-row__actions .button.button-ghost:hover:not(:disabled) {
+  color: var(--rust-deep);
+  border-color: rgba(196, 106, 58, 0.3);
+}
+.image-row__actions .button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Color picker rows ──────────────────────── */
+.color-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 760px) { .color-row { grid-template-columns: 1fr; } }
+.color-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.color-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+}
+.color-input {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+}
+.color-input input[type="color"] {
+  width: 36px; height: 32px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.color-input input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; border-radius: 4px; overflow: hidden; }
+.color-input input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+.color-input input[type="color"]::-moz-color-swatch { border: none; border-radius: 4px; }
+
+.color-hex {
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--ink);
+  min-width: 0;
+}
+.color-hex:focus { outline: none; }
+.color-hex::placeholder { color: var(--ink-quiet); opacity: 0.55; }
+
+.color-clear {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: var(--ink-quiet);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.color-clear:hover:not(:disabled) {
+  background: rgba(196, 106, 58, 0.1);
+  border-color: rgba(196, 106, 58, 0.3);
+  color: var(--rust-deep);
+}
+.color-clear:disabled { opacity: 0.25; cursor: default; }
 
 .field {
   border: none;
@@ -982,6 +1245,13 @@ function markDirty() { dirty.value = true }
 }
 .toggle input { width: 18px; height: 18px; accent-color: var(--teal); }
 
+@media (max-width: 1080px) {
+  .editor__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: clamp(280px, 42svh, 460px) 1fr;
+  }
+}
+
 @media (max-width: 720px) {
   .admin__topbar { padding: 10px 16px; }
   .admin__crumb { display: none; }
@@ -989,13 +1259,13 @@ function markDirty() { dirty.value = true }
     grid-template-columns: 1fr;
     gap: 10px;
     padding: 12px 16px;
-    top: 50px;
   }
   .editor__head-actions { flex-wrap: wrap; gap: 8px; }
   .editor__head-actions .button { flex: 1; min-height: 40px; }
-  .editor__body { padding: 16px; gap: 16px; }
+  .editor__body { padding: 14px; gap: 12px; }
   .admin__panel { padding: 20px; }
   .entry { grid-template-columns: 70px 1fr; }
   .entry__actions { grid-column: 1 / -1; justify-content: flex-start; }
+  .editor__form { padding: 18px; }
 }
 </style>

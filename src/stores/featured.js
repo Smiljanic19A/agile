@@ -58,6 +58,9 @@ function blankEntry(overrides = {}) {
     layout: 'overlay',
     textAlign: 'left',
     verticalAlign: 'bottom',
+    titleColor: '',     // blank = use default (paper)
+    descColor: '',      // blank = use default
+    accentColor: '',    // blank = use default (--accent-on-dark)
     enabled: true,
     order: 1,
     ...overrides,

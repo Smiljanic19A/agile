@@ -102,6 +102,19 @@ watch(idx, () => { dragX.value = 0 })
 watch(n, (next) => {
   if (idx.value >= next) idx.value = Math.max(0, next - 1)
 })
+
+function titleStyle(entry) {
+  const s = {}
+  if (entry.titleColor)  s.color = entry.titleColor
+  if (entry.accentColor) s['--em-color'] = entry.accentColor
+  return s
+}
+function descStyle(entry) {
+  const s = {}
+  if (entry.descColor)   s.color = entry.descColor
+  if (entry.accentColor) s['--em-color'] = entry.accentColor
+  return s
+}
 </script>
 
 <template>
@@ -143,8 +156,8 @@ watch(n, (next) => {
                 <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
                 <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
               </div>
-              <h2 class="banner__title" v-html="entry.title"></h2>
-              <div v-if="entry.description" class="banner__desc" v-html="entry.description"></div>
+              <h2 class="banner__title" :style="titleStyle(entry)" v-html="entry.title"></h2>
+              <div v-if="entry.description" class="banner__desc" :style="descStyle(entry)" v-html="entry.description"></div>
               <div class="banner__actions" v-if="entry.ctaUrl || entry.ctaLabel">
                 <a v-if="entry.ctaUrl" class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
                   {{ entry.ctaLabel || 'Learn more' }}
@@ -398,7 +411,7 @@ watch(n, (next) => {
 .banner__title :deep(em) {
   font-style: italic;
   font-weight: 500;
-  color: var(--accent-on-dark);
+  color: var(--em-color, var(--accent-on-dark));
 }
 .banner__desc {
   margin: 0 0 30px;
@@ -407,8 +420,8 @@ watch(n, (next) => {
   font-size: clamp(1rem, 1.3vw, 1.18rem);
   line-height: 1.6;
 }
-.banner__desc :deep(em) { font-style: italic; color: var(--accent-on-dark); font-weight: 500; }
-.banner__desc :deep(strong) { font-weight: 700; color: var(--paper); }
+.banner__desc :deep(em) { font-style: italic; color: var(--em-color, var(--accent-on-dark)); font-weight: 500; }
+.banner__desc :deep(strong) { font-weight: 700; color: inherit; }
 .banner__desc :deep(br) { display: block; content: ""; margin-top: 6px; }
 .banner__actions {
   display: flex; align-items: center; gap: 18px;
