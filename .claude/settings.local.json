@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm run *)",
       "Bash(xargs cat -n)",
-      "Bash(sed *)"
+      "Bash(sed *)",
+      "Bash(rm -v src/components/AppNav.vue src/components/sections/HeroSection.vue src/components/sections/FeaturedBanner.vue src/components/sections/AboutSection.vue src/components/sections/BlogSection.vue src/components/sections/CommunitySection.vue src/components/sections/StoreSection.vue src/components/sections/NewsletterSection.vue src/components/sections/AppFooter.vue src/components/sections/SpotlightSection.vue src/components/sections/VideoSection.vue src/components/ui/HeroCard.vue src/components/ui/BlogCard.vue src/components/ui/ProductCard.vue src/components/ui/AppButton.vue src/components/ui/HexLattice.vue src/components/ui/AbstractCover.vue src/components/ui/SectionLabel.vue src/components/ui/StoreTabs.vue src/components/ui/VideoFacade.vue src/stores/content.js src/assets/styles/base.css src/assets/styles/theme-v2.css src/assets/styles/theme-v3.css src/assets/styles/theme-v4.css VISUAL_AUDIT_BRIEF.md)",
+      "Bash(rmdir -v src/components/sections src/components/ui src/stores)"
     ]
   }
 }

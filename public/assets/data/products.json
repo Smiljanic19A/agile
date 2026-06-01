@@ -1,0 +1,56 @@
+[
+  {
+    "title": "Philosophical Foundations",
+    "type": "Course",
+    "tag": "Philosophy",
+    "description": "The mental models behind Agile Periodization.",
+    "image": "/assets/images/philosophical-foundations.png",
+    "url": "https://payhip.com/mjovanovic",
+    "featured": true
+  },
+  {
+    "title": "Endurance Map Builder",
+    "type": "Tool",
+    "tag": "Conditioning",
+    "description": "Map domains, thresholds, CP/W′, MAS, and conditioning decisions.",
+    "image": "/assets/images/endurance-map-builder.png",
+    "url": "https://payhip.com/b/DSc7p",
+    "featured": true
+  },
+  {
+    "title": "Badger Protocol",
+    "type": "PDF",
+    "tag": "Strength",
+    "description": "Simple, flexible loading ideas and isoSandwich variations.",
+    "image": "/assets/images/badger-protocol.png",
+    "url": "https://payhip.com/mjovanovic",
+    "featured": true
+  },
+  {
+    "title": "Conditioning for MMA",
+    "type": "Course",
+    "tag": "Conditioning",
+    "description": "Agile microcycle planning and conditioning under combat sport constraints.",
+    "image": "/assets/images/conditioning-mma.png",
+    "url": "https://payhip.com/mjovanovic",
+    "featured": true
+  },
+  {
+    "title": "Decoding Fatigue",
+    "type": "Course",
+    "tag": "Monitoring",
+    "description": "Make sense of HRV, wellness, and load data without worshipping it.",
+    "image": "/assets/images/decoding-fatigue.png",
+    "url": "https://payhip.com/mjovanovic",
+    "featured": false
+  },
+  {
+    "title": "Strength Training Manual",
+    "type": "Book",
+    "tag": "Strength",
+    "description": "The long-form manual on programming, decisions, and structure.",
+    "image": "/assets/images/strength-training-manual.png",
+    "url": "https://payhip.com/mjovanovic",
+    "featured": false
+  }
+]
