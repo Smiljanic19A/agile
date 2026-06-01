@@ -1,13 +1,13 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useContentStore, itemUrl, sourceLabel } from '@/stores/content.js'
+import { useFeaturedStore } from '@/stores/featured.js'
 
-const content = useContentStore()
-const { featuredItems } = storeToRefs(content)
+const featured = useFeaturedStore()
+const { activeEntries } = storeToRefs(featured)
 
 const idx = ref(0)
-const n = computed(() => featuredItems.value.length)
+const n = computed(() => activeEntries.value.length)
 const hasMany = computed(() => n.value > 1)
 
 const dragX = ref(0)
@@ -98,14 +98,10 @@ function onTouchEnd() {
 
 watch(idx, () => { dragX.value = 0 })
 
-function ctaLabel(item) {
-  if (item.ctaLabel) return item.ctaLabel
-  if (item.source === 'amazon') return 'View on Amazon'
-  if (item.source === 'payhip') return 'Get it on Payhip'
-  if (item.source === 'youtube') return 'Watch on YouTube'
-  if (item.source === 'skool') return 'Open in Skool'
-  return 'Learn more'
-}
+// Reset to first slide if entries change (e.g., admin removed one)
+watch(n, (next) => {
+  if (idx.value >= next) idx.value = Math.max(0, next - 1)
+})
 </script>
 
 <template>
@@ -126,78 +122,79 @@ function ctaLabel(item) {
     <div class="banner__viewport" ref="trackEl">
       <div class="banner__track" :style="trackStyle">
         <article
-          v-for="item in featuredItems"
-          :key="item.id"
+          v-for="entry in activeEntries"
+          :key="entry.id"
           class="banner__slide"
-          :class="['layout-' + (item.layout || 'overlay')]"
+          :class="[
+            'layout-' + (entry.layout || 'overlay'),
+            'align-' + (entry.textAlign || 'left'),
+            entry.layout === 'overlay' ? 'v-' + (entry.verticalAlign || 'bottom') : '',
+          ]"
           :style="{ width: slideWidth }"
         >
           <!-- ── OVERLAY ─────────────────────────────────────── -->
-          <template v-if="item.layout === 'overlay' || !item.layout">
+          <template v-if="entry.layout === 'overlay' || !entry.layout">
             <div class="banner__bg" aria-hidden="true">
-              <img v-if="item.image" :src="item.image" :alt="''" />
+              <img v-if="entry.image" :src="entry.image" :alt="''" />
               <div class="banner__scrim" />
             </div>
             <div class="container banner__overlay-body">
               <div class="banner__meta">
-                <span v-if="item.badge" class="banner__badge">{{ item.badge }}</span>
-                <span v-if="item.type" class="banner__type">{{ item.type }}</span>
+                <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
+                <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
               </div>
-              <h2 class="banner__title" v-html="item.title"></h2>
-              <p v-if="item.description" class="banner__desc">{{ item.description }}</p>
-              <div class="banner__actions">
-                <a class="button button-primary" :href="itemUrl(item)" target="_blank" rel="noopener">
-                  {{ ctaLabel(item) }}
+              <h2 class="banner__title" v-html="entry.title"></h2>
+              <div v-if="entry.description" class="banner__desc" v-html="entry.description"></div>
+              <div class="banner__actions" v-if="entry.ctaUrl || entry.ctaLabel">
+                <a v-if="entry.ctaUrl" class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
+                  {{ entry.ctaLabel || 'Learn more' }}
                   <span class="arrow" aria-hidden="true">→</span>
                 </a>
-                <span v-if="item.source" class="banner__source">via {{ sourceLabel(item) }}</span>
               </div>
             </div>
           </template>
 
           <!-- ── SPLIT RIGHT (text left, media right) ────────── -->
-          <template v-else-if="item.layout === 'split-right'">
+          <template v-else-if="entry.layout === 'split-right'">
             <div class="container banner__split">
               <div class="banner__split-text">
                 <div class="banner__meta">
-                  <span v-if="item.badge" class="banner__badge">{{ item.badge }}</span>
-                  <span v-if="item.type" class="banner__type">{{ item.type }}</span>
+                  <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
+                  <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
                 </div>
-                <h2 class="banner__title" v-html="item.title"></h2>
-                <p v-if="item.description" class="banner__desc">{{ item.description }}</p>
-                <div class="banner__actions">
-                  <a class="button button-primary" :href="itemUrl(item)" target="_blank" rel="noopener">
-                    {{ ctaLabel(item) }}
+                <h2 class="banner__title" v-html="entry.title"></h2>
+                <div v-if="entry.description" class="banner__desc" v-html="entry.description"></div>
+                <div class="banner__actions" v-if="entry.ctaUrl || entry.ctaLabel">
+                  <a v-if="entry.ctaUrl" class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
+                    {{ entry.ctaLabel || 'Learn more' }}
                     <span class="arrow" aria-hidden="true">→</span>
                   </a>
-                  <span v-if="item.source" class="banner__source">via {{ sourceLabel(item) }}</span>
                 </div>
               </div>
               <figure class="banner__split-media">
-                <img v-if="item.image" :src="item.image" :alt="''" />
+                <img v-if="entry.image" :src="entry.image" :alt="''" />
               </figure>
             </div>
           </template>
 
           <!-- ── SPLIT LEFT (media left, text right) ────────── -->
-          <template v-else-if="item.layout === 'split-left'">
+          <template v-else-if="entry.layout === 'split-left'">
             <div class="container banner__split reverse">
               <figure class="banner__split-media">
-                <img v-if="item.image" :src="item.image" :alt="''" />
+                <img v-if="entry.image" :src="entry.image" :alt="''" />
               </figure>
               <div class="banner__split-text">
                 <div class="banner__meta">
-                  <span v-if="item.badge" class="banner__badge">{{ item.badge }}</span>
-                  <span v-if="item.type" class="banner__type">{{ item.type }}</span>
+                  <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
+                  <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
                 </div>
-                <h2 class="banner__title" v-html="item.title"></h2>
-                <p v-if="item.description" class="banner__desc">{{ item.description }}</p>
-                <div class="banner__actions">
-                  <a class="button button-primary" :href="itemUrl(item)" target="_blank" rel="noopener">
-                    {{ ctaLabel(item) }}
+                <h2 class="banner__title" v-html="entry.title"></h2>
+                <div v-if="entry.description" class="banner__desc" v-html="entry.description"></div>
+                <div class="banner__actions" v-if="entry.ctaUrl || entry.ctaLabel">
+                  <a v-if="entry.ctaUrl" class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
+                    {{ entry.ctaLabel || 'Learn more' }}
                     <span class="arrow" aria-hidden="true">→</span>
                   </a>
-                  <span v-if="item.source" class="banner__source">via {{ sourceLabel(item) }}</span>
                 </div>
               </div>
             </div>
@@ -216,8 +213,8 @@ function ctaLabel(item) {
         </button>
         <div class="banner__dots" role="tablist" aria-label="Slides">
           <button
-            v-for="(item, i) in featuredItems"
-            :key="item.id"
+            v-for="(entry, i) in activeEntries"
+            :key="entry.id"
             class="banner__dot"
             :class="{ 'is-active': i === idx }"
             role="tab"
@@ -271,6 +268,31 @@ function ctaLabel(item) {
   position: relative;
 }
 .banner__slide > .container { padding: 0; }
+
+/* Vertical anchor (overlay only) */
+.banner__slide.layout-overlay.v-top    { align-items: flex-start; }
+.banner__slide.layout-overlay.v-center { align-items: center; }
+.banner__slide.layout-overlay.v-bottom { align-items: flex-end; }
+
+/* Text alignment within content body */
+.banner__slide.align-left  .banner__overlay-body,
+.banner__slide.align-left  .banner__split-text  { text-align: left; }
+.banner__slide.align-center .banner__overlay-body,
+.banner__slide.align-center .banner__split-text { text-align: center; }
+.banner__slide.align-right .banner__overlay-body,
+.banner__slide.align-right .banner__split-text  { text-align: right; }
+
+.banner__slide.align-center .banner__overlay-body,
+.banner__slide.align-center .banner__split-text  { margin-left: auto; margin-right: auto; }
+.banner__slide.align-right  .banner__overlay-body,
+.banner__slide.align-right  .banner__split-text  { margin-left: auto; }
+
+.banner__slide.align-center .banner__title { max-width: none; margin-left: auto; margin-right: auto; }
+.banner__slide.align-center .banner__desc  { margin-left: auto; margin-right: auto; }
+.banner__slide.align-center .banner__meta,
+.banner__slide.align-center .banner__actions { justify-content: center; }
+.banner__slide.align-right  .banner__meta,
+.banner__slide.align-right  .banner__actions { justify-content: flex-end; }
 
 /* ── Overlay layout ─────────────────────────────────────── */
 .banner__bg {
@@ -385,6 +407,9 @@ function ctaLabel(item) {
   font-size: clamp(1rem, 1.3vw, 1.18rem);
   line-height: 1.6;
 }
+.banner__desc :deep(em) { font-style: italic; color: var(--accent-on-dark); font-weight: 500; }
+.banner__desc :deep(strong) { font-weight: 700; color: var(--paper); }
+.banner__desc :deep(br) { display: block; content: ""; margin-top: 6px; }
 .banner__actions {
   display: flex; align-items: center; gap: 18px;
   flex-wrap: wrap;
