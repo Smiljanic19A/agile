@@ -55,15 +55,15 @@ const select = (id) => emit('update:modelValue', id)
 .tabs-wrap::after {
   content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 40px;
   pointer-events: none;
-  background: linear-gradient(to right, rgba(247,242,233,0), var(--cream));
+  background: linear-gradient(to right, rgba(55, 136, 130, 0), var(--teal));
   opacity: 0; transition: opacity 200ms var(--ease); border-radius: 0 999px 999px 0;
 }
 @media (max-width: 560px) { .tabs-wrap::after { opacity: 1; } }
 
 .tabs {
   position: relative; display: inline-flex; align-items: stretch; gap: 4px;
-  padding: 6px; border: 1px solid var(--line); border-radius: 999px;
-  background: rgba(17, 32, 30, 0.04); max-width: 100%;
+  padding: 6px; border: 1px solid var(--hairline-light); border-radius: 999px;
+  background: rgba(243, 243, 243, 0.04); max-width: 100%;
   overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .tabs::-webkit-scrollbar { display: none; }
@@ -71,16 +71,16 @@ const select = (id) => emit('update:modelValue', id)
 .tabs__btn {
   position: relative; z-index: 2; padding: 10px 18px;
   font-family: var(--font-body); font-size: 13px; font-weight: 500; letter-spacing: 0.01em;
-  color: var(--ink-quiet); border-radius: 999px;
+  color: rgba(243, 243, 243, 0.7); border-radius: 999px;
   transition: color 200ms var(--ease); white-space: nowrap; cursor: pointer;
 }
 @media (max-width: 560px) { .tabs__btn { padding: 9px 14px; font-size: 12.5px; } }
-.tabs__btn.is-active { color: var(--paper); }
-.tabs__btn:hover:not(.is-active) { color: var(--ink); }
+.tabs__btn.is-active { color: var(--ink); }
+.tabs__btn:hover:not(.is-active) { color: var(--cream); }
 
 .tabs__indicator {
   position: absolute; top: 6px; bottom: 6px; left: 0;
-  background: var(--teal); border-radius: 999px;
+  background: var(--cream); border-radius: 999px;
   transition: transform 320ms var(--ease), width 320ms var(--ease), opacity 200ms var(--ease);
   z-index: 1; pointer-events: none;
 }

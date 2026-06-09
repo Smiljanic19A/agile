@@ -31,33 +31,33 @@ defineProps({
 <style scoped>
 .card {
   display: flex; flex-direction: column; text-decoration: none; color: inherit;
-  background: var(--paper); border: 1px solid var(--line);
+  background: rgba(243, 243, 243, 0.04); border: 1px solid var(--hairline-light);
   border-radius: var(--radius); padding: 22px;
   transition: background 220ms var(--ease), border-color 220ms var(--ease), transform 220ms var(--ease);
   height: 100%;
 }
-.card:hover { background: var(--cream); border-color: var(--line-strong); transform: translateY(-2px); }
+.card:hover { background: rgba(243, 243, 243, 0.08); border-color: var(--hairline-light-strong); transform: translateY(-2px); }
 .card:hover .card__arrow { transform: translateX(4px); }
 
 .card__cover { margin-bottom: 22px; }
 .card__meta {
   display: flex; align-items: center; gap: 8px;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--ink-quiet); margin-bottom: 14px;
+  color: var(--cream); opacity: 0.7; margin-bottom: 14px;
 }
-.card__chip { display: inline-block; padding: 4px 10px; border: 1px solid var(--line-strong); border-radius: 999px; }
+.card__chip { display: inline-block; padding: 4px 10px; border: 1px solid var(--hairline-light-strong); border-radius: 999px; }
 .card__dot { opacity: 0.5; }
 
 .card__title {
   font-family: var(--font-display); font-size: clamp(22px, 2.4vw, 30px);
-  font-weight: 700; line-height: 1.08; letter-spacing: -0.018em; margin: 0 0 10px; color: var(--ink);
+  font-weight: 700; line-height: 1.08; letter-spacing: -0.018em; margin: 0 0 10px;
 }
-.card__dek { color: var(--ink-soft); font-size: 15px; line-height: 1.55; margin: 0 0 28px; max-width: 56ch; }
+.card__dek { color: rgba(243, 243, 243, 0.82); font-size: 15px; line-height: 1.55; margin: 0 0 28px; max-width: 56ch; }
 
 .card__foot {
   margin-top: auto; padding-top: 18px; display: flex; align-items: center; justify-content: space-between;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--ink-quiet); border-top: 1px solid var(--line);
+  color: var(--cream); opacity: 0.78; border-top: 1px solid var(--hairline-light);
 }
 .card__read { display: inline-flex; align-items: center; gap: 8px; }
 .card__arrow { display: inline-block; transition: transform 220ms var(--ease); }

@@ -10,11 +10,11 @@ const { articles, featureArticle, standardArticles, textArticles } = storeToRefs
 </script>
 
 <template>
-  <section id="writing" class="blog section" aria-labelledby="blog-title">
+  <section id="writing" class="blog section section--teal" aria-labelledby="blog-title">
     <div class="container">
       <header class="blog__head">
         <div class="blog__head-left">
-          <SectionLabel index="03" label="Articles" tone="on-paper" />
+          <SectionLabel index="03" label="Articles" />
           <h2 id="blog-title" class="display-2 blog__title fade-up">
             Field notes from <em>inside the practice.</em>
           </h2>
@@ -24,7 +24,7 @@ const { articles, featureArticle, standardArticles, textArticles } = storeToRefs
             Essays on planning, monitoring, and coaching judgment — written the way a coach talks to another coach. Published on Substack.
           </p>
           <div class="is-desktop-only">
-            <AppButton variant="ghost" :href="externalLinks.substack" external>View all articles</AppButton>
+            <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>View all articles</AppButton>
           </div>
         </div>
       </header>
@@ -46,23 +46,23 @@ const { articles, featureArticle, standardArticles, textArticles } = storeToRefs
       </div>
 
       <div class="blog__mobile-cta is-mobile-only">
-        <AppButton variant="ghost" :href="externalLinks.substack" external>View all articles</AppButton>
+        <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>View all articles</AppButton>
       </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-.blog { background: var(--paper); color: var(--ink); }
+.blog { background: var(--teal); color: var(--cream); }
 
 .blog__head {
   display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; align-items: end; margin-bottom: 64px;
 }
 .blog__head-left { display: flex; flex-direction: column; gap: 28px; }
 .blog__head-right { display: flex; flex-direction: column; gap: 22px; align-items: flex-start; }
-.blog__title { max-width: 16ch; color: var(--ink); }
-.blog__title em { font-style: italic; font-weight: 500; color: var(--teal); }
-.blog__lead { color: var(--ink-soft); font-size: clamp(16px, 1.15vw, 18px); line-height: 1.68; max-width: 48ch; margin: 0; }
+.blog__title { max-width: 16ch; color: var(--cream); }
+.blog__title em { font-style: italic; font-weight: 500; color: rgba(243, 243, 243, 0.78); }
+.blog__lead { color: rgba(243, 243, 243, 0.92); font-size: clamp(16px, 1.15vw, 18px); line-height: 1.68; max-width: 48ch; margin: 0; }
 
 .blog__grid { display: grid; gap: 18px; }
 .blog__feature { display: block; }

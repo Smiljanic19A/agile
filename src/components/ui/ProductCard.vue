@@ -34,12 +34,12 @@ const displayPrice = computed(() => props.item.price ?? 'Free')
 <style scoped>
 .prod {
   display: flex; flex-direction: column; text-decoration: none; color: inherit;
-  background: var(--paper); border: 1px solid var(--line);
+  background: rgba(243, 243, 243, 0.04); border: 1px solid var(--hairline-light);
   border-radius: var(--radius); padding: 18px;
   transition: background 220ms var(--ease), border-color 220ms var(--ease), transform 220ms var(--ease);
   height: 100%;
 }
-.prod:hover { background: var(--paper-warm); border-color: var(--line-strong); transform: translateY(-2px); }
+.prod:hover { background: rgba(243, 243, 243, 0.08); border-color: var(--hairline-light-strong); transform: translateY(-2px); }
 .prod:hover .prod__arrow { transform: translateX(4px); }
 
 .prod__cover { margin-bottom: 20px; }
@@ -48,19 +48,19 @@ const displayPrice = computed(() => props.item.price ?? 'Free')
 .prod__meta {
   display: flex; align-items: center; justify-content: space-between;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--ink-quiet); margin-bottom: 12px;
+  color: var(--cream); opacity: 0.78; margin-bottom: 12px;
 }
-.prod__type { border: 1px solid var(--line-strong); padding: 4px 10px; border-radius: 999px; }
+.prod__type { border: 1px solid var(--hairline-light-strong); padding: 4px 10px; border-radius: 999px; }
 .prod__price { letter-spacing: 0.04em; }
-.prod__price--free { color: var(--teal); }
+.prod__price--free { color: var(--teal-soft); }
 
-.prod__title { font-family: var(--font-display); font-size: 22px; font-weight: 700; line-height: 1.12; letter-spacing: -0.018em; margin: 0 0 10px; color: var(--ink); }
-.prod__blurb { color: var(--ink-soft); font-size: 14px; line-height: 1.55; margin: 0 0 22px; }
+.prod__title { font-family: var(--font-display); font-size: 22px; font-weight: 700; line-height: 1.12; letter-spacing: -0.018em; margin: 0 0 10px; }
+.prod__blurb { color: rgba(243, 243, 243, 0.82); font-size: 14px; line-height: 1.55; margin: 0 0 22px; }
 
 .prod__foot {
-  margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line);
+  margin-top: auto; padding-top: 16px; border-top: 1px solid var(--hairline-light);
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--teal-deep);
+  color: var(--cream); opacity: 0.85;
 }
 .prod__cta { display: inline-flex; align-items: center; gap: 8px; }
 .prod__arrow { display: inline-block; transition: transform 220ms var(--ease); }

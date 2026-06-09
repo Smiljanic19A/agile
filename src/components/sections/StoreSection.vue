@@ -15,11 +15,11 @@ const visible = computed(() => content.productsByCategory(active.value))
 </script>
 
 <template>
-  <section id="store" class="store section surface-cream" aria-labelledby="store-title">
+  <section id="store" class="store section section--teal" aria-labelledby="store-title">
     <div class="container">
       <header class="store__head">
         <div class="store__head-left">
-          <SectionLabel index="05" label="Resources" tone="on-paper" />
+          <SectionLabel index="05" label="Resources" />
           <h2 id="store-title" class="display-2 store__title fade-up">
             Courses, books, <em>and working tools.</em>
           </h2>
@@ -32,7 +32,7 @@ const visible = computed(() => content.productsByCategory(active.value))
       <div class="store__tab-row fade-up">
         <StoreTabs v-model="active" :tabs="tabs" />
         <div class="is-desktop-only">
-          <AppButton variant="ghost" size="sm" :href="externalLinks.payhip" external>Browse all resources</AppButton>
+          <AppButton variant="ghostOnTeal" size="sm" :href="externalLinks.payhip" external>Browse all resources</AppButton>
         </div>
       </div>
 
@@ -51,20 +51,20 @@ const visible = computed(() => content.productsByCategory(active.value))
       <p v-if="!visible.length" class="store__empty">No items in this category yet.</p>
 
       <div class="store__mobile-cta is-mobile-only">
-        <AppButton variant="ghost" :href="externalLinks.payhip" external>Browse all resources</AppButton>
+        <AppButton variant="ghostOnTeal" :href="externalLinks.payhip" external>Browse all resources</AppButton>
       </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-.store { background: var(--cream); color: var(--ink); }
+.store { background: var(--teal); color: var(--cream); }
 
 .store__head { display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; align-items: end; margin-bottom: 48px; }
 .store__head-left { display: flex; flex-direction: column; gap: 28px; }
-.store__title { max-width: 18ch; color: var(--ink); }
-.store__title em { font-style: italic; font-weight: 500; color: var(--teal); }
-.store__lead { color: var(--ink-soft); font-size: clamp(16px, 1.15vw, 18px); line-height: 1.68; max-width: 46ch; margin: 0 0 6px; }
+.store__title { max-width: 18ch; color: var(--cream); }
+.store__title em { font-style: italic; font-weight: 500; color: rgba(243, 243, 243, 0.78); }
+.store__lead { color: rgba(243, 243, 243, 0.92); font-size: clamp(16px, 1.15vw, 18px); line-height: 1.68; max-width: 46ch; margin: 0 0 6px; }
 
 .store__tab-row { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 36px; flex-wrap: wrap; }
 
