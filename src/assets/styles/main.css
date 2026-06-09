@@ -1388,3 +1388,92 @@ body.nav-open { overflow: hidden; }
 @media (min-width: 721px) {
   .mobile-cta-bar { display: none; }
 }
+
+/* ============================================================
+   Legacy compat aliases (used by restored ce5e019 components)
+   ============================================================ */
+:root {
+  --hairline:              var(--line);
+  --hairline-strong:       var(--line-strong);
+  --hairline-light:        var(--line-light);
+  --hairline-light-strong: var(--line-light-strong);
+  --mute:                  var(--ink-quiet);
+}
+
+/* Display type scale */
+.display-1 {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 7.4vw, 110px);
+  font-weight: 700;
+  line-height: 0.96;
+  letter-spacing: -0.032em;
+}
+.display-2 {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 5.4vw, 80px);
+  font-weight: 700;
+  line-height: 0.96;
+  letter-spacing: -0.028em;
+}
+.display-3 {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3.6vw, 52px);
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -0.022em;
+}
+
+/* Section background variants (teal / cream) */
+.section--teal  { background: var(--teal);  color: var(--cream); }
+.section--cream { background: var(--cream); color: var(--ink);   }
+.section--paper { background: var(--paper); color: var(--ink);   }
+/* hairlines inside teal sections flip to light */
+.section--teal { --hairline: var(--line-light); --hairline-strong: var(--line-light-strong); --hairline-light: var(--line-light); --hairline-light-strong: var(--line-light-strong); }
+
+/* Prose body text */
+.prose {
+  font-size: clamp(16px, 1.2vw, 18px);
+  line-height: 1.68;
+  color: currentColor;
+  max-width: 68ch;
+}
+
+/* Horizontal snap rail (mobile product / article scroll) */
+.snap-rail {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.snap-rail::-webkit-scrollbar { display: none; }
+.snap-rail > * {
+  flex: 0 0 calc(100vw - var(--gutter) * 3);
+  max-width: 460px;
+  scroll-snap-align: start;
+}
+.snap-rail--narrow > * { max-width: 340px; }
+
+/* Responsive visibility helpers */
+.is-desktop-only { display: block; }
+.is-mobile-only  { display: none;  }
+@media (max-width: 720px) {
+  .is-desktop-only { display: none !important; }
+  .is-mobile-only  { display: block !important; }
+}
+
+/* Scroll-reveal */
+.fade-up {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 600ms var(--ease), transform 600ms var(--ease);
+}
+.fade-up.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fade-up { opacity: 1; transform: none; }
+}
