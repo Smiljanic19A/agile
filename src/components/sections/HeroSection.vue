@@ -10,35 +10,52 @@ import { externalLinks } from '@/stores/content.js'
       <HexLattice variant="grid" tone="on-teal" mask="radial" :size="110" :accents="7" :seed="11" />
     </div>
 
-    <div class="hero__meta">
-      <div class="hero__meta-row">
-        <span class="hero__corner hero__corner--tl"><em>Est. —</em> Agile Periodization</span>
-        <span class="hero__corner hero__corner--tr">MJ / Belgrade · Global</span>
-      </div>
-    </div>
-
     <div class="container hero__inner">
-      <div class="hero__logo fade-up">
-        <img src="/logo.png" alt="Agile Periodization" />
+      <div class="hero__copy fade-up">
+        <p class="hero__eyebrow">Agile Periodization</p>
+
+        <h1 id="hero-title" class="hero__title">
+          Build training systems that survive contact with reality.
+        </h1>
+
+        <p class="hero__sub">
+          Agile Periodization helps coaches, sport scientists, physios, and performance teams turn fragile plans into adaptive systems: plan, train, monitor, review, adapt, repeat.
+        </p>
+
+        <div class="hero__cta">
+          <AppButton variant="onTeal" :href="externalLinks.skool" external>Join the Community</AppButton>
+          <AppButton variant="ghostOnTeal" href="#updates">Get Updates</AppButton>
+        </div>
+
+        <p class="hero__note">Tired of annual plans dying after the first injury, travel week, fatigue spike, or staff meeting?</p>
+
+        <div class="hero__tags" aria-label="What Agile Periodization provides">
+          <span v-for="t in ['Philosophy', 'Frameworks', 'Tools', 'Education', 'Community', 'Field notes']" :key="t" class="hero__tag">{{ t }}</span>
+        </div>
       </div>
 
-      <p class="hero__eyebrow fade-up">Planning under uncertainty</p>
+      <div class="hero__visual fade-up" aria-hidden="true">
+        <div class="hero__board">
+          <p class="hero__board-kicker">Adaptive operating system</p>
+          <div class="hero__loop-wrap">
+            <div class="hero__loop">
+              <span class="hero__node">Plan</span>
+              <span class="hero__node">Train</span>
+              <span class="hero__node">Monitor</span>
+              <span class="hero__node">Review</span>
+              <span class="hero__node">Adapt</span>
+              <span class="hero__node">Repeat</span>
+            </div>
+            <div class="hero__loop-center">Decision<br>Loop</div>
+          </div>
+          <div class="hero__reality">
+            <span class="hero__reality-label">Reality pushing in</span>
+            <div class="hero__reality-tags">
+              <span v-for="t in ['Injuries', 'Fatigue', 'Travel', 'Rehab setbacks', 'Noisy data', 'Competition']" :key="t">{{ t }}</span>
+            </div>
+          </div>
+        </div>
 
-      <h1 id="hero-title" class="hero__title display-1 fade-up">
-        Build training systems that survive<br><em>contact with reality.</em>
-      </h1>
-
-      <p class="hero__sub prose fade-up">
-        Agile Periodization helps coaches, sport scientists, physios, and performance teams turn fragile plans into adaptive systems: plan, train, monitor, review, adapt, repeat.
-      </p>
-
-      <div class="hero__cta fade-up">
-        <AppButton variant="onTeal" :href="externalLinks.skool" external>Join the Community</AppButton>
-        <AppButton variant="ghostOnTeal" href="#newsletter">Get Updates</AppButton>
-      </div>
-
-      <div class="hero__tags fade-up" aria-hidden="true">
-        <span v-for="t in ['Philosophy', 'Frameworks', 'Tools', 'Education', 'Community', 'Field notes']" :key="t" class="hero__tag">{{ t }}</span>
       </div>
     </div>
 
@@ -52,50 +69,109 @@ import { externalLinks } from '@/stores/content.js'
 <style scoped>
 .hero {
   position: relative; background: var(--teal); color: var(--cream);
-  min-height: 100svh; padding: 120px 0 80px; overflow: hidden; isolation: isolate;
+  min-height: 100svh; padding: 80px 0 80px; overflow: hidden; isolation: isolate;
 }
 .hero__hex { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
 
-.hero__meta {
-  position: absolute; top: 96px; left: 0; right: 0; z-index: 2; padding: 0 var(--gutter);
-}
-.hero__meta-row {
-  display: flex; justify-content: space-between; align-items: center;
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7;
-}
-.hero__corner em { font-style: normal; opacity: 0.55; margin-right: 2px; }
-
 .hero__inner {
-  position: relative; z-index: 1; text-align: center;
-  display: flex; flex-direction: column; align-items: center; padding-top: 70px;
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(36px, 5vw, 72px);
+  align-items: center; padding-top: 80px; min-height: calc(100svh - 160px);
 }
-.hero__logo { width: clamp(96px, 12vw, 142px); margin-bottom: 36px; }
-.hero__logo img { width: 100%; height: auto; filter: drop-shadow(0 0 60px rgba(247,242,233,0.06)); }
+
+/* Copy column */
+.hero__copy { display: flex; flex-direction: column; align-items: flex-start; }
 
 .hero__eyebrow {
-  font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--cream); opacity: 0.72; margin-bottom: 22px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--cream); opacity: 0.72; margin-bottom: 20px;
 }
 
-.hero__title { font-family: var(--font-display); font-weight: 700; color: var(--cream); margin: 0 0 32px; max-width: 18ch; }
-.hero__title em { font-style: italic; font-weight: 500; color: var(--accent-on-dark); opacity: 1; }
-
-.hero__sub { font-size: clamp(16px, 1.2vw, 18px); line-height: 1.65; color: rgba(247, 242, 233, 0.92); max-width: 58ch; margin: 0 0 40px; }
-
-.hero__cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 52px; }
-
-.hero__tags {
-  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; opacity: 0.6;
+.hero__title {
+  font-family: var(--font-display); font-weight: 700; color: var(--cream);
+  font-size: clamp(30px, 3.6vw, 52px); line-height: 1.08; letter-spacing: -0.022em;
+  margin: 0 0 24px; max-width: 18ch;
 }
+
+.hero__sub {
+  font-size: clamp(15px, 1.15vw, 17px); line-height: 1.65; color: rgba(243, 243, 243, 0.88);
+  max-width: 48ch; margin: 0 0 36px;
+}
+
+.hero__cta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+
+.hero__note {
+  font-size: 13px; line-height: 1.55; color: rgba(243, 243, 243, 0.65);
+  font-style: italic; max-width: 42ch; margin: 0 0 32px;
+}
+
+.hero__tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .hero__tag {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-  border: 1px solid var(--hairline-light); border-radius: 999px; padding: 5px 12px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  border: 1px solid var(--hairline-light); border-radius: 999px; padding: 5px 11px;
+  color: var(--cream); opacity: 0.72;
 }
+
+/* Visual column */
+.hero__visual { display: flex; flex-direction: column; gap: 18px; }
+
+.hero__board {
+  background: var(--teal-deep); border: 1px solid rgba(243, 243, 243, 0.1);
+  border-radius: var(--radius-lg); padding: 28px;
+}
+
+.hero__board-kicker {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(243, 243, 243, 0.55); margin: 0 0 18px;
+}
+
+.hero__loop-wrap { position: relative; margin-bottom: 18px; }
+
+.hero__loop {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+}
+
+.hero__node {
+  padding: 10px 8px; text-align: center;
+  background: rgba(243, 243, 243, 0.07); border: 1px solid rgba(243, 243, 243, 0.12);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(243, 243, 243, 0.85);
+}
+
+.hero__loop-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: var(--teal); border: 1px solid rgba(243, 243, 243, 0.2);
+  border-radius: 999px; padding: 9px 16px;
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(243, 243, 243, 0.92); text-align: center; line-height: 1.4;
+  white-space: nowrap; z-index: 2;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.hero__reality {
+  padding-top: 16px; border-top: 1px solid rgba(243, 243, 243, 0.1);
+}
+.hero__reality-label {
+  display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(243, 243, 243, 0.5); margin-bottom: 10px;
+}
+.hero__reality-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.hero__reality-tags span {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(243, 243, 243, 0.06); border: 1px solid rgba(243, 243, 243, 0.12);
+  color: rgba(243, 243, 243, 0.72);
+}
+
 
 .hero__scroll {
   position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 10px;
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.70;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  opacity: 0.60;
 }
 .hero__scroll-line {
   width: 1px; height: 36px; background: linear-gradient(to bottom, transparent, var(--cream));
@@ -104,17 +180,26 @@ import { externalLinks } from '@/stores/content.js'
 @keyframes scrollLine { 0%,100% { transform: scaleY(0.4); opacity: 0.4; } 50% { transform: scaleY(1); opacity: 0.85; } }
 @media (prefers-reduced-motion: reduce) { .hero__scroll-line { animation: none; } }
 
+@media (max-width: 960px) {
+  .hero__inner { grid-template-columns: 1fr; gap: 48px; padding-top: 20px; }
+  .hero__visual { max-width: 520px; }
+  .hero { padding-bottom: 100px; }
+}
+
 @media (max-width: 720px) {
-  .hero { padding: 96px 0 64px; min-height: 100svh; }
-  .hero__meta { display: none; }
-  .hero__inner { padding-top: 24px; justify-content: center; }
-  .hero__logo { width: clamp(200px, 56vw, 280px); margin: 0 auto 40px; }
-  .hero__eyebrow { margin-bottom: 18px; font-size: 11px; }
-  .hero__title { margin-bottom: 22px; }
-  .hero__sub { margin-bottom: 36px; font-size: 15px; }
-  .hero__cta { width: 100%; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+  .hero { padding: 96px 0 80px; }
+  .hero__title { margin-bottom: 20px; }
+  .hero__sub { margin-bottom: 28px; font-size: 15px; }
+  .hero__cta { flex-direction: column; width: 100%; gap: 10px; }
   .hero__cta :deep(.btn) { width: 100%; justify-content: center; }
-  .hero__tags { display: none; }
+  .hero__stack { display: none; }
   .hero__scroll { bottom: 20px; }
 }
+
+/* Theme-v3 overrides — hero becomes white canvas */
+html[data-theme="v3"] .hero .hero__sub { color: rgba(14, 26, 26, 0.72); }
+html[data-theme="v3"] .hero .hero__note { color: rgba(14, 26, 26, 0.55); }
+html[data-theme="v3"] .hero .hero__tag { color: var(--ink); border-color: var(--hairline-strong); opacity: 0.85; }
+html[data-theme="v3"] .hero .hero__scroll { color: var(--ink); }
+html[data-theme="v3"] .hero .hero__scroll-line { background: linear-gradient(to bottom, transparent, var(--ink)); }
 </style>

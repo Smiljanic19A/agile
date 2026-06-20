@@ -10,7 +10,8 @@ defineProps({
 <template>
   <a :href="item.url" target="_blank" rel="noopener noreferrer" class="card" :class="[`card--${variant}`]">
     <div v-if="variant !== 'text'" class="card__cover">
-      <AbstractCover :seed="item.cover.seed" tone="cream" :label="item.type" />
+      <img v-if="item.image" :src="item.image" :alt="item.title" class="card__img" />
+      <AbstractCover v-else :seed="item.cover.seed" tone="cream" :label="item.type" />
     </div>
     <div class="card__body">
       <div class="card__meta">
@@ -40,6 +41,7 @@ defineProps({
 .card:hover .card__arrow { transform: translateX(4px); }
 
 .card__cover { margin-bottom: 22px; }
+.card__img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: var(--radius-sm); display: block; }
 .card__meta {
   display: flex; align-items: center; gap: 8px;
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;

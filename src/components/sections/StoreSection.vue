@@ -1,54 +1,40 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
 import { useContentStore, externalLinks } from '@/stores/content.js'
 import SectionLabel from '@/components/ui/SectionLabel.vue'
-import StoreTabs from '@/components/ui/StoreTabs.vue'
 import ProductCard from '@/components/ui/ProductCard.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 
 const content = useContentStore()
-const { tabs } = storeToRefs(content)
 
-const active = ref('courses')
-const visible = computed(() => content.productsByCategory(active.value))
+const featuredIds = ['s1', 's5', 's6', 's2']
+const resources = computed(() =>
+  featuredIds.map((id) => content.items.find((i) => i.id === id)).filter(Boolean)
+)
 </script>
 
 <template>
-  <section id="store" class="store section section--teal" aria-labelledby="store-title">
+  <section id="resources" class="store section section--teal" aria-labelledby="store-title">
     <div class="container">
-      <header class="store__head">
+      <header class="store__head fade-up">
         <div class="store__head-left">
-          <SectionLabel index="05" label="Resources" />
-          <h2 id="store-title" class="display-2 store__title fade-up">
-            Courses, books, <em>and working tools.</em>
+          <SectionLabel index="06" label="Payhip Resources" />
+          <h2 id="store-title" class="display-2 store__title">
+            Courses, tools, PDFs, <em>and working resources.</em>
           </h2>
         </div>
-        <p class="store__lead fade-up">
-          Practical resources built to be used, not collected. Courses, PDFs, books, and spreadsheets — pick what fits your practice.
-        </p>
+        <div class="store__head-right is-desktop-only">
+          <AppButton variant="onTeal" :href="externalLinks.payhip" external>Browse Payhip</AppButton>
+        </div>
       </header>
 
-      <div class="store__tab-row fade-up">
-        <StoreTabs v-model="active" :tabs="tabs" />
-        <div class="is-desktop-only">
-          <AppButton variant="ghostOnTeal" size="sm" :href="externalLinks.payhip" external>Browse all resources</AppButton>
-        </div>
+      <div class="store__grid is-desktop-only fade-up">
+        <ProductCard v-for="item in resources" :key="item.id" :item="item" />
       </div>
 
-      <Transition name="store-fade" mode="out-in">
-        <div :key="active" class="store__grid is-desktop-only">
-          <ProductCard v-for="p in visible" :key="p.id" :item="p" />
-        </div>
-      </Transition>
-
-      <Transition name="store-fade" mode="out-in">
-        <div :key="`m-${active}`" class="store__rail snap-rail snap-rail--narrow is-mobile-only">
-          <ProductCard v-for="p in visible" :key="p.id" :item="p" />
-        </div>
-      </Transition>
-
-      <p v-if="!visible.length" class="store__empty">No items in this category yet.</p>
+      <div class="store__rail snap-rail snap-rail--narrow is-mobile-only fade-up">
+        <ProductCard v-for="item in resources" :key="item.id" :item="item" />
+      </div>
 
       <div class="store__mobile-cta is-mobile-only">
         <AppButton variant="ghostOnTeal" :href="externalLinks.payhip" external>Browse all resources</AppButton>
@@ -60,30 +46,21 @@ const visible = computed(() => content.productsByCategory(active.value))
 <style scoped>
 .store { background: var(--teal); color: var(--cream); }
 
-.store__head { display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; align-items: end; margin-bottom: 48px; }
-.store__head-left { display: flex; flex-direction: column; gap: 28px; }
-.store__title { max-width: 18ch; color: var(--cream); }
-.store__title em { font-style: italic; font-weight: 500; color: rgba(243, 243, 243, 0.78); }
-.store__lead { color: rgba(243, 243, 243, 0.92); font-size: clamp(16px, 1.15vw, 18px); line-height: 1.68; max-width: 46ch; margin: 0 0 6px; }
-
-.store__tab-row { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 36px; flex-wrap: wrap; }
+.store__head {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 32px; margin-bottom: 48px;
+}
+.store__head-left { display: flex; flex-direction: column; gap: 20px; }
+.store__title { color: var(--cream); max-width: 22ch; margin: 0; }
+.store__title em { font-style: italic; font-weight: 500; color: rgba(243,243,243,0.72); }
 
 .store__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-.store__empty { text-align: center; font-family: var(--font-mono); font-size: 13px; opacity: 0.7; padding: 60px 0; }
-
-.store-fade-enter-active, .store-fade-leave-active { transition: opacity 180ms var(--ease); }
-.store-fade-enter-from, .store-fade-leave-to { opacity: 0; }
 
 @media (max-width: 1100px) {
-  .store__head { grid-template-columns: 1fr; gap: 24px; margin-bottom: 36px; align-items: start; }
-  .store__grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 820px) {
+  .store__head { flex-direction: column; align-items: flex-start; margin-bottom: 36px; }
   .store__grid { grid-template-columns: repeat(2, 1fr); }
-  .store__tab-row { align-items: flex-start; gap: 14px; margin-bottom: 28px; }
 }
 @media (max-width: 720px) {
-  .store__head-left { gap: 22px; }
   .store__mobile-cta { margin-top: 14px; display: flex; }
   .store__mobile-cta :deep(.btn) { width: 100%; justify-content: center; }
   .store__rail :deep(.prod) { height: clamp(360px, 76vw, 460px); }

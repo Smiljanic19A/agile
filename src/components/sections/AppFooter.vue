@@ -5,11 +5,11 @@ import HexLattice from '@/components/ui/HexLattice.vue'
 const year = new Date().getFullYear()
 
 const explore = [
-  { href: '#about',     label: 'The Method' },
-  { href: '#writing',   label: 'Articles' },
-  { href: '#community', label: 'Community' },
-  { href: '#store',     label: 'Resources' },
-  { href: '#newsletter', label: 'Contact' },
+  { href: '#what-is-ap', label: 'What is AP?' },
+  { href: '#ecosystem',  label: 'Ecosystem' },
+  { href: '#substack',   label: 'Articles' },
+  { href: '#resources',  label: 'Resources' },
+  { href: '#contact',    label: 'Contact' },
 ]
 
 const ecosystem = [

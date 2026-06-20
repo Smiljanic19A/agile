@@ -467,6 +467,7 @@ html[data-theme="v3"] body .featured__dot.is-active {
    ============================================= */
 html[data-theme="v3"] body .ctc__panel--teal {
   background: var(--teal) !important;
+  --cream: #f3f3f3;
 }
 html[data-theme="v3"] body .ctc__panel--white {
   background: #ffffff !important;
@@ -500,3 +501,73 @@ html[data-theme="v3"] body .about .hex--on-teal line {
 html[data-theme="v3"] body .about .hex--on-teal .hex__accents polygon {
   stroke-opacity: unset;
 }
+
+/* =============================================
+   ECOSYSTEM SECTION — .section--teal flips to white;
+   hardcoded rgba(243,...) values need dark overrides
+   ============================================= */
+html[data-theme="v3"] body .eco__title em {
+  color: var(--teal) !important;
+  opacity: 1 !important;
+}
+html[data-theme="v3"] body .eco__sub {
+  color: var(--ink-soft) !important;
+}
+html[data-theme="v3"] body .eco__card-desc {
+  color: var(--ink-soft) !important;
+}
+html[data-theme="v3"] body .eco__card--primary {
+  background: rgba(55, 136, 130, 0.08) !important;
+  border-color: rgba(55, 136, 130, 0.25) !important;
+}
+
+/* =============================================
+   FINAL CTA SECTION — keeps teal bg, restore cream
+   ============================================= */
+html[data-theme="v3"] body .cta-final {
+  background: var(--teal) !important;
+  --cream: #f3f3f3;
+}
+html[data-theme="v3"] body .cta-final .hex--on-teal polygon,
+html[data-theme="v3"] body .cta-final .hex--on-teal line {
+  stroke: #9bd0cb;
+  stroke-opacity: unset;
+}
+html[data-theme="v3"] body .cta-final .hex--on-teal .hex__accents polygon {
+  stroke-opacity: unset;
+}
+
+/* =============================================
+   HERO — new elements (note, tags, board)
+   ============================================= */
+html[data-theme="v3"] body .hero__note {
+  color: rgba(14, 26, 26, 0.55) !important;
+}
+html[data-theme="v3"] body .hero__tag {
+  color: var(--ink) !important;
+  border-color: var(--hairline-strong) !important;
+  opacity: 0.75 !important;
+}
+
+/* =============================================
+   SKOOL SECTION — paper bg, no overrides needed
+   (uses var(--ink) throughout)
+   ============================================= */
+
+/* =============================================
+   UPDATES SECTION — teal card inside paper section
+   The .updates__card uses var(--teal) bg — stays teal.
+   All text inside is hardcoded rgba(243,...) — stays light. ✓
+   ============================================= */
+
+/* =============================================
+   BLOG SECTION — row-header variant
+   ============================================= */
+html[data-theme="v3"] body .blog__title em {
+  color: var(--teal) !important;
+  opacity: 1 !important;
+}
+
+/* =============================================
+   STORE SECTION — row-header variant (already exists above)
+   ============================================= */

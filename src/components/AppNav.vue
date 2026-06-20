@@ -24,11 +24,11 @@ onBeforeUnmount(() => {
 watch(open, (v) => { document.body.style.overflow = v ? 'hidden' : '' })
 
 const links = [
-  { href: '#about',     label: 'The Method' },
-  { href: '#writing',   label: 'Articles' },
-  { href: '#community', label: 'Community' },
-  { href: '#store',     label: 'Resources' },
-  { href: '#newsletter', label: 'Contact' },
+  { href: '#featured',   label: 'Featured' },
+  { href: '#what-is-ap', label: 'What is AP?' },
+  { href: '#ecosystem',  label: 'Ecosystem' },
+  { href: '#resources',  label: 'Resources' },
+  { href: '#contact',    label: 'Contact' },
 ]
 
 const close = () => (open.value = false)

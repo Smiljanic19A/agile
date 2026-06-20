@@ -5,10 +5,14 @@ import AppNav from '@/components/AppNav.vue'
 import HeroSection from '@/components/sections/HeroSection.vue'
 import FeaturedBanner from '@/components/sections/FeaturedBanner.vue'
 import AboutSection from '@/components/sections/AboutSection.vue'
-import BlogSection from '@/components/sections/BlogSection.vue'
+import EcosystemSection from '@/components/sections/EcosystemSection.vue'
 import CommunitySection from '@/components/sections/CommunitySection.vue'
+import BlogSection from '@/components/sections/BlogSection.vue'
 import StoreSection from '@/components/sections/StoreSection.vue'
+import AmazonSection from '@/components/sections/AmazonSection.vue'
 import NewsletterSection from '@/components/sections/NewsletterSection.vue'
+import ContactSection from '@/components/sections/ContactSection.vue'
+import FinalCTASection from '@/components/sections/FinalCTASection.vue'
 import AppFooter from '@/components/sections/AppFooter.vue'
 
 useContentStore()
@@ -36,10 +40,14 @@ onBeforeUnmount(() => { io?.disconnect() })
       <HeroSection />
       <FeaturedBanner />
       <AboutSection />
-      <BlogSection />
+      <EcosystemSection />
       <CommunitySection />
+      <BlogSection />
       <StoreSection />
+      <AmazonSection />
       <NewsletterSection />
+      <ContactSection />
+      <FinalCTASection />
     </main>
     <AppFooter />
   </div>
