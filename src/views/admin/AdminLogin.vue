@@ -31,7 +31,7 @@ async function onSubmit() {
     <form class="login__card" @submit.prevent="onSubmit" autocomplete="on">
       <p class="eyebrow">Agile Periodization · Admin</p>
       <h1>Sign in.</h1>
-      <p class="login__sub">Manage the featured banner. Nothing else for now.</p>
+      <p class="login__sub">Manage articles, products, featured banner, and imports.</p>
 
       <label>
         <span>Email</span>

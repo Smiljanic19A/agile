@@ -7,9 +7,11 @@ import AppButton from '@/components/ui/AppButton.vue'
 
 const content = useContentStore()
 
-const featuredIds = ['s1', 's5', 's6', 's2']
+// Show courses + tools from API, capped at 4, ordered by display_order
 const resources = computed(() =>
-  featuredIds.map((id) => content.items.find((i) => i.id === id)).filter(Boolean)
+  content.products
+    .filter(i => i.category === 'courses' || i.category === 'tools')
+    .slice(0, 4)
 )
 </script>
 

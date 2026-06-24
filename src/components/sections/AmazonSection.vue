@@ -1,22 +1,34 @@
 <script setup>
+import { computed } from 'vue'
 import SectionLabel from '@/components/ui/SectionLabel.vue'
 import AppButton from '@/components/ui/AppButton.vue'
-import { externalLinks } from '@/stores/content.js'
+import { useContentStore, externalLinks } from '@/stores/content.js'
 
-const books = [
-  'Strength Training Manual',
-  'HIIT Manual',
-  'bmbstats',
-  'Other long-form resources',
-]
+const content = useContentStore()
+
+// Books from the API; fall back to static list if none loaded yet
+const books = computed(() =>
+  content.books.length > 0
+    ? content.books
+    : []
+)
+
+// Cover images: use image_url from API if present, else fall back to local assets
+const bookImages = computed(() => [
+  { src: books.value[0]?.image || '/assets/images/strength-training-manual.png', alt: books.value[0]?.title || 'Strength Training Manual', offset: false },
+  { src: books.value[1]?.image || '/assets/images/hiit-manual.jpg',              alt: books.value[1]?.title || 'HIIT Manual',               offset: true  },
+])
 </script>
 
 <template>
   <section id="amazon" class="amz section section--cream" aria-labelledby="amz-title">
     <div class="container amz__grid">
       <div class="amz__books fade-up" aria-hidden="true">
-        <img src="/assets/images/strength-training-manual.png" alt="Strength Training Manual cover" class="amz__book" />
-        <img src="/assets/images/hiit-manual.jpg" alt="HIIT Manual cover" class="amz__book amz__book--offset" />
+        <img
+          v-for="b in bookImages" :key="b.alt"
+          :src="b.src" :alt="b.alt + ' cover'"
+          class="amz__book" :class="{ 'amz__book--offset': b.offset }"
+        />
       </div>
 
       <div class="amz__copy fade-up">
@@ -28,7 +40,7 @@ const books = [
           Some resources are available as paperback books for coaches and practitioners who prefer reading, annotating, and destroying margins with notes.
         </p>
         <ul class="amz__list">
-          <li v-for="b in books" :key="b">{{ b }}</li>
+          <li v-for="b in books" :key="b.id || b.title">{{ b.title || b }}</li>
         </ul>
         <AppButton variant="ghost" :href="externalLinks.amazon" external>View Books on Amazon</AppButton>
       </div>

@@ -37,15 +37,31 @@ import { externalLinks } from '@/stores/content.js'
       <div class="hero__visual fade-up" aria-hidden="true">
         <div class="hero__board">
           <p class="hero__board-kicker">Adaptive operating system</p>
-          <div class="hero__loop-wrap">
-            <div class="hero__loop">
-              <span class="hero__node">Plan</span>
-              <span class="hero__node">Train</span>
-              <span class="hero__node">Monitor</span>
-              <span class="hero__node">Review</span>
-              <span class="hero__node">Adapt</span>
-              <span class="hero__node">Repeat</span>
-            </div>
+          <div class="hero__ring-wrap">
+            <!-- dashed ring + directional tick marks -->
+            <svg class="hero__ring-svg" viewBox="0 0 280 280" aria-hidden="true">
+              <circle cx="140" cy="140" r="102" fill="none"
+                stroke="rgba(243,243,243,0.14)" stroke-width="1"
+                stroke-dasharray="5 5" />
+              <!-- 6 small direction arrows on the ring at 30°, 90°, 150°, 210°, 270°, 330° (between nodes) -->
+              <g stroke="rgba(243,243,243,0.3)" stroke-width="1.2" fill="none">
+                <polyline points="141,38 146,33 151,38"  transform="rotate(0,   140,140)" />
+                <polyline points="141,38 146,33 151,38"  transform="rotate(60,  140,140)" />
+                <polyline points="141,38 146,33 151,38"  transform="rotate(120, 140,140)" />
+                <polyline points="141,38 146,33 151,38"  transform="rotate(180, 140,140)" />
+                <polyline points="141,38 146,33 151,38"  transform="rotate(240, 140,140)" />
+                <polyline points="141,38 146,33 151,38"  transform="rotate(300, 140,140)" />
+              </g>
+            </svg>
+
+            <!-- 6 nodes, each rotated into position then counter-rotated so text stays upright -->
+            <span class="hero__node" style="--i:0">Plan</span>
+            <span class="hero__node" style="--i:1">Train</span>
+            <span class="hero__node" style="--i:2">Monitor</span>
+            <span class="hero__node" style="--i:3">Review</span>
+            <span class="hero__node" style="--i:4">Adapt</span>
+            <span class="hero__node" style="--i:5">Repeat</span>
+
             <div class="hero__loop-center">Decision<br>Loop</div>
           </div>
           <div class="hero__reality">
@@ -125,28 +141,42 @@ import { externalLinks } from '@/stores/content.js'
   color: rgba(243, 243, 243, 0.55); margin: 0 0 18px;
 }
 
-.hero__loop-wrap { position: relative; margin-bottom: 18px; }
-
-.hero__loop {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+.hero__ring-wrap {
+  position: relative;
+  width: 280px; height: 280px;
+  margin: 0 auto 18px;
 }
 
+.hero__ring-svg {
+  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+}
+
+/* Each node sits at the ring radius, rotated then counter-rotated so text stays upright */
 .hero__node {
-  padding: 10px 8px; text-align: center;
-  background: rgba(243, 243, 243, 0.07); border: 1px solid rgba(243, 243, 243, 0.12);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
-  color: rgba(243, 243, 243, 0.85);
+  position: absolute;
+  top: 50%; left: 50%;
+  /* radius = 102px, half node size ~(44px × 15px) */
+  transform:
+    translate(-50%, -50%)
+    rotate(calc(var(--i, 0) * 60deg))
+    translateY(-102px)
+    rotate(calc(var(--i, 0) * -60deg));
+
+  padding: 7px 13px; white-space: nowrap;
+  background: rgba(243, 243, 243, 0.08); border: 1px solid rgba(243, 243, 243, 0.16);
+  border-radius: 999px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(243, 243, 243, 0.9);
 }
 
 .hero__loop-center {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  background: var(--teal); border: 1px solid rgba(243, 243, 243, 0.2);
-  border-radius: 999px; padding: 9px 16px;
-  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: rgba(243, 243, 243, 0.92); text-align: center; line-height: 1.4;
+  background: var(--teal-deep); border: 1.5px solid rgba(243, 243, 243, 0.22);
+  border-radius: 999px; padding: 11px 18px;
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(243, 243, 243, 0.95); text-align: center; line-height: 1.45;
   white-space: nowrap; z-index: 2;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  box-shadow: 0 0 0 6px rgba(14,26,26,0.35), 0 6px 20px rgba(0,0,0,0.4);
 }
 
 .hero__reality {

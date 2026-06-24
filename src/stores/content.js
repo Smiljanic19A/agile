@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { api } from '@/lib/api.js'
 
 export const sources = {
   substack: { id: 'substack', name: 'Substack', url: 'https://agileperiodization.substack.com/' },
@@ -28,246 +30,111 @@ export function sourceLabel(item) {
   return sources[item?.source]?.name || ''
 }
 
-export const useContentStore = defineStore('content', {
-  state: () => ({
-    items: [
-      // ── Writing ────────────────────────────────────────────────────────────
-      {
-        id: 'p1',
-        type: 'Field note',
-        category: 'writing',
-        title: 'Problemming, practice design, and messy transfer',
-        description: 'Why skill acquisition in sport is harder than it looks — and what coaches can actually do about it.',
-        cover: { seed: 1 },
-        image: '/assets/images/conditioning-mma.png',
-        price: null,
-        url: sources.substack.url,
-        source: 'substack',
-        date: 'May 12, 2026',
-        readTime: '14 min',
-        variant: 'feature',
-      },
-      {
-        id: 'p2',
-        type: 'Conditioning',
-        category: 'writing',
-        title: 'Thresholds, domains, and practical endurance maps',
-        description: 'A working guide to intensity domains, CP/W′, MAS/vVO₂max, and how to build a map you can actually use on Monday.',
-        cover: { seed: 2 },
-        image: '/assets/images/endurance-map-builder.png',
-        price: null,
-        url: sources.substack.url,
-        source: 'substack',
-        date: 'Apr 28, 2026',
-        readTime: '11 min',
-        variant: 'standard',
-      },
-      {
-        id: 'p3',
-        type: 'Theory',
-        category: 'writing',
-        title: 'Fatigue, monitoring, and decisions under uncertainty',
-        description: 'How to use readiness signals without being enslaved by them.',
-        cover: { seed: 3 },
-        image: '/assets/images/decoding-fatigue.png',
-        price: null,
-        url: sources.substack.url,
-        source: 'substack',
-        date: 'Apr 11, 2026',
-        readTime: '9 min',
-        variant: 'standard',
-      },
-      {
-        id: 'p4',
-        type: 'Field Notes',
-        category: 'writing',
-        title: 'Reading athletes: a field guide',
-        description: 'What to look for before you ever open the spreadsheet.',
-        cover: { seed: 4 },
-        price: null,
-        url: sources.substack.url,
-        source: 'substack',
-        date: 'Mar 24, 2026',
-        readTime: '7 min',
-        variant: 'standard',
-      },
-      {
-        id: 'p5',
-        type: 'Essay',
-        category: 'writing',
-        title: 'Planning with intent, adjusting without panic',
-        description: 'On the difference between a plan and the act of planning.',
-        cover: { seed: 5 },
-        price: null,
-        url: sources.substack.url,
-        source: 'substack',
-        date: 'Mar 09, 2026',
-        readTime: '12 min',
-        variant: 'standard',
-      },
-      {
-        id: 'p6',
-        type: 'Field Notes',
-        category: 'writing',
-        title: 'The architecture of adaptation',
-        description: null,
-        cover: { seed: 6 },
-        price: null,
-        url: sources.substack.url,
-        source: 'substack',
-        date: 'Feb 22, 2026',
-        readTime: '8 min',
-        variant: 'text',
-      },
-      {
-        id: 'p7',
-        type: 'Essay',
-        category: 'writing',
-        title: 'Why most periodization models fail in the real world',
-        description: null,
-        cover: { seed: 7 },
-        price: null,
-        url: sources.substack.url,
-        source: 'substack',
-        date: 'Feb 03, 2026',
-        readTime: '10 min',
-        variant: 'text',
-      },
+function normalizeArticle(a, idx) {
+  return {
+    id:          String(a.id),
+    type:        a.type || 'Article',
+    category:    'writing',
+    title:       a.title,
+    description: a.description || null,
+    cover:       { seed: a.id },
+    image:       a.image_url || null,
+    price:       null,
+    url:         a.url,
+    source:      'substack',
+    date:        a.published_at
+      ? new Date(a.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : null,
+    readTime:    a.read_time || null,
+    variant:     a.is_featured ? 'feature' : (idx < 3 ? 'standard' : 'text'),
+  }
+}
 
-      // ── Courses ────────────────────────────────────────────────────────────
-      {
-        id: 's1',
-        type: 'Course',
-        category: 'courses',
-        title: 'Agile Periodization: Philosophical Foundations',
-        description: 'The core framework — planning under uncertainty, adaptive microcycles, decision loops, and the mental models behind real-world periodization.',
-        cover: { seed: 11 },
-        image: '/assets/images/philosophical-foundations.png',
-        price: null,
-        url: sources.payhip.url,
-        source: 'payhip',
-      },
-      {
-        id: 's2',
-        type: 'Course',
-        category: 'courses',
-        title: 'Conditioning for MMA and Combat Sports',
-        description: 'Energy system development, fight-camp structure, and load management for combat athletes.',
-        cover: { seed: 12 },
-        image: '/assets/images/conditioning-mma.png',
-        price: null,
-        url: sources.payhip.url,
-        source: 'payhip',
-      },
-      {
-        id: 's11',
-        type: 'Course',
-        category: 'courses',
-        title: 'Decoding Fatigue',
-        description: 'How to measure, interpret, and act on fatigue signals without drowning in complexity.',
-        cover: { seed: 21 },
-        image: '/assets/images/decoding-fatigue.png',
-        price: null,
-        url: sources.payhip.url,
-        source: 'payhip',
-      },
+function normalizeProduct(p) {
+  return {
+    id:          String(p.id),
+    type:        p.type || 'Course',
+    category:    p.category || 'courses',
+    title:       p.title,
+    description: p.description || null,
+    cover:       { seed: p.id },
+    image:       p.image_url || null,
+    price:       p.price || null,
+    url:         p.url,
+    source:      p.source || 'payhip',
+    date:        null,
+    readTime:    null,
+    variant:     'standard',
+  }
+}
 
-      // ── Books ──────────────────────────────────────────────────────────────
-      {
-        id: 's3',
-        type: 'Book',
-        category: 'books',
-        title: 'Strength Training Manual',
-        description: 'The long-form reference on programming logic, set-and-rep schemes, and progression — for coaches who want the system, not the trend.',
-        cover: { seed: 13 },
-        image: '/assets/images/strength-training-manual.png',
-        price: null,
-        url: sources.amazon.url,
-        source: 'amazon',
-      },
-      {
-        id: 's4',
-        type: 'Book',
-        category: 'books',
-        title: 'HIIT Manual',
-        description: 'A complete guide to high-intensity interval training — physiology, programming, and practical application.',
-        cover: { seed: 14 },
-        image: '/assets/images/hiit-manual.jpg',
-        price: null,
-        url: sources.amazon.url,
-        source: 'amazon',
-      },
+export const useContentStore = defineStore('content', () => {
+  const _articles = ref([])
+  const _products = ref([])
+  const loading   = ref(false)
+  const error     = ref(null)
 
-      // ── Tools ──────────────────────────────────────────────────────────────
-      {
-        id: 's5',
-        type: 'Tool',
-        category: 'tools',
-        title: 'Endurance Map Builder',
-        description: 'Map domains, thresholds, CP/W′, MAS/vVO₂max, and conditioning decisions in one working tool.',
-        cover: { seed: 15 },
-        image: '/assets/images/endurance-map-builder.png',
-        price: null,
-        url: 'https://payhip.com/b/DSc7p',
-        source: 'payhip',
-      },
-      {
-        id: 's6',
-        type: 'PDF',
-        category: 'tools',
-        title: 'Badger Protocol',
-        description: 'A practical template for short-cycle training structure, weekly review, and progressive adjustment.',
-        cover: { seed: 16 },
-        image: '/assets/images/badger-protocol.png',
-        price: null,
-        url: sources.payhip.url,
-        source: 'payhip',
-      },
-    ],
+  const items              = computed(() => [..._articles.value, ..._products.value])
+  const articles           = computed(() => _articles.value)
+  const products           = computed(() => _products.value)
+  const featureArticle     = computed(() => _articles.value.find(i => i.variant === 'feature') || _articles.value[0] || null)
+  const standardArticles   = computed(() => _articles.value.filter(i => i.variant === 'standard'))
+  const textArticles       = computed(() => _articles.value.filter(i => i.variant === 'text'))
+  const books              = computed(() => _products.value.filter(i => i.category === 'books'))
+  const resources          = computed(() => _products.value.filter(i => i.category === 'courses' || i.category === 'tools'))
+  function productsByCategory(cat) { return _products.value.filter(i => i.category === cat) }
 
-    channels: [
-      { id: 'planning',       label: '# planning' },
-      { id: 'monitoring',     label: '# monitoring' },
-      { id: 'return-to-play', label: '# return-to-play' },
-      { id: 'book-club',      label: '# book-club' },
-    ],
+  // Skool community data stays static (no Skool API)
+  const channels = ref([
+    { id: 'planning',       label: '# planning' },
+    { id: 'monitoring',     label: '# monitoring' },
+    { id: 'return-to-play', label: '# return-to-play' },
+    { id: 'book-club',      label: '# book-club' },
+  ])
+  const threads = ref([
+    { id: 't1',  channel: 'planning',       handle: 'evelyn.k', role: 'S&C · Football',      time: '2h',  replies: 14, text: 'Anyone using readiness scores to gate sprint volume during in-season? Looking for thresholds that actually hold up across a long schedule.' },
+    { id: 't2',  channel: 'planning',       handle: 'jakob.r',  role: 'Athletics · Throws',   time: '5h',  replies: 8,  text: 'What does your minimum viable week look like when the schedule collapses to 3 days? Asking for the next 6 weeks.' },
+    { id: 't3',  channel: 'planning',       handle: 'sara.v',   role: 'Hockey · S&C',         time: '1d',  replies: 21, text: 'Has anyone mapped the barbell strategy to block design — safe base block plus small experimental block rather than undulating everything?' },
+    { id: 't4',  channel: 'monitoring',     handle: 'marko.p',  role: 'Physio · Track',       time: '6h',  replies: 19, text: 'Sharing a return-to-play decision log we built off the monitoring template. Feedback very welcome.' },
+    { id: 't5',  channel: 'monitoring',     handle: 'claire.m', role: 'S&C · Rugby',          time: '9h',  replies: 11, text: 'Rolling 28-day load is giving me cleaner signals than ACWR ever did. Anyone else moved away from the ratio entirely?' },
+    { id: 't6',  channel: 'monitoring',     handle: 'niko.a',   role: 'Basketball · Perf',    time: '2d',  replies: 6,  text: 'We cut subjective wellness to one question — overall feel 1–10. Three months in and it is more actionable than the full questionnaire.' },
+    { id: 't7',  channel: 'return-to-play', handle: 'jules.t',  role: 'Combat sports',        time: '14h', replies: 17, text: 'Question on residual fatigue during fight camp — how aggressively are you cutting CNS work in week 2 of a 4-week camp?' },
+    { id: 't8',  channel: 'return-to-play', handle: 'ana.d',    role: 'Physio · Football',    time: '1d',  replies: 23, text: 'Criteria-based vs time-based RTP — what decision triggers do you actually use in practice vs what the literature says?' },
+    { id: 't9',  channel: 'return-to-play', handle: 'liam.f',   role: 'S&C · Cricket',        time: '3d',  replies: 9,  text: 'Anyone have a template for the deload-to-ramp sequence after a soft tissue injury? Something I can hand to the physio.' },
+    { id: 't10', channel: 'book-club',      handle: 'petra.s',  role: 'Sports Sci · Swim',    time: '4h',  replies: 12, text: '"Models are maps, not territory" hits differently each time. Re-reading the Foundations notes this week.' },
+    { id: 't11', channel: 'book-club',      handle: 'oskar.l',  role: 'Strength Coach',       time: '12h', replies: 7,  text: 'Taleb on robustness vs optimisation — has anyone applied the barbell concept directly to program structure?' },
+    { id: 't12', channel: 'book-club',      handle: 'mei.w',    role: 'Tennis · Performance', time: '2d',  replies: 15, text: 'Reading Cynefin for the first time. The sense-respond vs analyse-respond split is exactly what the agile framework is built on.' },
+  ])
+  const communityStats = ref([
+    { value: '1,200+', label: 'Coaches & practitioners' },
+    { value: '30+',    label: 'Countries represented' },
+    { value: 'Weekly', label: 'Live discussion threads' },
+  ])
+  const tabs = ref([
+    { id: 'courses', label: 'Courses' },
+    { id: 'tools',   label: 'Tools' },
+    { id: 'books',   label: 'Books' },
+  ])
 
-    threads: [
-      { id: 't1', channel: 'planning',       handle: 'evelyn.k', role: 'S&C · Football',     time: '2h',  replies: 14, text: 'Anyone using readiness scores to gate sprint volume during in-season? Looking for thresholds that actually hold up across a long schedule.' },
-      { id: 't2', channel: 'planning',       handle: 'jakob.r',  role: 'Athletics · Throws', time: '5h',  replies: 8,  text: 'What does your minimum viable week look like when the schedule collapses to 3 days? Asking for the next 6 weeks.' },
-      { id: 't3', channel: 'planning',       handle: 'sara.v',   role: 'Hockey · S&C',       time: '1d',  replies: 21, text: 'Has anyone mapped the barbell strategy to block design — safe base block plus small experimental block rather than undulating everything?' },
-      { id: 't4', channel: 'monitoring',     handle: 'marko.p',  role: 'Physio · Track',     time: '6h',  replies: 19, text: 'Sharing a return-to-play decision log we built off the monitoring template. Feedback very welcome.' },
-      { id: 't5', channel: 'monitoring',     handle: 'claire.m', role: 'S&C · Rugby',        time: '9h',  replies: 11, text: 'Rolling 28-day load is giving me cleaner signals than ACWR ever did. Anyone else moved away from the ratio entirely?' },
-      { id: 't6', channel: 'monitoring',     handle: 'niko.a',   role: 'Basketball · Perf',  time: '2d',  replies: 6,  text: 'We cut subjective wellness to one question — overall feel 1–10. Three months in and it is more actionable than the full questionnaire.' },
-      { id: 't7', channel: 'return-to-play', handle: 'jules.t',  role: 'Combat sports',      time: '14h', replies: 17, text: 'Question on residual fatigue during fight camp — how aggressively are you cutting CNS work in week 2 of a 4-week camp?' },
-      { id: 't8', channel: 'return-to-play', handle: 'ana.d',    role: 'Physio · Football',  time: '1d',  replies: 23, text: 'Criteria-based vs time-based RTP — what decision triggers do you actually use in practice vs what the literature says?' },
-      { id: 't9', channel: 'return-to-play', handle: 'liam.f',   role: 'S&C · Cricket',      time: '3d',  replies: 9,  text: 'Anyone have a template for the deload-to-ramp sequence after a soft tissue injury? Something I can hand to the physio.' },
-      { id: 't10', channel: 'book-club',     handle: 'petra.s',  role: 'Sports Sci · Swim',  time: '4h',  replies: 12, text: '"Models are maps, not territory" hits differently each time. Re-reading the Foundations notes this week.' },
-      { id: 't11', channel: 'book-club',     handle: 'oskar.l',  role: 'Strength Coach',     time: '12h', replies: 7,  text: 'Taleb on robustness vs optimisation — has anyone applied the barbell concept directly to program structure?' },
-      { id: 't12', channel: 'book-club',     handle: 'mei.w',    role: 'Tennis · Performance', time: '2d', replies: 15, text: 'Reading Cynefin for the first time. The sense-respond vs analyse-respond split is exactly what the agile framework is built on.' },
-    ],
+  async function fetch() {
+    if (loading.value) return
+    loading.value = true
+    error.value   = null
+    try {
+      const [rawA, rawP] = await Promise.all([api.articles(), api.products()])
+      _articles.value = (rawA || []).map((a, i) => normalizeArticle(a, i))
+      _products.value = (rawP || []).map(p => normalizeProduct(p))
+    } catch (e) {
+      error.value = e.message
+    } finally {
+      loading.value = false
+    }
+  }
 
-    communityStats: [
-      { value: '1,200+', label: 'Coaches & practitioners' },
-      { value: '30+',    label: 'Countries represented' },
-      { value: 'Weekly', label: 'Live discussion threads' },
-    ],
-
-    tabs: [
-      { id: 'courses', label: 'Courses' },
-      { id: 'tools',   label: 'Tools' },
-      { id: 'books',   label: 'Books' },
-    ],
-  }),
-
-  getters: {
-    articles:          (s) => s.items.filter((i) => i.category === 'writing'),
-    products:          (s) => s.items.filter((i) => i.category !== 'writing'),
-    productsByCategory:(s) => (cat) => s.items.filter((i) => i.category === cat),
-    featureArticle:    (s) => s.items.find((i) => i.category === 'writing' && i.variant === 'feature'),
-    standardArticles:  (s) => s.items.filter((i) => i.category === 'writing' && i.variant === 'standard'),
-    textArticles:      (s) => s.items.filter((i) => i.category === 'writing' && i.variant === 'text'),
-    books:             (s) => s.items.filter((i) => i.category === 'books'),
-    resources:         (s) => s.items.filter((i) => i.category === 'courses' || i.category === 'tools'),
-  },
+  return {
+    items, articles, products, loading, error, fetch,
+    featureArticle, standardArticles, textArticles, books, resources,
+    productsByCategory,
+    channels, threads, communityStats, tabs,
+  }
 })

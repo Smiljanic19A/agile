@@ -1,22 +1,7 @@
 import { defineStore } from 'pinia'
-import { itemUrl } from '@/stores/content.js'
+import { ref, computed } from 'vue'
+import { api } from '@/lib/api.js'
 
-const STORAGE_KEY = 'ap_featured_entries_v1'
-
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed.map(normalize) : null
-  } catch { return null }
-}
-
-function saveToStorage(entries) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)) } catch {}
-}
-
-// Allowed inline HTML tags (everything else is stripped on save).
 const ALLOWED_TAGS = new Set(['EM', 'STRONG', 'B', 'I', 'BR'])
 
 export function sanitizeHtml(html) {
@@ -43,10 +28,9 @@ export function sanitizeHtml(html) {
   return wrap.innerHTML.trim()
 }
 
-// Default entry shape — used for new entries and for migrations.
 function blankEntry(overrides = {}) {
   return {
-    id: 'fe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+    id: null,
     sourceItemId: null,
     title: '',
     description: '',
@@ -58,68 +42,59 @@ function blankEntry(overrides = {}) {
     layout: 'overlay',
     textAlign: 'left',
     verticalAlign: 'bottom',
-    titleColor: '',     // blank = use default (paper)
-    descColor: '',      // blank = use default
-    accentColor: '',    // blank = use default (--accent-on-dark)
+    titleColor: '',
+    descColor: '',
+    accentColor: '',
     enabled: true,
     order: 1,
     ...overrides,
   }
 }
 
-function normalize(e) {
-  return { ...blankEntry(), ...e }
+function fromApi(e) {
+  return blankEntry({
+    id:            e.id,
+    sourceItemId:  e.external_key || null,
+    title:         e.title        || '',
+    description:   e.description  || '',
+    image:         e.image_url    || '',
+    type:          e.type         || '',
+    badge:         e.badge        || '',
+    ctaLabel:      e.cta_label    || 'Learn more',
+    ctaUrl:        e.cta_url      || '',
+    layout:        e.layout       || 'overlay',
+    textAlign:     e.text_align   || 'left',
+    verticalAlign: e.vertical_align || 'bottom',
+    titleColor:    e.title_color  || '',
+    descColor:     e.desc_color   || '',
+    accentColor:   e.accent_color || '',
+    enabled:       e.enabled      !== false,
+    order:         e.display_order || 1,
+  })
 }
 
-function defaultEntries() {
-  return [
-    normalize({
-      id: 'fe-seed-1',
-      sourceItemId: 'f-overview',
-      title: 'What is <em>Agile Periodization</em>?',
-      description: 'Why fixed plans break, why training needs feedback loops, and how Agile Periodization turns planning into a learning system.',
-      image: '/assets/images/philosophical-foundations.png',
-      type: 'Video orientation',
-      badge: 'Start here',
-      ctaLabel: 'Watch the overview',
-      ctaUrl: 'https://www.youtube.com/@mladenjovanovic',
-      layout: 'split-right',
-      textAlign: 'left',
-      verticalAlign: 'center',
-      order: 1,
-    }),
-    normalize({
-      id: 'fe-seed-2',
-      sourceItemId: 'f-endurance',
-      title: 'Endurance Map <em>Builder</em>',
-      description: 'Map domains, thresholds, CP/W′, MAS/vVO₂max, and conditioning decisions.',
-      image: '/assets/images/endurance-map-builder.png',
-      type: 'Tool · Conditioning',
-      badge: 'New tool',
-      ctaLabel: 'Get the tool',
-      ctaUrl: 'https://payhip.com/b/DSc7p',
-      layout: 'overlay',
-      textAlign: 'left',
-      verticalAlign: 'bottom',
-      order: 2,
-    }),
-    normalize({
-      id: 'fe-seed-3',
-      sourceItemId: 'f-stm',
-      title: 'Strength Training <em>Manual</em>',
-      description: 'The long-form reference on programming logic, set-and-rep schemes, and progression — for coaches who want the system, not the trend.',
-      image: '/assets/images/strength-training-manual.png',
-      type: 'Book · Strength',
-      badge: 'Paperback',
-      ctaLabel: 'View on Amazon',
-      ctaUrl: 'https://www.amazon.com/stores/author/B07MYX4Y13',
-      layout: 'split-left',
-      textAlign: 'left',
-      verticalAlign: 'center',
-      order: 3,
-    }),
-  ]
+function toApi(entry) {
+  return {
+    external_key:    entry.sourceItemId || null,
+    title:           sanitizeHtml(entry.title),
+    description:     sanitizeHtml(entry.description),
+    image_url:       entry.image       || null,
+    type:            entry.type        || null,
+    badge:           entry.badge       || null,
+    cta_label:       entry.ctaLabel    || 'Learn more',
+    cta_url:         entry.ctaUrl      || null,
+    layout:          entry.layout      || 'overlay',
+    text_align:      entry.textAlign   || 'left',
+    vertical_align:  entry.verticalAlign || 'bottom',
+    title_color:     entry.titleColor  || null,
+    desc_color:      entry.descColor   || null,
+    accent_color:    entry.accentColor || null,
+    enabled:         entry.enabled     !== false,
+    display_order:   entry.order       || 1,
+  }
 }
+
+import { itemUrl } from '@/stores/content.js'
 
 function ctaForSource(source) {
   if (source === 'amazon')   return 'View on Amazon'
@@ -130,87 +105,116 @@ function ctaForSource(source) {
   return 'Learn more'
 }
 
-// Build an entry from an existing item — copies values into independent fields.
 export function entryFromItem(item) {
   if (!item) return blankEntry()
   return blankEntry({
-    sourceItemId: item.id,
-    title: item.title || '',
-    description: item.description || '',
-    image: item.image || '',
-    type: item.tag ? `${item.type} · ${item.tag}` : (item.type || ''),
-    ctaUrl: itemUrl(item),
-    ctaLabel: ctaForSource(item.source),
-    layout: 'overlay',
-    textAlign: 'left',
+    sourceItemId:  item.id,
+    title:         item.title || '',
+    description:   item.description || '',
+    image:         item.image || '',
+    type:          item.tag ? `${item.type} · ${item.tag}` : (item.type || ''),
+    ctaUrl:        itemUrl(item),
+    ctaLabel:      ctaForSource(item.source),
+    layout:        'overlay',
+    textAlign:     'left',
     verticalAlign: 'bottom',
   })
 }
 
-export const useFeaturedStore = defineStore('featured', {
-  state: () => ({
-    entries: loadFromStorage() || defaultEntries(),
-  }),
+export const useFeaturedStore = defineStore('featured', () => {
+  const entries = ref([])
+  const loading = ref(false)
 
-  getters: {
-    activeEntries: (s) =>
-      [...s.entries]
-        .filter((e) => e.enabled)
-        .sort((a, b) => (a.order || 0) - (b.order || 0)),
-    byId: (s) => (id) => s.entries.find((e) => e.id === id) || null,
-  },
+  const activeEntries = computed(() =>
+    [...entries.value]
+      .filter(e => e.enabled)
+      .sort((a, b) => (a.order || 0) - (b.order || 0))
+  )
 
-  actions: {
-    persist() { saveToStorage(this.entries) },
+  const byId = computed(() => (id) => entries.value.find(e => String(e.id) === String(id)) || null)
 
-    create(overrides = {}) {
-      const maxOrder = this.entries.reduce((m, e) => Math.max(m, e.order || 0), 0)
-      const entry = blankEntry({ order: maxOrder + 1, ...overrides })
-      entry.title = sanitizeHtml(entry.title)
-      entry.description = sanitizeHtml(entry.description)
-      this.entries.push(entry)
-      this.persist()
-      return entry
-    },
+  async function loadFromApi() {
+    loading.value = true
+    try {
+      const data = await api.admin.featured()
+      entries.value = (data || []).map(fromApi)
+    } catch {
+      // silently keep current state if API is unavailable
+    } finally {
+      loading.value = false
+    }
+  }
 
-    update(id, patch) {
-      const i = this.entries.findIndex((e) => e.id === id)
-      if (i < 0) return null
-      const next = { ...this.entries[i], ...patch }
-      if ('title' in patch)       next.title = sanitizeHtml(next.title)
-      if ('description' in patch) next.description = sanitizeHtml(next.description)
-      this.entries[i] = next
-      this.persist()
-      return next
-    },
+  // Public fetch — used by the public FeaturedBanner on the home page
+  async function fetchPublic() {
+    loading.value = true
+    try {
+      const data = await api.featured()
+      entries.value = (data || []).map(fromApi)
+    } catch {
+      // keep current state
+    } finally {
+      loading.value = false
+    }
+  }
 
-    remove(id) {
-      this.entries = this.entries.filter((e) => e.id !== id)
-      this.persist()
-    },
+  // persist is a no-op — all writes go to the API immediately
+  function persist() {}
 
-    toggleEnabled(id) {
-      const e = this.byId(id)
-      if (!e) return
-      this.update(id, { enabled: !e.enabled })
-    },
+  async function create(overrides = {}) {
+    const maxOrder = entries.value.reduce((m, e) => Math.max(m, e.order || 0), 0)
+    const entry = blankEntry({ order: maxOrder + 1, ...overrides })
+    entry.title       = sanitizeHtml(entry.title)
+    entry.description = sanitizeHtml(entry.description)
+    const created = await api.admin.createFeatured(toApi(entry))
+    const normalized = fromApi(created)
+    entries.value.push(normalized)
+    return normalized
+  }
 
-    move(id, direction) {
-      const sorted = [...this.entries].sort((a, b) => (a.order || 0) - (b.order || 0))
-      const i = sorted.findIndex((e) => e.id === id)
-      if (i < 0) return
-      const j = i + direction
-      if (j < 0 || j >= sorted.length) return
-      const a = sorted[i]
-      const b = sorted[j]
-      const tmp = a.order
-      this.update(a.id, { order: b.order })
-      this.update(b.id, { order: tmp })
-    },
+  async function update(id, patch) {
+    const current = byId.value(id)
+    if (!current) return null
+    const merged = { ...current, ...patch }
+    if ('title'       in patch) merged.title       = sanitizeHtml(merged.title)
+    if ('description' in patch) merged.description = sanitizeHtml(merged.description)
+    const updated = await api.admin.updateFeatured(id, toApi(merged))
+    const normalized = fromApi(updated)
+    const i = entries.value.findIndex(e => String(e.id) === String(id))
+    if (i >= 0) entries.value[i] = normalized
+    return normalized
+  }
 
-    resetToDefaults() {
-      this.entries = defaultEntries()
-      this.persist()
-    },
-  },
+  async function remove(id) {
+    await api.admin.deleteFeatured(id)
+    entries.value = entries.value.filter(e => String(e.id) !== String(id))
+  }
+
+  async function toggleEnabled(id) {
+    const e = byId.value(id)
+    if (e) await update(id, { enabled: !e.enabled })
+  }
+
+  async function move(id, direction) {
+    const sorted = [...entries.value].sort((a, b) => (a.order || 0) - (b.order || 0))
+    const i = sorted.findIndex(e => String(e.id) === String(id))
+    if (i < 0) return
+    const j = i + direction
+    if (j < 0 || j >= sorted.length) return
+    const order = sorted.map(e => e.id)
+    const [item] = order.splice(i, 1)
+    order.splice(j, 0, item)
+    await api.admin.reorderFeatured(order)
+    await loadFromApi()
+  }
+
+  async function resetToDefaults() {
+    // No-op — defaults live in the DB seeder now
+  }
+
+  return {
+    entries, loading, activeEntries, byId,
+    loadFromApi, fetchPublic, persist,
+    create, update, remove, toggleEnabled, move, resetToDefaults,
+  }
 })

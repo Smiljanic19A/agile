@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { currentAdmin, logout } from '@/lib/auth.js'
@@ -8,9 +8,13 @@ import { useFeaturedStore, entryFromItem } from '@/stores/featured.js'
 import RichEditor from '@/components/admin/RichEditor.vue'
 import AssetPicker from '@/components/admin/AssetPicker.vue'
 
-const router  = useRouter()
-const content = useContentStore()
+const router   = useRouter()
+const content  = useContentStore()
 const featured = useFeaturedStore()
+
+onMounted(async () => {
+  await Promise.all([content.fetch(), featured.loadFromApi()])
+})
 
 const { entries } = storeToRefs(featured)
 const admin = currentAdmin()
@@ -220,7 +224,7 @@ function clearImage() {
                 <span class="sep">·</span>
                 <span>align {{ entry.textAlign }}{{ entry.layout === 'overlay' ? ' / ' + entry.verticalAlign : '' }}</span>
                 <span class="sep">·</span>
-                <span v-if="entry.sourceItemId">from item · <code>{{ entry.sourceItemId }}</code></span>
+                <span v-if="entry.sourceItemId">from item · <span class="entry__source-id">{{ entry.sourceItemId }}</span></span>
                 <span v-else>standalone</span>
               </div>
               <h3 class="entry__title" v-html="entry.title || '(untitled)'"></h3>
@@ -647,10 +651,11 @@ function clearImage() {
 .entry__thumb {
   width: 90px; height: 70px;
   border-radius: var(--radius-sm);
-  background: var(--cream);
-  border: 1px solid var(--line);
+  background: rgba(14, 26, 26, 0.06);
+  border: 1px solid rgba(14, 26, 26, 0.1);
   overflow: hidden;
   display: grid; place-items: center;
+  flex-shrink: 0;
 }
 .entry__thumb img { width: 100%; height: 100%; object-fit: cover; }
 .entry__thumb-empty {
@@ -681,6 +686,11 @@ function clearImage() {
 }
 .entry__meta .dot.on { background: var(--teal); }
 .entry__meta .dot.off { background: var(--rust); }
+.entry__source-id {
+  font-family: var(--font-mono); font-size: 0.7rem;
+  background: rgba(14,26,26,0.08); color: var(--ink-soft);
+  border-radius: 4px; padding: 1px 6px;
+}
 .entry__meta code {
   font-family: var(--font-mono);
   text-transform: none;

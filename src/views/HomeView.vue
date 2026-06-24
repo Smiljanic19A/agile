@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onBeforeUnmount } from 'vue'
 import { useContentStore } from '@/stores/content.js'
+import { useFeaturedStore } from '@/stores/featured.js'
 import AppNav from '@/components/AppNav.vue'
 import HeroSection from '@/components/sections/HeroSection.vue'
 import FeaturedBanner from '@/components/sections/FeaturedBanner.vue'
@@ -15,10 +16,13 @@ import ContactSection from '@/components/sections/ContactSection.vue'
 import FinalCTASection from '@/components/sections/FinalCTASection.vue'
 import AppFooter from '@/components/sections/AppFooter.vue'
 
-useContentStore()
+const content  = useContentStore()
+const featured = useFeaturedStore()
 
 let io = null
 onMounted(() => {
+  content.fetch()
+  featured.fetchPublic()
   if (typeof IntersectionObserver === 'undefined') return
   io = new IntersectionObserver(
     (entries) => {
