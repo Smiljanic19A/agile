@@ -6,6 +6,8 @@ import AdminBanner from '@/views/admin/AdminBanner.vue'
 import AdminArticles from '@/views/admin/AdminArticles.vue'
 import AdminProducts from '@/views/admin/AdminProducts.vue'
 import AdminImports from '@/views/admin/AdminImports.vue'
+import AdminSettings from '@/views/admin/AdminSettings.vue'
+import AdminFooterLinks from '@/views/admin/AdminFooterLinks.vue'
 import { isAuthed } from '@/lib/auth.js'
 
 const router = createRouter({
@@ -18,6 +20,8 @@ const router = createRouter({
     { path: '/admin/articles', name: 'admin-articles', component: AdminArticles,  meta: { admin: true, requiresAuth: true } },
     { path: '/admin/products', name: 'admin-products', component: AdminProducts,  meta: { admin: true, requiresAuth: true } },
     { path: '/admin/imports',  name: 'admin-imports',  component: AdminImports,   meta: { admin: true, requiresAuth: true } },
+    { path: '/admin/settings', name: 'admin-settings', component: AdminSettings,  meta: { admin: true, requiresAuth: true } },
+    { path: '/admin/footer-links', name: 'admin-footer-links', component: AdminFooterLinks, meta: { admin: true, requiresAuth: true } },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition

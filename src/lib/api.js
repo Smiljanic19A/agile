@@ -21,9 +21,10 @@ function qs(params) {
 
 export const api = {
   // Public
-  articles: (params = {}) => request('GET', '/articles' + qs(params)),
-  products: (params = {}) => request('GET', '/products' + qs(params)),
-  featured: ()             => request('GET', '/featured'),
+  articles:    (params = {}) => request('GET', '/articles' + qs(params)),
+  products:    (params = {}) => request('GET', '/products' + qs(params)),
+  featured:    ()             => request('GET', '/featured'),
+  footerLinks: ()             => request('GET', '/footer-links'),
 
   // Admin — all open, protected only by the frontend login guard
   admin: {
@@ -43,8 +44,18 @@ export const api = {
     deleteFeatured: (id)          => request('DELETE', `/admin/featured/${id}`),
     reorderFeatured:(order)       => request('PUT',    '/admin/featured-reorder', { order }),
 
-    imports:        ()            => request('GET',  '/admin/imports'),
-    importSubstack: ()            => request('POST', '/admin/imports/substack'),
-    importPayhip:   ()            => request('POST', '/admin/imports/payhip'),
+    imports:         ()           => request('GET',  '/admin/imports'),
+    importSubstack:  ()           => request('POST', '/admin/imports/substack'),
+    importPayhip:    ()           => request('POST', '/admin/imports/payhip'),
+    verifyPayhipKey: ()           => request('POST', '/admin/imports/payhip-verify'),
+
+    settings:       ()            => request('GET', '/admin/settings'),
+    updateSettings: (settings)    => request('PUT', '/admin/settings', { settings }),
+
+    footerLinks:       ()         => request('GET',    '/admin/footer-links'),
+    createFooterLink:  (data)     => request('POST',   '/admin/footer-links', data),
+    updateFooterLink:  (id, data) => request('PUT',    `/admin/footer-links/${id}`, data),
+    deleteFooterLink:  (id)       => request('DELETE', `/admin/footer-links/${id}`),
+    reorderFooterLinks:(order)    => request('PUT',    '/admin/footer-links-reorder', { order }),
   },
 }
