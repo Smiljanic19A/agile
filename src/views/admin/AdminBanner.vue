@@ -1,14 +1,12 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
-import { currentAdmin, logout } from '@/lib/auth.js'
+import AdminLayout from './AdminLayout.vue'
 import { useContentStore } from '@/stores/content.js'
 import { useFeaturedStore, entryFromItem } from '@/stores/featured.js'
 import RichEditor from '@/components/admin/RichEditor.vue'
 import AssetPicker from '@/components/admin/AssetPicker.vue'
 
-const router   = useRouter()
 const content  = useContentStore()
 const featured = useFeaturedStore()
 
@@ -17,7 +15,6 @@ onMounted(async () => {
 })
 
 const { entries } = storeToRefs(featured)
-const admin = currentAdmin()
 
 const sortedEntries = computed(() =>
   [...entries.value].sort((a, b) => (a.order || 0) - (b.order || 0))
@@ -124,11 +121,6 @@ function resetAll() {
   draft.value = null
 }
 
-function onLogout() {
-  logout()
-  router.replace({ name: 'admin-login' })
-}
-
 function stripTags(html) {
   if (!html) return ''
   return String(html).replace(/<[^>]+>/g, '')
@@ -174,24 +166,8 @@ function clearImage() {
 </script>
 
 <template>
+  <AdminLayout>
   <div class="admin">
-    <header class="admin__topbar">
-      <div class="admin__topbar-left">
-        <a class="admin__brand" href="/">
-          <img src="/assets/images/ap-logo.svg" alt="" />
-          <span>Agile Periodization · <strong>Admin</strong></span>
-        </a>
-        <span class="admin__crumb" v-if="draft">
-          / Featured Banner / {{ draftMode === 'new' ? 'New entry' : 'Edit' }}
-        </span>
-        <span class="admin__crumb" v-else>/ Featured Banner</span>
-      </div>
-      <div class="admin__topbar-right">
-        <span class="admin__user" v-if="admin">{{ admin.email }}</span>
-        <button class="admin__topbar-btn" @click="onLogout">Log out</button>
-      </div>
-    </header>
-
     <!-- ═══════════════════════ LIST VIEW ═══════════════════════ -->
     <main v-if="!draft" class="admin__main">
       <section class="admin__panel">
@@ -546,6 +522,7 @@ function clearImage() {
       </div>
     </div>
   </div>
+  </AdminLayout>
 </template>
 
 <style scoped>

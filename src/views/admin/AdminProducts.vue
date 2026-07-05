@@ -14,15 +14,16 @@ const filterCat = ref('')
 const TYPES      = ['Course', 'Tool', 'PDF', 'Book']
 const CATEGORIES = ['courses', 'tools', 'books']
 const SOURCES    = ['payhip', 'amazon', 'manual']
+const CURRENCIES = ['USD', 'EUR', 'GBP']
 
 const blank = () => ({
   id: null, source: 'manual', type: 'Course', category: 'courses',
   title: '', description: '', image_url: '', url: '', price: '',
-  currency: 'USD', is_active: true, display_order: 0,
+  currency: 'EUR', is_active: true, display_order: 0,
 })
 
 const filtered = computed(() =>
-  filterCat.value ? products.value.filter(p => p.category === filterCat.value) : products.value
+  filterCat.value ? products.value.filter((p) => p.category === filterCat.value) : products.value
 )
 
 onMounted(load)
@@ -38,7 +39,6 @@ function openNew() { editing.value = blank() }
 function openEdit(p) {
   editing.value = { ...p, price: p.price ?? '', image_url: p.image_url || '', description: p.description || '' }
 }
-function closeEditor() { editing.value = null }
 
 async function save() {
   saving.value = true; error.value = ''
@@ -52,7 +52,7 @@ async function save() {
       image_url: editing.value.image_url || null,
       url: editing.value.url,
       price: editing.value.price !== '' ? Number(editing.value.price) : null,
-      currency: editing.value.currency || 'USD',
+      currency: editing.value.currency || 'EUR',
       is_active: editing.value.is_active,
       display_order: Number(editing.value.display_order) || 0,
     }
@@ -66,198 +66,217 @@ async function save() {
 
 async function confirmDelete() {
   if (!deleteConfirm.value) return
-  try { await api.admin.deleteProduct(deleteConfirm.value.id); deleteConfirm.value = null; await load() }
-  catch (e) { error.value = e.message }
+  try {
+    await api.admin.deleteProduct(deleteConfirm.value.id)
+    deleteConfirm.value = null
+    editing.value = null
+    await load()
+  } catch (e) { error.value = e.message }
 }
 
-function fmtPrice(p) {
-  if (!p && p !== 0) return 'Free'
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(p)
+function fmtPrice(p, currency) {
+  if (p === null || p === undefined || p === '') return 'Free'
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'EUR' }).format(p)
 }
 </script>
 
 <template>
   <AdminLayout>
-    <div class="ap">
+    <div class="adm-page pr">
+      <header class="adm-head">
+        <div>
+          <p class="adm-eyebrow">Content</p>
+          <h1 class="adm-title">Products</h1>
+          <p class="adm-sub">Courses, tools, and books — imported from Payhip or managed by hand.</p>
+        </div>
+        <button class="adm-btn adm-btn--primary" @click="openNew">+ New product</button>
+      </header>
 
-      <!-- Editor -->
-      <template v-if="editing">
-        <header class="ap__header">
-          <button class="ap__back" @click="closeEditor">← Products</button>
-          <h1 class="ap__title">{{ editing.id ? 'Edit product' : 'New product' }}</h1>
+      <p v-if="error" class="adm-alert adm-alert--danger">{{ error }}</p>
+
+      <div class="pr__toolbar">
+        <div class="adm-seg">
+          <button :class="{ 'is-on': filterCat === '' }" @click="filterCat = ''">All</button>
+          <button
+            v-for="c in CATEGORIES" :key="c"
+            :class="{ 'is-on': filterCat === c }"
+            style="text-transform: capitalize"
+            @click="filterCat = c"
+          >{{ c }}</button>
+        </div>
+        <span class="pr__count">{{ filtered.length }} of {{ products.length }}</span>
+      </div>
+
+      <div v-if="loading" class="adm-loading">
+        <span class="adm-loop"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="14"/></svg></span>
+        Loading products…
+      </div>
+
+      <div v-else-if="filtered.length" class="pr__grid">
+        <article
+          v-for="p in filtered" :key="p.id"
+          class="adm-card adm-card--hover pr__card"
+          :class="{ 'is-inactive': !p.is_active }"
+          @click="openEdit(p)"
+        >
+          <div class="pr__thumb">
+            <img v-if="p.image_url" :src="p.image_url" alt="" loading="lazy" />
+            <span v-else class="pr__thumb-empty">{{ p.type }}</span>
+          </div>
+          <div class="pr__body">
+            <div class="pr__meta">
+              <span class="adm-badge adm-badge--teal">{{ p.type }}</span>
+              <span class="pr__source">{{ p.source }}</span>
+            </div>
+            <h2 class="pr__title">{{ p.title }}</h2>
+            <div class="pr__foot">
+              <span class="pr__price">{{ fmtPrice(p.price, p.currency) }}</span>
+              <span v-if="!p.is_active" class="adm-badge adm-badge--mute">Hidden</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div v-else class="adm-empty">
+        <p>{{ filterCat ? 'No products in this category.' : 'No products yet. Run the Payhip import or add one by hand.' }}</p>
+        <button v-if="!filterCat" class="adm-btn adm-btn--primary" @click="openNew">+ New product</button>
+      </div>
+    </div>
+
+    <!-- Editor drawer -->
+    <template v-if="editing">
+      <div class="adm-drawer-bg" @click="editing = null"></div>
+      <aside class="adm-drawer" role="dialog" aria-modal="true">
+        <header class="adm-drawer__head">
+          <h2>{{ editing.id ? 'Edit product' : 'New product' }}</h2>
+          <button class="adm-close" aria-label="Close" @click="editing = null">
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+          </button>
         </header>
 
-        <form class="ap__form" @submit.prevent="save">
-          <p v-if="error" class="ap__error">{{ error }}</p>
-
-          <div class="ap__field">
-            <label class="ap__label">Title *</label>
-            <input v-model="editing.title" required class="ap__input" />
+        <form class="adm-drawer__body" @submit.prevent="save">
+          <div class="adm-field">
+            <label class="adm-label">Title <span class="req">*</span></label>
+            <input v-model="editing.title" required class="adm-input" placeholder="e.g. Endurance Map Builder" />
           </div>
-          <div class="ap__row3">
-            <div class="ap__field">
-              <label class="ap__label">Source</label>
-              <select v-model="editing.source" class="ap__select">
+
+          <div class="adm-grid-3">
+            <div class="adm-field">
+              <label class="adm-label">Source</label>
+              <select v-model="editing.source" class="adm-select">
                 <option v-for="s in SOURCES" :key="s">{{ s }}</option>
               </select>
             </div>
-            <div class="ap__field">
-              <label class="ap__label">Type</label>
-              <select v-model="editing.type" class="ap__select">
+            <div class="adm-field">
+              <label class="adm-label">Type</label>
+              <select v-model="editing.type" class="adm-select">
                 <option v-for="t in TYPES" :key="t">{{ t }}</option>
               </select>
             </div>
-            <div class="ap__field">
-              <label class="ap__label">Category</label>
-              <select v-model="editing.category" class="ap__select">
+            <div class="adm-field">
+              <label class="adm-label">Category</label>
+              <select v-model="editing.category" class="adm-select">
                 <option v-for="c in CATEGORIES" :key="c">{{ c }}</option>
               </select>
             </div>
           </div>
-          <div class="ap__field">
-            <label class="ap__label">Description</label>
-            <textarea v-model="editing.description" class="ap__textarea" rows="3"></textarea>
+
+          <div class="adm-field">
+            <label class="adm-label">Description</label>
+            <textarea v-model="editing.description" class="adm-textarea" rows="3" placeholder="Short blurb shown on the card…"></textarea>
           </div>
-          <div class="ap__field">
-            <label class="ap__label">URL *</label>
-            <input v-model="editing.url" required type="url" class="ap__input" placeholder="https://…" />
+          <div class="adm-field">
+            <label class="adm-label">URL <span class="req">*</span></label>
+            <input v-model="editing.url" required type="url" class="adm-input adm-input--mono" placeholder="https://…" />
           </div>
-          <div class="ap__field">
-            <label class="ap__label">Image URL</label>
-            <input v-model="editing.image_url" class="ap__input" placeholder="https://…" />
-          </div>
-          <div class="ap__row2">
-            <div class="ap__field">
-              <label class="ap__label">Price (leave blank = free)</label>
-              <input v-model="editing.price" type="number" min="0" step="0.01" class="ap__input" placeholder="0.00" />
-            </div>
-            <div class="ap__field">
-              <label class="ap__label">Display order</label>
-              <input v-model="editing.display_order" type="number" class="ap__input" />
-            </div>
-          </div>
-          <div class="ap__field ap__field--check">
-            <input id="is_active" v-model="editing.is_active" type="checkbox" />
-            <label for="is_active">Active (visible on site)</label>
+          <div class="adm-field">
+            <label class="adm-label">Image URL</label>
+            <input v-model="editing.image_url" class="adm-input adm-input--mono" placeholder="https://… (optional)" />
           </div>
 
-          <div class="ap__actions">
-            <button type="submit" class="ap__btn ap__btn--primary" :disabled="saving">
-              {{ saving ? 'Saving…' : 'Save' }}
-            </button>
-            <button type="button" class="ap__btn" @click="closeEditor">Cancel</button>
+          <div class="adm-grid-3">
+            <div class="adm-field">
+              <label class="adm-label">Price</label>
+              <input v-model="editing.price" type="number" min="0" step="0.01" class="adm-input" placeholder="Blank = free" />
+            </div>
+            <div class="adm-field">
+              <label class="adm-label">Currency</label>
+              <select v-model="editing.currency" class="adm-select">
+                <option v-for="c in CURRENCIES" :key="c">{{ c }}</option>
+              </select>
+            </div>
+            <div class="adm-field">
+              <label class="adm-label">Display order</label>
+              <input v-model="editing.display_order" type="number" class="adm-input" />
+            </div>
           </div>
+
+          <label class="adm-switch">
+            <input v-model="editing.is_active" type="checkbox" />
+            <span class="track"></span>
+            <span class="lbl">Active — visible in the store section</span>
+          </label>
         </form>
-      </template>
 
-      <!-- Delete confirm -->
-      <div v-if="deleteConfirm" class="ap__modal-bg" @click.self="deleteConfirm = null">
-        <div class="ap__modal">
-          <p>Delete <strong>{{ deleteConfirm.title }}</strong>?</p>
-          <div class="ap__modal-actions">
-            <button class="ap__btn ap__btn--danger" @click="confirmDelete">Delete</button>
-            <button class="ap__btn" @click="deleteConfirm = null">Cancel</button>
-          </div>
+        <footer class="adm-drawer__foot">
+          <button
+            v-if="editing.id"
+            class="adm-btn adm-btn--danger"
+            style="margin-right: auto"
+            @click="deleteConfirm = editing"
+          >Delete</button>
+          <button class="adm-btn" @click="editing = null">Cancel</button>
+          <button class="adm-btn adm-btn--primary" :disabled="saving || !editing.title || !editing.url" @click="save">
+            {{ saving ? 'Saving…' : editing.id ? 'Save product' : 'Create product' }}
+          </button>
+        </footer>
+      </aside>
+    </template>
+
+    <!-- Delete confirm -->
+    <div v-if="deleteConfirm" class="adm-modal-bg" @click.self="deleteConfirm = null">
+      <div class="adm-modal">
+        <h3>Delete this product?</h3>
+        <p><strong>{{ deleteConfirm.title }}</strong> will be removed. This cannot be undone.</p>
+        <div class="adm-modal-actions">
+          <button class="adm-btn" @click="deleteConfirm = null">Keep it</button>
+          <button class="adm-btn adm-btn--danger" @click="confirmDelete">Delete product</button>
         </div>
       </div>
-
-      <!-- List -->
-      <template v-if="!editing">
-        <header class="ap__header">
-          <h1 class="ap__title">Products</h1>
-          <div class="ap__header-actions">
-            <select v-model="filterCat" class="ap__filter">
-              <option value="">All categories</option>
-              <option v-for="c in CATEGORIES" :key="c">{{ c }}</option>
-            </select>
-            <button class="ap__btn ap__btn--primary" @click="openNew">+ New product</button>
-          </div>
-        </header>
-
-        <p v-if="error" class="ap__error">{{ error }}</p>
-        <div v-if="loading" class="ap__loading">Loading…</div>
-
-        <table v-else class="ap__table">
-          <thead>
-            <tr><th>Title</th><th>Type</th><th>Source</th><th>Price</th><th>Active</th><th>Order</th><th></th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="p in filtered" :key="p.id">
-              <td class="ap__td-title">
-                <a :href="p.url" target="_blank" rel="noopener" class="ap__td-link">{{ p.title }}</a>
-              </td>
-              <td><span class="ap__tag">{{ p.type }}</span></td>
-              <td>{{ p.source }}</td>
-              <td>{{ fmtPrice(p.price) }}</td>
-              <td>{{ p.is_active ? '✓' : '' }}</td>
-              <td>{{ p.display_order }}</td>
-              <td class="ap__td-actions">
-                <button class="ap__row-btn" @click="openEdit(p)">Edit</button>
-                <button class="ap__row-btn ap__row-btn--del" @click="deleteConfirm = p">Delete</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <p v-if="!loading && filtered.length === 0" class="ap__empty">No products.</p>
-      </template>
     </div>
   </AdminLayout>
 </template>
 
 <style scoped>
-.ap { padding: 40px 48px; max-width: 1100px; }
-.ap__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
-.ap__header-actions { display: flex; gap: 12px; align-items: center; }
-.ap__title { font-family: var(--font-display); font-size: clamp(22px, 3vw, 32px); font-weight: 700; color: var(--ink); margin: 0; }
-.ap__back { background: none; border: none; color: var(--teal); font-size: 13px; cursor: pointer; padding: 0; }
-.ap__loading { color: var(--ink-soft); font-size: 14px; }
-.ap__empty { color: var(--ink-soft); font-size: 14px; padding: 24px 0; }
-.ap__error { color: #dc2626; font-size: 13px; margin-bottom: 16px; }
-.ap__filter { border: 1.5px solid var(--hairline-strong); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 13px; color: var(--ink); background: var(--paper); }
+.pr__toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+.pr__count { font-family: var(--font-mono); font-size: 11px; color: var(--adm-mute); }
 
-.ap__table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.ap__table th { text-align: left; padding: 8px 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); border-bottom: 2px solid var(--hairline); }
-.ap__table td { padding: 12px; border-bottom: 1px solid var(--hairline); color: var(--ink); vertical-align: middle; }
-.ap__td-title { max-width: 320px; }
-.ap__td-link { color: var(--ink); text-decoration: none; font-weight: 500; }
-.ap__td-link:hover { color: var(--teal); }
-.ap__td-actions { display: flex; gap: 8px; white-space: nowrap; }
-.ap__tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: rgba(55,136,130,0.1); color: var(--teal-deep); }
-
-.ap__row-btn { background: none; border: 1px solid var(--hairline-strong); border-radius: 6px; padding: 5px 10px; font-size: 12px; color: var(--ink-soft); cursor: pointer; transition: border-color 120ms, color 120ms; }
-.ap__row-btn:hover { border-color: var(--teal); color: var(--teal); }
-.ap__row-btn--del:hover { border-color: #dc2626; color: #dc2626; }
-
-.ap__form { max-width: 640px; display: flex; flex-direction: column; gap: 20px; }
-.ap__field { display: flex; flex-direction: column; gap: 6px; }
-.ap__field--check { flex-direction: row; align-items: center; gap: 8px; }
-.ap__label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
-.ap__input, .ap__select, .ap__textarea {
-  background: var(--paper); border: 1.5px solid var(--hairline-strong); border-radius: var(--radius-sm);
-  padding: 11px 14px; font-size: 14px; color: var(--ink); font-family: var(--font-body); width: 100%;
-  transition: border-color 140ms;
+.pr__grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px;
 }
-.ap__input:focus, .ap__select:focus, .ap__textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(55,136,130,0.1); }
-.ap__textarea { resize: vertical; }
-.ap__row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.ap__row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.ap__actions { display: flex; gap: 12px; margin-top: 8px; }
 
-.ap__btn { padding: 10px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--hairline-strong); background: var(--paper); color: var(--ink); transition: all 140ms; }
-.ap__btn:hover { border-color: var(--ink); }
-.ap__btn--primary { background: var(--ink); color: #f3f3f3; border-color: var(--ink); }
-.ap__btn--primary:hover { background: var(--teal-deep); border-color: var(--teal-deep); }
-.ap__btn--danger { background: #dc2626; color: #fff; border-color: #dc2626; }
-.ap__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pr__card { overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }
+.pr__card.is-inactive { opacity: 0.55; }
 
-.ap__modal-bg { position: fixed; inset: 0; background: rgba(14,26,26,0.5); display: grid; place-items: center; z-index: 100; }
-.ap__modal { background: var(--paper); border-radius: var(--radius-lg); padding: 32px; max-width: 400px; width: 90%; }
-.ap__modal p { margin: 0 0 24px; }
-.ap__modal-actions { display: flex; gap: 12px; }
-
-@media (max-width: 640px) {
-  .ap { padding: 24px 20px; }
-  .ap__row2, .ap__row3 { grid-template-columns: 1fr; }
+.pr__thumb {
+  height: 130px; background: linear-gradient(135deg, var(--adm-teal-mist), #dcebe9);
+  display: grid; place-items: center; overflow: hidden;
+  border-bottom: 1px solid var(--adm-line);
 }
+.pr__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pr__thumb-empty {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--adm-teal-deep); opacity: 0.65;
+}
+
+.pr__body { padding: 15px 16px 16px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+.pr__meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pr__source { font-family: var(--font-mono); font-size: 10px; color: var(--adm-mute-2); text-transform: uppercase; letter-spacing: 0.08em; }
+.pr__title {
+  font-family: var(--font-display); font-size: 14.5px; font-weight: 700; line-height: 1.3;
+  letter-spacing: -0.01em; margin: 0; color: var(--adm-ink);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.pr__foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pr__price { font-family: var(--font-mono); font-size: 12.5px; color: var(--adm-teal-deep); font-weight: 500; }
 </style>

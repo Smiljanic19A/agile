@@ -76,11 +76,13 @@ const features = [
 .skool__img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
 
 .skool__badge {
-  background: var(--ink); color: var(--cream); border-radius: var(--radius);
+  background: linear-gradient(150deg, var(--teal) 0%, var(--teal-deep) 120%);
+  color: #f3f3f3; border-radius: var(--radius);
   padding: 18px 22px; display: flex; flex-direction: column; gap: 6px;
+  border: 1px solid rgba(243, 243, 243, 0.1);
 }
-.skool__badge strong { font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: -0.012em; }
-.skool__badge p { font-size: 13px; line-height: 1.5; color: rgba(243,243,243,0.82); margin: 0; }
+.skool__badge strong { font-family: var(--font-display); font-size: 15px; font-weight: 700; letter-spacing: -0.012em; color: #f3f3f3; }
+.skool__badge p { font-size: 13px; line-height: 1.5; color: rgba(243,243,243,0.85); margin: 0; }
 
 @media (max-width: 1024px) { .skool__grid { grid-template-columns: 1fr; gap: 44px; } }
 @media (max-width: 640px) { .skool__copy { gap: 22px; } }

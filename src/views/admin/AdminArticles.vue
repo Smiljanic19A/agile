@@ -1,14 +1,15 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AdminLayout from './AdminLayout.vue'
 import { api } from '@/lib/api.js'
 
 const articles = ref([])
 const loading = ref(true)
 const error = ref('')
-const editing = ref(null)    // null = list view
+const editing = ref(null)
 const saving = ref(false)
 const deleteConfirm = ref(null)
+const search = ref('')
 
 const TYPES = ['Article', 'Essay', 'Field note', 'Field Notes', 'Theory', 'Conditioning', 'Tool']
 
@@ -23,6 +24,14 @@ const blank = () => ({
   is_featured: false,
   display_order: 0,
   published_at: '',
+})
+
+const filtered = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  if (!q) return articles.value
+  return articles.value.filter((a) =>
+    a.title.toLowerCase().includes(q) || (a.type || '').toLowerCase().includes(q)
+  )
 })
 
 onMounted(load)
@@ -51,8 +60,6 @@ function openEdit(a) {
   }
 }
 
-function closeEditor() { editing.value = null }
-
 async function save() {
   saving.value = true
   error.value = ''
@@ -68,11 +75,8 @@ async function save() {
       display_order: Number(editing.value.display_order) || 0,
       published_at:  editing.value.published_at || null,
     }
-    if (editing.value.id) {
-      await api.admin.updateArticle(editing.value.id, payload)
-    } else {
-      await api.admin.createArticle(payload)
-    }
+    if (editing.value.id) await api.admin.updateArticle(editing.value.id, payload)
+    else await api.admin.createArticle(payload)
     editing.value = null
     await load()
   } catch (e) {
@@ -87,6 +91,7 @@ async function confirmDelete() {
   try {
     await api.admin.deleteArticle(deleteConfirm.value.id)
     deleteConfirm.value = null
+    editing.value = null
     await load()
   } catch (e) {
     error.value = e.message
@@ -101,173 +106,210 @@ function fmtDate(d) {
 
 <template>
   <AdminLayout>
-    <div class="aa">
-
-      <!-- Editor -->
-      <template v-if="editing">
-        <header class="aa__header">
-          <button class="aa__back" @click="closeEditor">← Articles</button>
-          <h1 class="aa__title">{{ editing.id ? 'Edit article' : 'New article' }}</h1>
-        </header>
-
-        <form class="aa__form" @submit.prevent="save">
-          <p v-if="error" class="aa__error">{{ error }}</p>
-
-          <div class="aa__field">
-            <label class="aa__label">Title *</label>
-            <input v-model="editing.title" required class="aa__input" placeholder="Article title" />
-          </div>
-          <div class="aa__row2">
-            <div class="aa__field">
-              <label class="aa__label">Type</label>
-              <select v-model="editing.type" class="aa__select">
-                <option v-for="t in TYPES" :key="t">{{ t }}</option>
-              </select>
-            </div>
-            <div class="aa__field">
-              <label class="aa__label">Read time</label>
-              <input v-model="editing.read_time" class="aa__input" placeholder="e.g. 12 min" />
-            </div>
-          </div>
-          <div class="aa__field">
-            <label class="aa__label">Description</label>
-            <textarea v-model="editing.description" class="aa__textarea" rows="3" placeholder="Short excerpt…"></textarea>
-          </div>
-          <div class="aa__field">
-            <label class="aa__label">URL *</label>
-            <input v-model="editing.url" required type="url" class="aa__input" placeholder="https://…" />
-          </div>
-          <div class="aa__field">
-            <label class="aa__label">Image URL</label>
-            <input v-model="editing.image_url" class="aa__input" placeholder="https://…" />
-          </div>
-          <div class="aa__row2">
-            <div class="aa__field">
-              <label class="aa__label">Published date</label>
-              <input v-model="editing.published_at" type="date" class="aa__input" />
-            </div>
-            <div class="aa__field">
-              <label class="aa__label">Display order</label>
-              <input v-model="editing.display_order" type="number" class="aa__input" />
-            </div>
-          </div>
-          <div class="aa__field aa__field--check">
-            <input id="featured" v-model="editing.is_featured" type="checkbox" />
-            <label for="featured">Featured article</label>
-          </div>
-
-          <div class="aa__actions">
-            <button type="submit" class="aa__btn aa__btn--primary" :disabled="saving">
-              {{ saving ? 'Saving…' : 'Save' }}
-            </button>
-            <button type="button" class="aa__btn" @click="closeEditor">Cancel</button>
-          </div>
-        </form>
-      </template>
-
-      <!-- Delete confirm -->
-      <div v-if="deleteConfirm" class="aa__modal-bg" @click.self="deleteConfirm = null">
-        <div class="aa__modal">
-          <p>Delete <strong>{{ deleteConfirm.title }}</strong>? This cannot be undone.</p>
-          <div class="aa__modal-actions">
-            <button class="aa__btn aa__btn--danger" @click="confirmDelete">Delete</button>
-            <button class="aa__btn" @click="deleteConfirm = null">Cancel</button>
-          </div>
+    <div class="adm-page aa">
+      <header class="adm-head">
+        <div>
+          <p class="adm-eyebrow">Content</p>
+          <h1 class="adm-title">Articles</h1>
+          <p class="adm-sub">Everything the Writing section shows — imported from Substack or written by hand.</p>
         </div>
+        <button class="adm-btn adm-btn--primary" @click="openNew">+ New article</button>
+      </header>
+
+      <p v-if="error" class="adm-alert adm-alert--danger">{{ error }}</p>
+
+      <div class="aa__toolbar">
+        <div class="aa__search">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="7" cy="7" r="4.6"/><path d="M10.6 10.6L14 14"/>
+          </svg>
+          <input v-model="search" class="adm-input" placeholder="Search by title or type…" />
+        </div>
+        <span class="aa__count">{{ filtered.length }} of {{ articles.length }}</span>
       </div>
 
-      <!-- List -->
-      <template v-if="!editing">
-        <header class="aa__header">
-          <h1 class="aa__title">Articles</h1>
-          <button class="aa__btn aa__btn--primary" @click="openNew">+ New article</button>
-        </header>
+      <div v-if="loading" class="adm-loading">
+        <span class="adm-loop"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="14"/></svg></span>
+        Loading articles…
+      </div>
 
-        <p v-if="error" class="aa__error">{{ error }}</p>
-        <div v-if="loading" class="aa__loading">Loading…</div>
-
-        <table v-else class="aa__table">
+      <div v-else-if="filtered.length" class="adm-table-wrap">
+        <table class="adm-table">
           <thead>
-            <tr>
-              <th>Title</th><th>Type</th><th>Published</th><th>Order</th><th>Featured</th><th></th>
-            </tr>
+            <tr><th>Title</th><th>Type</th><th>Published</th><th>Order</th><th>Featured</th><th></th></tr>
           </thead>
           <tbody>
-            <tr v-for="a in articles" :key="a.id">
+            <tr v-for="a in filtered" :key="a.id" class="aa__row" @click="openEdit(a)">
               <td class="aa__td-title">
-                <a :href="a.url" target="_blank" rel="noopener" class="aa__td-link">{{ a.title }}</a>
+                <span class="aa__title-text">{{ a.title }}</span>
+                <a :href="a.url" target="_blank" rel="noopener" class="aa__open" title="Open article" @click.stop>↗</a>
               </td>
-              <td><span class="aa__tag">{{ a.type }}</span></td>
+              <td><span class="adm-badge adm-badge--teal">{{ a.type }}</span></td>
               <td>{{ fmtDate(a.published_at) }}</td>
               <td>{{ a.display_order }}</td>
-              <td>{{ a.is_featured ? '✓' : '' }}</td>
-              <td class="aa__td-actions">
-                <button class="aa__row-btn" @click="openEdit(a)">Edit</button>
-                <button class="aa__row-btn aa__row-btn--del" @click="deleteConfirm = a">Delete</button>
+              <td>
+                <span v-if="a.is_featured" class="adm-badge adm-badge--ok">Featured</span>
+              </td>
+              <td class="aa__td-actions" @click.stop>
+                <button class="adm-btn adm-btn--ghost adm-btn--sm" @click="openEdit(a)">Edit</button>
+                <button class="adm-btn adm-btn--ghost adm-btn--sm aa__del" @click="deleteConfirm = a">Delete</button>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
 
-        <p v-if="!loading && articles.length === 0" class="aa__empty">
-          No articles yet. Run an import or create one manually.
-        </p>
-      </template>
+      <div v-else class="adm-empty">
+        <p>{{ search ? 'Nothing matches that search.' : 'No articles yet. Run a Substack import or create one by hand.' }}</p>
+        <button v-if="!search" class="adm-btn adm-btn--primary" @click="openNew">+ New article</button>
+      </div>
+    </div>
+
+    <!-- Editor drawer -->
+    <template v-if="editing">
+      <div class="adm-drawer-bg" @click="editing = null"></div>
+      <aside class="adm-drawer" role="dialog" aria-modal="true">
+        <header class="adm-drawer__head">
+          <h2>{{ editing.id ? 'Edit article' : 'New article' }}</h2>
+          <button class="adm-close" aria-label="Close" @click="editing = null">
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+          </button>
+        </header>
+
+        <form class="adm-drawer__body" @submit.prevent="save">
+          <!-- Live preview -->
+          <div class="aa__preview">
+            <p class="adm-label" style="margin-bottom: 8px">Live preview</p>
+            <div class="aa__preview-card">
+              <div class="aa__preview-media" :class="{ 'has-img': editing.image_url }">
+                <img v-if="editing.image_url" :src="editing.image_url" alt="" />
+                <span v-else class="aa__preview-noimg">Abstract cover is generated automatically</span>
+              </div>
+              <div class="aa__preview-body">
+                <div class="aa__preview-meta">
+                  <span class="aa__preview-chip">{{ editing.type }}</span>
+                  <span v-if="editing.read_time">{{ editing.read_time }}</span>
+                </div>
+                <p class="aa__preview-title">{{ editing.title || 'Article title…' }}</p>
+                <p v-if="editing.description" class="aa__preview-desc">{{ editing.description }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="adm-field">
+            <label class="adm-label">Title <span class="req">*</span></label>
+            <input v-model="editing.title" required class="adm-input" placeholder="e.g. Planning with intent, adjusting without panic" />
+          </div>
+          <div class="adm-grid-2">
+            <div class="adm-field">
+              <label class="adm-label">Type</label>
+              <select v-model="editing.type" class="adm-select">
+                <option v-for="t in TYPES" :key="t">{{ t }}</option>
+              </select>
+            </div>
+            <div class="adm-field">
+              <label class="adm-label">Read time</label>
+              <input v-model="editing.read_time" class="adm-input" placeholder="e.g. 12 min" />
+            </div>
+          </div>
+          <div class="adm-field">
+            <label class="adm-label">Description</label>
+            <textarea v-model="editing.description" class="adm-textarea" rows="3" placeholder="Short excerpt shown on the card…"></textarea>
+          </div>
+          <div class="adm-field">
+            <label class="adm-label">URL <span class="req">*</span></label>
+            <input v-model="editing.url" required type="url" class="adm-input adm-input--mono" placeholder="https://…" />
+          </div>
+          <div class="adm-field">
+            <label class="adm-label">Image URL</label>
+            <input v-model="editing.image_url" class="adm-input adm-input--mono" placeholder="https://… (optional)" />
+          </div>
+          <div class="adm-grid-2">
+            <div class="adm-field">
+              <label class="adm-label">Published date</label>
+              <input v-model="editing.published_at" type="date" class="adm-input" />
+            </div>
+            <div class="adm-field">
+              <label class="adm-label">Display order</label>
+              <input v-model="editing.display_order" type="number" class="adm-input" />
+            </div>
+          </div>
+          <label class="adm-switch">
+            <input v-model="editing.is_featured" type="checkbox" />
+            <span class="track"></span>
+            <span class="lbl">Featured — leads the Writing section</span>
+          </label>
+        </form>
+
+        <footer class="adm-drawer__foot">
+          <button
+            v-if="editing.id"
+            class="adm-btn adm-btn--danger"
+            style="margin-right: auto"
+            @click="deleteConfirm = editing"
+          >Delete</button>
+          <button class="adm-btn" @click="editing = null">Cancel</button>
+          <button class="adm-btn adm-btn--primary" :disabled="saving || !editing.title || !editing.url" @click="save">
+            {{ saving ? 'Saving…' : editing.id ? 'Save article' : 'Create article' }}
+          </button>
+        </footer>
+      </aside>
+    </template>
+
+    <!-- Delete confirm -->
+    <div v-if="deleteConfirm" class="adm-modal-bg" @click.self="deleteConfirm = null">
+      <div class="adm-modal">
+        <h3>Delete this article?</h3>
+        <p><strong>{{ deleteConfirm.title }}</strong> will be removed. This cannot be undone.</p>
+        <div class="adm-modal-actions">
+          <button class="adm-btn" @click="deleteConfirm = null">Keep it</button>
+          <button class="adm-btn adm-btn--danger" @click="confirmDelete">Delete article</button>
+        </div>
+      </div>
     </div>
   </AdminLayout>
 </template>
 
 <style scoped>
-.aa { padding: 40px 48px; max-width: 1000px; }
-.aa__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
-.aa__title { font-family: var(--font-display); font-size: clamp(22px, 3vw, 32px); font-weight: 700; color: var(--ink); margin: 0; }
-.aa__back { background: none; border: none; color: var(--teal); font-size: 13px; cursor: pointer; padding: 0; }
-.aa__loading { color: var(--ink-soft); font-size: 14px; }
-.aa__empty { color: var(--ink-soft); font-size: 14px; padding: 24px 0; }
-.aa__error { color: #dc2626; font-size: 13px; margin-bottom: 16px; }
+.aa__toolbar { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.aa__search { position: relative; flex: 1; max-width: 360px; }
+.aa__search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--adm-mute-2); pointer-events: none; }
+.aa__search .adm-input { padding-left: 36px; }
+.aa__count { font-family: var(--font-mono); font-size: 11px; color: var(--adm-mute); }
 
-.aa__table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.aa__table th { text-align: left; padding: 8px 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); border-bottom: 2px solid var(--hairline); }
-.aa__table td { padding: 12px; border-bottom: 1px solid var(--hairline); color: var(--ink); vertical-align: middle; }
-.aa__td-title { max-width: 360px; }
-.aa__td-link { color: var(--ink); text-decoration: none; font-weight: 500; }
-.aa__td-link:hover { color: var(--teal); }
-.aa__td-actions { display: flex; gap: 8px; white-space: nowrap; }
-.aa__tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: rgba(55,136,130,0.1); color: var(--teal-deep); }
-
-.aa__row-btn { background: none; border: 1px solid var(--hairline-strong); border-radius: 6px; padding: 5px 10px; font-size: 12px; color: var(--ink-soft); cursor: pointer; transition: border-color 120ms, color 120ms; }
-.aa__row-btn:hover { border-color: var(--teal); color: var(--teal); }
-.aa__row-btn--del:hover { border-color: #dc2626; color: #dc2626; }
-
-/* Form */
-.aa__form { max-width: 640px; display: flex; flex-direction: column; gap: 20px; }
-.aa__field { display: flex; flex-direction: column; gap: 6px; }
-.aa__field--check { flex-direction: row; align-items: center; gap: 8px; }
-.aa__label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
-.aa__input, .aa__select, .aa__textarea {
-  background: var(--paper); border: 1.5px solid var(--hairline-strong); border-radius: var(--radius-sm);
-  padding: 11px 14px; font-size: 14px; color: var(--ink); font-family: var(--font-body); width: 100%;
-  transition: border-color 140ms;
+.aa__row { cursor: pointer; }
+.aa__td-title { max-width: 380px; }
+.aa__title-text { font-weight: 550; }
+.aa__open {
+  margin-left: 8px; color: var(--adm-mute-2); text-decoration: none; font-size: 12px;
+  transition: color 140ms;
 }
-.aa__input:focus, .aa__select:focus, .aa__textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(55,136,130,0.1); }
-.aa__textarea { resize: vertical; }
-.aa__row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.aa__actions { display: flex; gap: 12px; margin-top: 8px; }
+.aa__open:hover { color: var(--adm-teal); }
+.aa__td-actions { white-space: nowrap; text-align: right; }
+.aa__del:hover { color: var(--adm-danger) !important; }
 
-.aa__btn { padding: 10px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--hairline-strong); background: var(--paper); color: var(--ink); transition: all 140ms; }
-.aa__btn:hover { border-color: var(--ink); }
-.aa__btn--primary { background: var(--ink); color: #f3f3f3; border-color: var(--ink); }
-.aa__btn--primary:hover { background: var(--teal-deep); border-color: var(--teal-deep); }
-.aa__btn--danger { background: #dc2626; color: #fff; border-color: #dc2626; }
-.aa__btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.aa__modal-bg { position: fixed; inset: 0; background: rgba(14,26,26,0.5); display: grid; place-items: center; z-index: 100; }
-.aa__modal { background: var(--paper); border-radius: var(--radius-lg); padding: 32px; max-width: 400px; width: 90%; }
-.aa__modal p { margin: 0 0 24px; }
-.aa__modal-actions { display: flex; gap: 12px; }
-
-@media (max-width: 640px) {
-  .aa { padding: 24px 20px; }
-  .aa__row2 { grid-template-columns: 1fr; }
+/* Live preview card */
+.aa__preview { margin-bottom: 4px; }
+.aa__preview-card {
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-md); overflow: hidden;
+  background: var(--adm-canvas);
 }
+.aa__preview-media {
+  height: 110px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--adm-teal-mist), #dcebe9);
+  overflow: hidden;
+}
+.aa__preview-media img { width: 100%; height: 100%; object-fit: cover; }
+.aa__preview-noimg { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--adm-teal-deep); opacity: 0.7; padding: 0 20px; text-align: center; }
+.aa__preview-body { padding: 14px 16px; }
+.aa__preview-meta {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  font-family: var(--font-mono); font-size: 10px; color: var(--adm-mute);
+}
+.aa__preview-chip {
+  border: 1px solid var(--adm-teal); color: var(--adm-teal-deep);
+  border-radius: 999px; padding: 2px 8px; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.aa__preview-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; line-height: 1.25; margin: 0 0 6px; color: var(--adm-ink); }
+.aa__preview-desc { font-size: 12.5px; color: var(--adm-mute); line-height: 1.55; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 </style>
