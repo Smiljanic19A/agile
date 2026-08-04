@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from './AdminLayout.vue'
+import ImageField from '@/components/admin/ImageField.vue'
 import { api } from '@/lib/api.js'
 
 const products = ref([])
@@ -10,6 +11,12 @@ const editing = ref(null)
 const saving = ref(false)
 const deleteConfirm = ref(null)
 const filterCat = ref('')
+const filterSource = ref('')
+const search = ref('')
+const sortBy = ref('title')
+const selected = ref([])
+const bulkConfirm = ref(false)
+const bulkBusy = ref(false)
 
 const TYPES      = ['Course', 'Tool', 'PDF', 'Book']
 const CATEGORIES = ['courses', 'tools', 'books']
@@ -22,9 +29,49 @@ const blank = () => ({
   currency: 'EUR', is_active: true, display_order: 0,
 })
 
-const filtered = computed(() =>
-  filterCat.value ? products.value.filter((p) => p.category === filterCat.value) : products.value
+const filtered = computed(() => {
+  let list = products.value
+  if (filterCat.value) list = list.filter((p) => p.category === filterCat.value)
+  if (filterSource.value) list = list.filter((p) => p.source === filterSource.value)
+  const q = search.value.trim().toLowerCase()
+  if (q) list = list.filter((p) => p.title.toLowerCase().includes(q))
+  const arr = [...list]
+  switch (sortBy.value) {
+    case 'price-asc':  arr.sort((a, b) => (a.price ?? 0) - (b.price ?? 0)); break
+    case 'price-desc': arr.sort((a, b) => (b.price ?? 0) - (a.price ?? 0)); break
+    case 'order':      arr.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)); break
+    default:           arr.sort((a, b) => a.title.localeCompare(b.title))
+  }
+  return arr
+})
+
+// ── Bulk selection ──────────────────────────────────────────
+function toggleSelect(id) {
+  selected.value = selected.value.includes(id)
+    ? selected.value.filter((x) => x !== id)
+    : [...selected.value, id]
+}
+const allSelected = computed(
+  () => filtered.value.length > 0 && filtered.value.every((p) => selected.value.includes(p.id)),
 )
+function toggleSelectAll() {
+  selected.value = allSelected.value ? [] : filtered.value.map((p) => p.id)
+}
+
+async function bulkDelete() {
+  bulkBusy.value = true
+  error.value = ''
+  try {
+    for (const id of selected.value) await api.admin.deleteProduct(id)
+    selected.value = []
+    bulkConfirm.value = false
+    await load()
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    bulkBusy.value = false
+  }
+}
 
 onMounted(load)
 
@@ -104,6 +151,26 @@ function fmtPrice(p, currency) {
             @click="filterCat = c"
           >{{ c }}</button>
         </div>
+        <input v-model="search" class="adm-input pr__search" placeholder="Search titles…" />
+        <select v-model="filterSource" class="adm-input pr__select" title="Filter by source">
+          <option value="">All sources</option>
+          <option v-for="s in SOURCES" :key="s" :value="s">{{ s }}</option>
+        </select>
+        <select v-model="sortBy" class="adm-input pr__select" title="Sort">
+          <option value="title">Title A–Z</option>
+          <option value="price-asc">Price ↑</option>
+          <option value="price-desc">Price ↓</option>
+          <option value="order">Display order</option>
+        </select>
+        <button
+          v-if="selected.length"
+          class="adm-btn adm-btn--danger adm-btn--sm"
+          @click="bulkConfirm = true"
+        >Delete selected ({{ selected.length }})</button>
+        <label v-else-if="filtered.length" class="pr__select-all">
+          <input type="checkbox" :checked="allSelected" @change="toggleSelectAll" />
+          Select all
+        </label>
         <span class="pr__count">{{ filtered.length }} of {{ products.length }}</span>
       </div>
 
@@ -116,9 +183,12 @@ function fmtPrice(p, currency) {
         <article
           v-for="p in filtered" :key="p.id"
           class="adm-card adm-card--hover pr__card"
-          :class="{ 'is-inactive': !p.is_active }"
+          :class="{ 'is-inactive': !p.is_active, 'is-selected': selected.includes(p.id) }"
           @click="openEdit(p)"
         >
+          <label class="pr__check" @click.stop>
+            <input type="checkbox" :checked="selected.includes(p.id)" @change="toggleSelect(p.id)" />
+          </label>
           <div class="pr__thumb">
             <img v-if="p.image_url" :src="p.image_url" alt="" loading="lazy" />
             <span v-else class="pr__thumb-empty">{{ p.type }}</span>
@@ -189,10 +259,7 @@ function fmtPrice(p, currency) {
             <label class="adm-label">URL <span class="req">*</span></label>
             <input v-model="editing.url" required type="url" class="adm-input adm-input--mono" placeholder="https://…" />
           </div>
-          <div class="adm-field">
-            <label class="adm-label">Image URL</label>
-            <input v-model="editing.image_url" class="adm-input adm-input--mono" placeholder="https://… (optional)" />
-          </div>
+          <ImageField v-model="editing.image_url" label="Image" hint="Paste a URL, or browse the media library / upload." />
 
           <div class="adm-grid-3">
             <div class="adm-field">
@@ -207,7 +274,8 @@ function fmtPrice(p, currency) {
             </div>
             <div class="adm-field">
               <label class="adm-label">Display order</label>
-              <input v-model="editing.display_order" type="number" class="adm-input" />
+              <input v-model="editing.display_order" type="number" min="0" class="adm-input" />
+              <p class="adm-hint">0 = automatic (alphabetical). Set 1, 2, 3… to pin products to the front in that order.</p>
             </div>
           </div>
 
@@ -244,19 +312,53 @@ function fmtPrice(p, currency) {
         </div>
       </div>
     </div>
+
+    <!-- Bulk delete confirm -->
+    <div v-if="bulkConfirm" class="adm-modal-bg" @click.self="bulkConfirm = false">
+      <div class="adm-modal">
+        <h3>Delete {{ selected.length }} product{{ selected.length === 1 ? '' : 's' }}?</h3>
+        <p>All selected products will be removed. This cannot be undone.</p>
+        <div class="adm-modal-actions">
+          <button class="adm-btn" :disabled="bulkBusy" @click="bulkConfirm = false">Keep them</button>
+          <button class="adm-btn adm-btn--danger" :disabled="bulkBusy" @click="bulkDelete">
+            {{ bulkBusy ? 'Deleting…' : `Delete ${selected.length}` }}
+          </button>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
 <style scoped>
-.pr__toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
-.pr__count { font-family: var(--font-mono); font-size: 11px; color: var(--adm-mute); }
+.pr__toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.pr__count { font-family: var(--font-mono); font-size: 11px; color: var(--adm-mute); margin-left: auto; }
+.pr__search { width: 200px; }
+.pr__select { width: auto; padding-top: 9px; padding-bottom: 9px; }
+.pr__select-all {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; color: var(--adm-mute); cursor: pointer;
+}
+.pr__select-all input, .pr__check input {
+  width: 15px; height: 15px; accent-color: var(--adm-teal); cursor: pointer;
+}
 
 .pr__grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px;
 }
 
-.pr__card { overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }
+.pr__card { overflow: hidden; cursor: pointer; display: flex; flex-direction: column; position: relative; }
 .pr__card.is-inactive { opacity: 0.55; }
+.pr__card.is-selected { box-shadow: 0 0 0 2px var(--adm-teal); }
+
+.pr__check {
+  position: absolute; top: 8px; left: 8px; z-index: 2;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--adm-line);
+  cursor: pointer;
+}
 
 .pr__thumb {
   height: 130px; background: linear-gradient(135deg, var(--adm-teal-mist), #dcebe9);

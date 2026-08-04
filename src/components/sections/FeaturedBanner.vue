@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useFeaturedStore } from '@/stores/featured.js'
+import { youtubeEmbedUrl } from '@/lib/youtube.js'
 
 const featured = useFeaturedStore()
 const { activeEntries } = storeToRefs(featured)
@@ -40,9 +41,28 @@ function goTo(i) { idx.value = (i + n.value) % n.value; restartAutoplay() }
 function next()  { goTo(idx.value + 1) }
 function prev()  { goTo(idx.value - 1) }
 
+function videoSrc(entry) {
+  return youtubeEmbedUrl(entry.videoUrl)
+}
+function stripHtml(html) {
+  return String(html || '').replace(/<[^>]+>/g, '').trim()
+}
+// "YouTube video" is the admin's auto-filled placeholder title — not real copy.
+function videoTitle(entry) {
+  const t = stripHtml(entry.title)
+  return t && t.toLowerCase() !== 'youtube video' ? entry.title : ''
+}
+function videoHasText(entry) {
+  return entry.showText !== false && !!(videoTitle(entry) || entry.description || entry.badge || entry.type)
+}
+const activeIsVideo = computed(() => {
+  const entry = activeEntries.value[idx.value]
+  return !!(entry && videoSrc(entry))
+})
+
 let autoplayId = null
 function startAutoplay() {
-  if (!hasMany.value) return
+  if (!hasMany.value || activeIsVideo.value) return
   stopAutoplay()
   autoplayId = setInterval(() => { idx.value = (idx.value + 1) % n.value }, 7500)
 }
@@ -98,6 +118,12 @@ function onTouchEnd() {
 
 watch(idx, () => { dragX.value = 0 })
 
+// Video slides are meant to be watched — don't auto-advance away from them.
+watch(activeIsVideo, (isVideo) => {
+  if (isVideo) stopAutoplay()
+  else startAutoplay()
+})
+
 // Reset to first slide if entries change (e.g., admin removed one)
 watch(n, (next) => {
   if (idx.value >= next) idx.value = Math.max(0, next - 1)
@@ -145,21 +171,62 @@ function descStyle(entry) {
           ]"
           :style="{ width: slideWidth }"
         >
+          <!-- ── VIDEO (YouTube embed; optional text beside it) ── -->
+          <template v-if="videoSrc(entry)">
+            <div class="container banner__video-wrap" :class="{ 'has-text': videoHasText(entry) }">
+              <div v-if="videoHasText(entry)" class="banner__split-text banner__video-text">
+                <div class="banner__meta" v-if="entry.badge || entry.type">
+                  <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
+                  <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
+                </div>
+                <h2 v-if="videoTitle(entry)" class="banner__title" :style="titleStyle(entry)" v-html="videoTitle(entry)"></h2>
+                <div v-if="entry.description" class="banner__desc" :style="descStyle(entry)" v-html="entry.description"></div>
+                <div class="banner__actions" v-if="entry.showCta !== false && entry.ctaUrl">
+                  <a class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
+                    {{ entry.ctaLabel || 'Learn more' }}
+                    <span class="arrow" aria-hidden="true">→</span>
+                  </a>
+                </div>
+              </div>
+              <div class="banner__video">
+                <iframe
+                  :src="videoSrc(entry)"
+                  title="Featured video"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allowfullscreen
+                ></iframe>
+              </div>
+              <div
+                v-if="!videoHasText(entry) && entry.showCta !== false && entry.ctaUrl"
+                class="banner__actions banner__video-cta"
+              >
+                <a class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
+                  {{ entry.ctaLabel || 'Learn more' }}
+                  <span class="arrow" aria-hidden="true">→</span>
+                </a>
+              </div>
+            </div>
+          </template>
+
           <!-- ── OVERLAY ─────────────────────────────────────── -->
-          <template v-if="entry.layout === 'overlay' || !entry.layout">
+          <template v-else-if="entry.layout === 'overlay' || !entry.layout">
             <div class="banner__bg" aria-hidden="true">
               <img v-if="entry.image" :src="entry.image" :alt="''" />
               <div class="banner__scrim" />
             </div>
             <div class="container banner__overlay-body">
-              <div class="banner__meta">
-                <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
-                <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
-              </div>
-              <h2 class="banner__title" :style="titleStyle(entry)" v-html="entry.title"></h2>
-              <div v-if="entry.description" class="banner__desc" :style="descStyle(entry)" v-html="entry.description"></div>
-              <div class="banner__actions" v-if="entry.ctaUrl || entry.ctaLabel">
-                <a v-if="entry.ctaUrl" class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
+              <template v-if="entry.showText !== false">
+                <div class="banner__meta">
+                  <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
+                  <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
+                </div>
+                <h2 class="banner__title" :style="titleStyle(entry)" v-html="entry.title"></h2>
+                <div v-if="entry.description" class="banner__desc" :style="descStyle(entry)" v-html="entry.description"></div>
+              </template>
+              <div class="banner__actions" v-if="entry.showCta !== false && entry.ctaUrl">
+                <a class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
                   {{ entry.ctaLabel || 'Learn more' }}
                   <span class="arrow" aria-hidden="true">→</span>
                 </a>
@@ -171,14 +238,16 @@ function descStyle(entry) {
           <template v-else-if="entry.layout === 'split-right'">
             <div class="container banner__split">
               <div class="banner__split-text">
-                <div class="banner__meta">
-                  <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
-                  <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
-                </div>
-                <h2 class="banner__title" v-html="entry.title"></h2>
-                <div v-if="entry.description" class="banner__desc" v-html="entry.description"></div>
-                <div class="banner__actions" v-if="entry.ctaUrl || entry.ctaLabel">
-                  <a v-if="entry.ctaUrl" class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
+                <template v-if="entry.showText !== false">
+                  <div class="banner__meta">
+                    <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
+                    <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
+                  </div>
+                  <h2 class="banner__title" v-html="entry.title"></h2>
+                  <div v-if="entry.description" class="banner__desc" v-html="entry.description"></div>
+                </template>
+                <div class="banner__actions" v-if="entry.showCta !== false && entry.ctaUrl">
+                  <a class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
                     {{ entry.ctaLabel || 'Learn more' }}
                     <span class="arrow" aria-hidden="true">→</span>
                   </a>
@@ -197,14 +266,16 @@ function descStyle(entry) {
                 <img v-if="entry.image" :src="entry.image" :alt="''" />
               </figure>
               <div class="banner__split-text">
-                <div class="banner__meta">
-                  <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
-                  <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
-                </div>
-                <h2 class="banner__title" v-html="entry.title"></h2>
-                <div v-if="entry.description" class="banner__desc" v-html="entry.description"></div>
-                <div class="banner__actions" v-if="entry.ctaUrl || entry.ctaLabel">
-                  <a v-if="entry.ctaUrl" class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
+                <template v-if="entry.showText !== false">
+                  <div class="banner__meta">
+                    <span v-if="entry.badge" class="banner__badge">{{ entry.badge }}</span>
+                    <span v-if="entry.type" class="banner__type">{{ entry.type }}</span>
+                  </div>
+                  <h2 class="banner__title" v-html="entry.title"></h2>
+                  <div v-if="entry.description" class="banner__desc" v-html="entry.description"></div>
+                </template>
+                <div class="banner__actions" v-if="entry.showCta !== false && entry.ctaUrl">
+                  <a class="button button-primary" :href="entry.ctaUrl" target="_blank" rel="noopener">
                     {{ entry.ctaLabel || 'Learn more' }}
                     <span class="arrow" aria-hidden="true">→</span>
                   </a>
@@ -306,6 +377,41 @@ function descStyle(entry) {
 .banner__slide.align-center .banner__actions { justify-content: center; }
 .banner__slide.align-right  .banner__meta,
 .banner__slide.align-right  .banner__actions { justify-content: flex-end; }
+
+/* ── Video layout ───────────────────────────────────────── */
+.banner__video-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 24px;
+}
+/* text beside the video — never over it */
+.banner__video-wrap.has-text {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+  justify-items: stretch;
+}
+.banner__video-wrap.has-text .banner__video { width: 100%; }
+.banner__video-text { max-width: 560px; }
+.banner__video-cta { justify-content: center; }
+.banner__video {
+  width: min(100%, 1080px);
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(247, 242, 233, 0.12);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+}
+.banner__video iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
 
 /* ── Overlay layout ─────────────────────────────────────── */
 .banner__bg {
@@ -423,6 +529,47 @@ function descStyle(entry) {
 .banner__desc :deep(em) { font-style: italic; color: var(--em-color, var(--accent-on-dark)); font-weight: 500; }
 .banner__desc :deep(strong) { font-weight: 700; color: inherit; }
 .banner__desc :deep(br) { display: block; content: ""; margin-top: 6px; }
+
+/* Admin copy is authored as full HTML — keep anything it can contain inside
+   the slide instead of letting it blow the layout out. */
+.banner__desc :deep(p) { margin: 0 0 0.7em; }
+.banner__desc :deep(p:last-child) { margin-bottom: 0; }
+.banner__desc :deep(a) { color: var(--em-color, var(--accent-on-dark)); text-decoration: underline; }
+.banner__desc :deep(h1),
+.banner__desc :deep(h2),
+.banner__desc :deep(h3),
+.banner__desc :deep(h4) {
+  font-family: var(--font-display); font-weight: 600; line-height: 1.2;
+  margin: 0.6em 0 0.35em; color: var(--paper);
+}
+.banner__desc :deep(h1) { font-size: 1.5em; }
+.banner__desc :deep(h2) { font-size: 1.3em; }
+.banner__desc :deep(h3) { font-size: 1.15em; }
+.banner__desc :deep(h4) { font-size: 1em; }
+.banner__desc :deep(ul), .banner__desc :deep(ol) { margin: 0 0 0.7em; padding-left: 1.4em; }
+.banner__desc :deep(li) { margin: 0.25em 0; }
+.banner__desc :deep(blockquote) {
+  margin: 0.7em 0; padding: 2px 0 2px 14px;
+  border-left: 3px solid var(--em-color, var(--accent-on-dark)); font-style: italic;
+}
+.banner__desc :deep(pre) {
+  font-family: var(--font-mono); font-size: 0.86em;
+  background: rgba(0, 0, 0, 0.24); border-radius: var(--radius-sm);
+  padding: 10px 12px; white-space: pre-wrap; overflow-x: auto;
+}
+.banner__desc :deep(hr) { border: none; border-top: 1px solid var(--hairline-light); margin: 1em 0; }
+.banner__desc :deep(img) { max-width: 100%; height: auto; border-radius: var(--radius-sm); }
+.banner__desc :deep(iframe) { max-width: 100%; border: none; }
+.banner__desc :deep(.rte-embed) { margin: 0.8em 0; max-width: 100%; }
+.banner__desc :deep(.rte-embed iframe) {
+  width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius: var(--radius-sm);
+}
+.banner__desc :deep(table) {
+  width: 100%; border-collapse: collapse; margin: 0.8em 0; font-size: 0.9em;
+}
+.banner__desc :deep(th), .banner__desc :deep(td) {
+  border: 1px solid var(--hairline-light); padding: 6px 9px; text-align: left;
+}
 .banner__actions {
   display: flex; align-items: center; gap: 18px;
   flex-wrap: wrap;
@@ -505,7 +652,8 @@ function descStyle(entry) {
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 960px) {
   .banner__split,
-  .banner__split.reverse {
+  .banner__split.reverse,
+  .banner__video-wrap.has-text {
     grid-template-columns: 1fr;
     gap: 28px;
   }

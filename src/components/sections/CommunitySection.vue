@@ -2,33 +2,27 @@
 import SectionLabel from '@/components/ui/SectionLabel.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { externalLinks } from '@/stores/content.js'
+import { useI18n } from '@/i18n'
 
-const features = [
-  'Weekly discussions',
-  'Early-access resources',
-  'Courses and drafts',
-  'Community feedback',
-]
+const { t } = useI18n()
 </script>
 
 <template>
   <section id="skool" class="skool section section--cream" aria-labelledby="skool-title">
     <div class="container skool__grid">
       <div class="skool__copy">
-        <SectionLabel index="04" label="Community" />
-        <h2 id="skool-title" class="display-2 skool__title fade-up">
-          The workshop, not just <em>another content library.</em>
-        </h2>
+        <SectionLabel index="04" :label="t('skool.label')" />
+        <h2 id="skool-title" class="display-2 skool__title fade-up" v-html="t('skool.title')"></h2>
         <p class="prose skool__lead fade-up">
-          Join the Agile Periodization community for discussions, Q&As, early-access resources, working drafts, implementation questions, and the practical mess of applying these ideas with real athletes and real constraints.
+          {{ t('skool.lead') }}
         </p>
 
         <ul class="skool__features fade-up" aria-label="What you get">
-          <li v-for="f in features" :key="f">{{ f }}</li>
+          <li v-for="f in t('skool.features')" :key="f">{{ f }}</li>
         </ul>
 
         <div class="skool__cta fade-up">
-          <AppButton variant="primary" :href="externalLinks.skool" external>Join the Community</AppButton>
+          <AppButton variant="primary" :href="externalLinks.skool" external>{{ t('skool.cta') }}</AppButton>
         </div>
       </div>
 
@@ -37,8 +31,8 @@ const features = [
           <img src="/assets/images/philosophical-foundations.png" alt="Agile Periodization Philosophical Foundations" class="skool__img" />
         </div>
         <div class="skool__badge">
-          <strong>Best first door</strong>
-          <p>If someone wants context, discussion, and implementation help, send them here first.</p>
+          <strong>{{ t('skool.badgeTitle') }}</strong>
+          <p>{{ t('skool.badgeText') }}</p>
         </div>
       </div>
     </div>

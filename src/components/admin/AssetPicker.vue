@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { ASSET_IMAGES } from '@/lib/assets.js'
+import { api } from '@/lib/api.js'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -8,10 +9,43 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'selected'])
 
-const MAX_UPLOAD_BYTES = 1024 * 1024  // 1 MB cap
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024  // matches the backend's 8 MB limit
 
-const tab = ref('gallery')
+const tab = ref('library')
 const search = ref('')
+
+// ── Media library (shared, API-backed) ───────────────────
+const mediaItems = ref(null)   // null = not fetched yet
+const mediaLoading = ref(false)
+const mediaError = ref('')
+
+async function loadMedia() {
+  if (mediaItems.value) return
+  mediaLoading.value = true
+  mediaError.value = ''
+  try {
+    mediaItems.value = await api.admin.media()
+  } catch (e) {
+    mediaError.value = e.message
+    mediaItems.value = []
+  } finally {
+    mediaLoading.value = false
+  }
+}
+
+const filteredMedia = computed(() => {
+  const list = mediaItems.value || []
+  const q = search.value.trim().toLowerCase()
+  if (!q) return list
+  return list.filter(
+    (m) => (m.original_name || '').toLowerCase().includes(q) || (m.source || '').toLowerCase().includes(q),
+  )
+})
+
+function selectMedia(m) {
+  emit('selected', m.url)
+  close()
+}
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -49,6 +83,9 @@ function onDrop(e) {
   if (file) handleFile(file)
 }
 
+const uploadFile = ref(null)
+const uploadBusy = ref(false)
+
 function handleFile(file) {
   uploadError.value = ''
   if (!file.type.startsWith('image/')) {
@@ -56,9 +93,10 @@ function handleFile(file) {
     return
   }
   if (file.size > MAX_UPLOAD_BYTES) {
-    uploadError.value = `Image too large (${fmtSize(file.size)}). Max 1 MB for browser-only storage.`
+    uploadError.value = `Image too large (${fmtSize(file.size)}). Max 8 MB.`
     return
   }
+  uploadFile.value = file
   uploadName.value = file.name
   uploadSize.value = file.size
   const reader = new FileReader()
@@ -67,14 +105,25 @@ function handleFile(file) {
   reader.readAsDataURL(file)
 }
 
-function commitUpload() {
-  if (!uploadPreview.value) return
-  emit('selected', uploadPreview.value)
-  close()
+async function commitUpload() {
+  if (!uploadFile.value || uploadBusy.value) return
+  uploadBusy.value = true
+  uploadError.value = ''
+  try {
+    const media = await api.admin.uploadMedia(uploadFile.value)
+    if (mediaItems.value) mediaItems.value.unshift(media)
+    emit('selected', media.url)
+    close()
+  } catch (e) {
+    uploadError.value = e.message
+  } finally {
+    uploadBusy.value = false
+  }
 }
 
 function resetUpload() {
   uploadPreview.value = null
+  uploadFile.value = null
   uploadName.value = ''
   uploadSize.value = 0
   uploadError.value = ''
@@ -96,8 +145,12 @@ function fmtSize(b) {
 // Close on escape
 function onKey(e) { if (e.key === 'Escape' && props.open) close() }
 watch(() => props.open, (now) => {
-  if (now) document.addEventListener('keydown', onKey)
-  else document.removeEventListener('keydown', onKey)
+  if (now) {
+    document.addEventListener('keydown', onKey)
+    loadMedia()
+  } else {
+    document.removeEventListener('keydown', onKey)
+  }
 })
 
 function isCurrent(path) {
@@ -113,17 +166,51 @@ function isCurrent(path) {
           <header class="picker__head">
             <div>
               <p class="eyebrow">Choose image</p>
-              <h2>{{ tab === 'gallery' ? 'Browse assets' : 'Upload image' }}</h2>
+              <h2>{{ tab === 'library' ? 'Media library' : tab === 'gallery' ? 'Browse assets' : 'Upload image' }}</h2>
             </div>
             <button class="picker__close" @click="close" aria-label="Close">×</button>
           </header>
 
           <nav class="picker__tabs" role="tablist">
-            <button :class="{ 'is-on': tab === 'gallery' }" @click="tab = 'gallery'" role="tab">Gallery</button>
+            <button :class="{ 'is-on': tab === 'library' }" @click="tab = 'library'" role="tab">Library</button>
+            <button :class="{ 'is-on': tab === 'gallery' }" @click="tab = 'gallery'" role="tab">Site assets</button>
             <button :class="{ 'is-on': tab === 'upload' }" @click="tab = 'upload'" role="tab">Upload</button>
           </nav>
 
           <div class="picker__body">
+            <!-- ═════════ MEDIA LIBRARY ═════════ -->
+            <section v-if="tab === 'library'" class="gallery">
+              <div class="gallery__toolbar">
+                <input class="gallery__search" type="search" v-model="search"
+                       placeholder="Filter by name or source…" />
+                <span class="gallery__count">{{ filteredMedia.length }}</span>
+              </div>
+              <p v-if="mediaError" class="upload__error">{{ mediaError }}</p>
+              <div v-if="mediaLoading" class="gallery__empty"><p>Loading media…</p></div>
+              <div v-else-if="filteredMedia.length" class="gallery__grid">
+                <button v-for="m in filteredMedia" :key="m.id"
+                        class="gallery__item"
+                        :class="{ 'is-current': isCurrent(m.url) }"
+                        @click="selectMedia(m)">
+                  <div class="gallery__thumb">
+                    <img :src="m.url" :alt="m.original_name || ''" loading="lazy" />
+                    <span v-if="isCurrent(m.url)" class="gallery__current-badge">In use</span>
+                  </div>
+                  <div class="gallery__caption">
+                    <span class="gallery__name">{{ m.original_name || m.path.split('/').pop() }}</span>
+                    <span class="gallery__tag">{{ m.source }}</span>
+                  </div>
+                </button>
+              </div>
+              <div v-else class="gallery__empty">
+                <p>No media yet — upload your first image.</p>
+                <button class="button button-secondary button-small" @click="tab = 'upload'">Go to Upload</button>
+              </div>
+              <p class="gallery__hint">
+                The library is shared project-wide — imported Substack &amp; Payhip covers land here automatically. Manage it under <strong>Media</strong> in the sidebar.
+              </p>
+            </section>
+
             <!-- ═════════ GALLERY ═════════ -->
             <section v-if="tab === 'gallery'" class="gallery">
               <div class="gallery__toolbar">
@@ -170,7 +257,7 @@ function isCurrent(path) {
                    @keydown.enter="openFilePicker">
                 <div class="upload__zone-inner">
                   <p class="upload__zone-title">Drop an image here</p>
-                  <p class="upload__zone-sub">or click to choose · PNG / JPG / SVG / WebP · max 1 MB</p>
+                  <p class="upload__zone-sub">or click to choose · PNG / JPG / SVG / WebP · max 8 MB</p>
                 </div>
               </div>
 
@@ -180,13 +267,13 @@ function isCurrent(path) {
                 </div>
                 <div class="upload__meta">
                   <p><strong>{{ uploadName }}</strong></p>
-                  <p class="upload__meta-sub">{{ fmtSize(uploadSize) }} · stored as inline data URL</p>
+                  <p class="upload__meta-sub">{{ fmtSize(uploadSize) }} · uploads to the shared media library</p>
                 </div>
                 <div class="upload__actions">
-                  <button class="button button-secondary" @click="resetUpload">Choose another</button>
-                  <button class="button button-primary" @click="commitUpload">
-                    Use this image
-                    <span class="arrow" aria-hidden="true">→</span>
+                  <button class="button button-secondary" :disabled="uploadBusy" @click="resetUpload">Choose another</button>
+                  <button class="button button-primary" :disabled="uploadBusy" @click="commitUpload">
+                    {{ uploadBusy ? 'Uploading…' : 'Upload & use' }}
+                    <span v-if="!uploadBusy" class="arrow" aria-hidden="true">→</span>
                   </button>
                 </div>
               </div>
@@ -197,7 +284,7 @@ function isCurrent(path) {
               <p v-if="uploadError" class="upload__error">{{ uploadError }}</p>
 
               <p class="upload__note">
-                Uploads embed the image into the entry as a data URL — works only in this browser. For permanent / shared assets, drop the file into <code>/public/assets/images/</code> and use the Gallery tab.
+                Uploads go to the project's media storage and appear in the Library tab and the <strong>Media</strong> admin page — permanent and shared, not browser-only.
               </p>
             </section>
           </div>

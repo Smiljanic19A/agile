@@ -2,6 +2,9 @@
 import AppButton from '@/components/ui/AppButton.vue'
 import HexLattice from '@/components/ui/HexLattice.vue'
 import { externalLinks } from '@/stores/content.js'
+import { useI18n } from '@/i18n'
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -10,14 +13,14 @@ import { externalLinks } from '@/stores/content.js'
       <HexLattice variant="grid" tone="on-teal" mask="radial" :size="110" :accents="6" :seed="77" />
     </div>
     <div class="container cta-final__inner">
-      <p class="cta-final__eyebrow">Final call</p>
-      <h2 class="cta-final__title display-2">Reality will break the plan.<br><em>Build a system that learns.</em></h2>
+      <p class="cta-final__eyebrow">{{ t('ctaFinal.eyebrow') }}</p>
+      <h2 class="cta-final__title display-2" v-html="t('ctaFinal.title')"></h2>
       <p class="cta-final__sub">
-        Join coaches, sport scientists, physios, and performance practitioners building better training systems through discussion, tools, courses, and shared experiments.
+        {{ t('ctaFinal.sub') }}
       </p>
       <div class="cta-final__cta">
-        <AppButton variant="onTeal" :href="externalLinks.skool" external>Join the Agile Periodization Community</AppButton>
-        <AppButton variant="ghostOnTeal" href="#updates">Get Updates</AppButton>
+        <AppButton variant="onTeal" :href="externalLinks.skool" external>{{ t('ctaFinal.join') }}</AppButton>
+        <AppButton variant="ghostOnTeal" href="#updates">{{ t('ctaFinal.getUpdates') }}</AppButton>
       </div>
     </div>
   </section>

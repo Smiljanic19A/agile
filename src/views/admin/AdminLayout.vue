@@ -19,11 +19,14 @@ const sections = [
       { to: '/admin/articles', label: 'Articles', icon: 'doc' },
       { to: '/admin/products', label: 'Products', icon: 'box' },
       { to: '/admin/footer-links', label: 'Footer Links', icon: 'link' },
+      { to: '/admin/bio', label: 'Contact Bio', icon: 'user' },
+      { to: '/admin/media', label: 'Media', icon: 'image' },
     ],
   },
   {
     label: 'Operations',
     items: [
+      { to: '/admin/mail', label: 'Mail', icon: 'mail' },
       { to: '/admin/imports', label: 'Imports', icon: 'sync' },
       { to: '/admin/settings', label: 'API Keys', icon: 'key' },
     ],
@@ -93,6 +96,22 @@ async function doLogout() {
               <svg v-else-if="item.icon === 'key'" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="6" cy="12" r="3.4"/>
                 <path d="M8.5 9.5L15 3m-2.5 2.5l2 2M10.5 7.5l2 2"/>
+              </svg>
+              <!-- image -->
+              <svg v-else-if="item.icon === 'image'" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="14" height="12" rx="1.5"/>
+                <circle cx="6.2" cy="7.2" r="1.4"/>
+                <path d="M2.5 13l3.8-3.8 2.7 2.7 3-3L16 12.5"/>
+              </svg>
+              <!-- user -->
+              <svg v-else-if="item.icon === 'user'" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="6.2" r="3.1"/>
+                <path d="M3.5 15.5a5.5 5.5 0 0 1 11 0"/>
+              </svg>
+              <!-- mail -->
+              <svg v-else-if="item.icon === 'mail'" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3.8" width="14" height="10.4" rx="1.5"/>
+                <path d="M2.6 5l6.4 5 6.4-5"/>
               </svg>
             </span>
             {{ item.label }}

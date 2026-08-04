@@ -5,7 +5,9 @@ import { useContentStore, externalLinks } from '@/stores/content.js'
 import SectionLabel from '@/components/ui/SectionLabel.vue'
 import BlogCard from '@/components/ui/BlogCard.vue'
 import AppButton from '@/components/ui/AppButton.vue'
+import { useI18n } from '@/i18n'
 
+const { t } = useI18n()
 const content = useContentStore()
 const { articles } = storeToRefs(content)
 
@@ -17,13 +19,11 @@ const featuredArticles = computed(() => articles.value.slice(0, 3))
     <div class="container">
       <header class="blog__head fade-up">
         <div class="blog__head-left">
-          <SectionLabel index="05" label="Substack Articles" />
-          <h2 id="blog-title" class="display-2 blog__title">
-            Latest from <em>the blog.</em>
-          </h2>
+          <SectionLabel index="05" :label="t('blog.label')" />
+          <h2 id="blog-title" class="display-2 blog__title" v-html="t('blog.title')"></h2>
         </div>
         <div class="blog__head-right is-desktop-only">
-          <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>Read all articles</AppButton>
+          <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>{{ t('blog.readAll') }}</AppButton>
         </div>
       </header>
 
@@ -36,7 +36,7 @@ const featuredArticles = computed(() => articles.value.slice(0, 3))
       </div>
 
       <div class="blog__mobile-cta is-mobile-only">
-        <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>Read all articles</AppButton>
+        <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>{{ t('blog.readAll') }}</AppButton>
       </div>
     </div>
   </section>

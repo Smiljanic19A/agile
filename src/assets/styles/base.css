@@ -47,6 +47,11 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* anchored sections land clear of the fixed nav */
+[id] {
+  scroll-margin-top: 84px;
+}
+
 body {
   font-family: var(--font-body);
   font-size: 16px;

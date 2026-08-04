@@ -1,32 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { api } from '@/lib/api.js'
+import { sanitizeHtml } from '@/lib/sanitize.js'
 
-const ALLOWED_TAGS = new Set(['EM', 'STRONG', 'B', 'I', 'BR'])
-
-export function sanitizeHtml(html) {
-  if (!html) return ''
-  if (typeof document === 'undefined') return String(html)
-  const wrap = document.createElement('div')
-  wrap.innerHTML = String(html)
-  const walk = (node) => {
-    for (const child of Array.from(node.childNodes)) {
-      if (child.nodeType === 1) {
-        if (!ALLOWED_TAGS.has(child.tagName)) {
-          while (child.firstChild) node.insertBefore(child.firstChild, child)
-          node.removeChild(child)
-        } else {
-          for (const attr of Array.from(child.attributes)) child.removeAttribute(attr.name)
-          walk(child)
-        }
-      } else if (child.nodeType === 8) {
-        node.removeChild(child)
-      }
-    }
-  }
-  walk(wrap)
-  return wrap.innerHTML.trim()
-}
+// Re-exported for the components that already import it from here.
+export { sanitizeHtml }
 
 function blankEntry(overrides = {}) {
   return {
@@ -35,6 +13,7 @@ function blankEntry(overrides = {}) {
     title: '',
     description: '',
     image: '',
+    videoUrl: '',
     type: '',
     badge: '',
     ctaLabel: 'Learn more',
@@ -42,6 +21,8 @@ function blankEntry(overrides = {}) {
     layout: 'overlay',
     textAlign: 'left',
     verticalAlign: 'bottom',
+    showText: true,
+    showCta: true,
     titleColor: '',
     descColor: '',
     accentColor: '',
@@ -58,6 +39,7 @@ function fromApi(e) {
     title:         e.title        || '',
     description:   e.description  || '',
     image:         e.image_url    || '',
+    videoUrl:      e.video_url    || '',
     type:          e.type         || '',
     badge:         e.badge        || '',
     ctaLabel:      e.cta_label    || 'Learn more',
@@ -65,6 +47,8 @@ function fromApi(e) {
     layout:        e.layout       || 'overlay',
     textAlign:     e.text_align   || 'left',
     verticalAlign: e.vertical_align || 'bottom',
+    showText:      e.show_text    !== false,
+    showCta:       e.show_cta     !== false,
     titleColor:    e.title_color  || '',
     descColor:     e.desc_color   || '',
     accentColor:   e.accent_color || '',
@@ -79,6 +63,7 @@ function toApi(entry) {
     title:           sanitizeHtml(entry.title),
     description:     sanitizeHtml(entry.description),
     image_url:       entry.image       || null,
+    video_url:       entry.videoUrl    || null,
     type:            entry.type        || null,
     badge:           entry.badge       || null,
     cta_label:       entry.ctaLabel    || 'Learn more',
@@ -86,6 +71,8 @@ function toApi(entry) {
     layout:          entry.layout      || 'overlay',
     text_align:      entry.textAlign   || 'left',
     vertical_align:  entry.verticalAlign || 'bottom',
+    show_text:       entry.showText    !== false,
+    show_cta:        entry.showCta     !== false,
     title_color:     entry.titleColor  || null,
     desc_color:      entry.descColor   || null,
     accent_color:    entry.accentColor || null,

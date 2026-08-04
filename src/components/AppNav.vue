@@ -1,8 +1,11 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import HexLattice from '@/components/ui/HexLattice.vue'
 import { externalLinks } from '@/stores/content.js'
+import { useI18n } from '@/i18n'
+
+const { t, locale, setLocale, locales } = useI18n()
 
 const scrolled = ref(false)
 const open = ref(false)
@@ -23,13 +26,13 @@ onBeforeUnmount(() => {
 
 watch(open, (v) => { document.body.style.overflow = v ? 'hidden' : '' })
 
-const links = [
-  { href: '#featured',   label: 'Featured' },
-  { href: '#what-is-ap', label: 'What is AP?' },
-  { href: '#ecosystem',  label: 'Ecosystem' },
-  { href: '#resources',  label: 'Resources' },
-  { href: '#contact',    label: 'Contact' },
-]
+const links = computed(() => [
+  { href: '#featured',   label: t('nav.featured') },
+  { href: '#what-is-ap', label: t('nav.whatIsAp') },
+  { href: '#ecosystem',  label: t('nav.ecosystem') },
+  { href: '#resources',  label: t('nav.resources') },
+  { href: '#contact',    label: t('nav.contact') },
+])
 
 const close = () => (open.value = false)
 </script>
@@ -51,9 +54,21 @@ const close = () => (open.value = false)
         <a v-for="l in links" :key="l.href" :href="l.href" class="nav__link">{{ l.label }}</a>
       </nav>
 
-      <a :href="externalLinks.skool" target="_blank" rel="noopener noreferrer" class="nav__cta">
-        Join Skool <span aria-hidden="true" class="nav__cta-arrow">→</span>
-      </a>
+      <div class="nav__right">
+        <div class="nav__lang" role="group" aria-label="Language">
+          <button
+            v-for="l in locales" :key="l.id"
+            class="nav__lang-btn"
+            :class="{ 'is-on': locale === l.id }"
+            :aria-pressed="locale === l.id"
+            :title="l.name"
+            @click="setLocale(l.id)"
+          >{{ l.label }}</button>
+        </div>
+        <a :href="externalLinks.skool" target="_blank" rel="noopener noreferrer" class="nav__cta">
+          {{ t('nav.joinSkool') }} <span aria-hidden="true" class="nav__cta-arrow">→</span>
+        </a>
+      </div>
 
       <button class="nav__burger" :aria-expanded="open" :aria-label="open ? 'Close menu' : 'Open menu'" @click="open = !open">
         <span class="nav__burger-line" :class="{ 'is-open': open }"></span>
@@ -90,13 +105,22 @@ const close = () => (open.value = false)
         </a>
       </nav>
       <div class="menu__foot container">
+        <div class="menu__lang" role="group" aria-label="Language">
+          <button
+            v-for="l in locales" :key="l.id"
+            class="menu__lang-btn"
+            :class="{ 'is-on': locale === l.id }"
+            :aria-pressed="locale === l.id"
+            @click="setLocale(l.id)"
+          >{{ l.name }}</button>
+        </div>
         <div class="menu__cta">
-          <AppButton variant="onTeal" :href="externalLinks.skool" external>Join the Community</AppButton>
-          <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>Read Articles</AppButton>
+          <AppButton variant="onTeal" :href="externalLinks.skool" external>{{ t('nav.joinCommunity') }}</AppButton>
+          <AppButton variant="ghostOnTeal" :href="externalLinks.substack" external>{{ t('nav.readArticles') }}</AppButton>
         </div>
         <div class="menu__meta">
           <span>Agile Periodization</span>
-          <span>MJ · Belgrade / Global</span>
+          <span>{{ t('nav.menuMeta') }}</span>
         </div>
       </div>
     </div>
@@ -139,8 +163,23 @@ const close = () => (open.value = false)
 }
 .nav__link:hover::after { transform: scaleX(1); }
 
+.nav__right { justify-self: end; display: none; align-items: center; gap: 12px; }
+
+.nav__lang {
+  display: inline-flex; gap: 2px; padding: 3px;
+  border: 1px solid var(--hairline-light); border-radius: 999px;
+}
+.nav__lang-btn {
+  padding: 4px 9px; border-radius: 999px; border: none; background: transparent;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em;
+  color: currentColor; opacity: 0.6; cursor: pointer;
+  transition: opacity 180ms var(--ease), background 180ms var(--ease);
+}
+.nav__lang-btn:hover { opacity: 0.9; }
+.nav__lang-btn.is-on { opacity: 1; background: rgba(127, 127, 127, 0.16); font-weight: 600; }
+
 .nav__cta {
-  justify-self: end; display: none; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center; gap: 8px;
   font-size: 13px; font-weight: 500; padding: 9px 16px; border: 1px solid var(--hairline-light-strong);
   border-radius: 999px; color: currentColor;
   transition: background 200ms var(--ease), color 200ms var(--ease), border-color 200ms var(--ease);
@@ -203,6 +242,15 @@ const close = () => (open.value = false)
 .menu__foot {
   flex-shrink: 0; padding-top: 24px; padding-bottom: 28px; border-top: 1px solid var(--hairline-light);
 }
+.menu__lang { display: flex; gap: 8px; margin-bottom: 18px; }
+.menu__lang-btn {
+  flex: 1; padding: 11px 14px; border-radius: 999px;
+  border: 1px solid var(--hairline-light-strong); background: transparent;
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--cream); opacity: 0.7; cursor: pointer;
+  transition: opacity 180ms var(--ease), background 180ms var(--ease), color 180ms var(--ease);
+}
+.menu__lang-btn.is-on { opacity: 1; background: var(--cream); color: var(--ink); font-weight: 600; }
 .menu__cta { display: flex; flex-direction: column; gap: 10px; }
 .menu__cta :deep(.btn) { width: 100%; justify-content: center; padding: 16px 22px; font-size: 14px; }
 .menu__meta {
@@ -215,7 +263,7 @@ const close = () => (open.value = false)
 .menu-enter-from { opacity: 0; transform: translateY(-12px); }
 .menu-leave-to { opacity: 0; transform: translateY(-8px); }
 
-@media (min-width: 900px) { .nav__links { display: inline-flex; } .nav__cta { display: inline-flex; } .nav__burger { display: none; } }
+@media (min-width: 900px) { .nav__links { display: inline-flex; } .nav__right { display: inline-flex; } .nav__burger { display: none; } }
 @media (max-width: 899px) {
   .nav__inner { height: 60px; grid-template-columns: 1fr auto; gap: 12px; }
   .nav__wordmark { font-size: 13px; }

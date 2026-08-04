@@ -1,75 +1,87 @@
 <script setup>
+import { ref, computed, onMounted } from 'vue'
 import { externalLinks } from '@/stores/content.js'
+import { api } from '@/lib/api.js'
+import { useI18n } from '@/i18n'
 import HexLattice from '@/components/ui/HexLattice.vue'
 
+const { t } = useI18n()
 const year = new Date().getFullYear()
 
-const explore = [
-  { href: '#what-is-ap', label: 'What is AP?' },
-  { href: '#ecosystem',  label: 'Ecosystem' },
-  { href: '#substack',   label: 'Articles' },
-  { href: '#resources',  label: 'Resources' },
-  { href: '#contact',    label: 'Contact' },
-]
+// Fallbacks mirror the seeded defaults; replaced by the API as soon as it responds.
+const fallbackColumns = computed(() => [
+  {
+    id: 'explore',
+    title: t('footer.explore'),
+    links: [
+      { label: 'What is AP?', url: '#what-is-ap', is_external: false },
+      { label: 'Ecosystem',   url: '#ecosystem',  is_external: false },
+      { label: 'Articles',    url: '#substack',   is_external: false },
+      { label: 'Resources',   url: '#resources',  is_external: false },
+      { label: 'Contact',     url: '#contact',    is_external: false },
+    ],
+  },
+  {
+    id: 'ecosystem',
+    title: t('footer.ecosystem'),
+    links: [
+      { label: 'Substack',        url: externalLinks.substack, is_external: true },
+      { label: 'Skool Community', url: externalLinks.skool,    is_external: true },
+      { label: 'Payhip Store',    url: externalLinks.payhip,   is_external: true },
+      { label: 'Books on Amazon', url: externalLinks.amazon,   is_external: true },
+    ],
+  },
+  {
+    id: 'connect',
+    title: t('footer.connect'),
+    links: [
+      { label: 'LinkedIn',  url: externalLinks.linkedin,  is_external: true },
+      { label: 'Instagram', url: externalLinks.instagram, is_external: true },
+      { label: 'GitHub',    url: externalLinks.github,    is_external: true },
+    ],
+  },
+])
 
-const ecosystem = [
-  { href: externalLinks.substack, label: 'Substack' },
-  { href: externalLinks.skool,    label: 'Skool Community' },
-  { href: externalLinks.payhip,   label: 'Payhip Store' },
-  { href: externalLinks.amazon,   label: 'Books on Amazon' },
-]
+const apiColumns = ref(null)
 
-const connect = [
-  { href: externalLinks.linkedin,  label: 'LinkedIn' },
-  { href: externalLinks.instagram, label: 'Instagram' },
-  { href: externalLinks.github,    label: 'GitHub' },
-]
+onMounted(async () => {
+  try {
+    const data = await api.footer()
+    if (Array.isArray(data) && data.length) {
+      apiColumns.value = data.map((g) => ({ id: g.slug, title: g.title, links: g.links || [] }))
+    }
+  } catch {
+    // keep fallback — footer must never look broken
+  }
+})
+
+const columns = computed(() => apiColumns.value || fallbackColumns.value)
 </script>
 
 <template>
   <footer class="ft">
-    <div class="container ft__inner">
+    <div class="container ft__inner" :style="{ '--ft-cols': columns.length }">
       <div class="ft__brand">
         <div class="ft__brand-mark">
           <img src="/logo.png" alt="" aria-hidden="true" />
         </div>
         <h3 class="ft__brand-title">Agile Periodization</h3>
-        <p class="ft__brand-tag is-desktop-only">For practitioners who plan with intent and adapt without panic.</p>
+        <p class="ft__brand-tag is-desktop-only">{{ t('footer.tagline') }}</p>
       </div>
 
-      <nav class="ft__col" aria-label="Explore">
-        <h4 class="ft__col-title">Explore</h4>
+      <nav v-for="col in columns" :key="col.id" class="ft__col" :aria-label="col.title">
+        <h4 class="ft__col-title">{{ col.title }}</h4>
         <ul>
-          <li v-for="l in explore" :key="l.href"><a :href="l.href">{{ l.label }}</a></li>
-        </ul>
-      </nav>
-
-      <nav class="ft__col" aria-label="Ecosystem">
-        <h4 class="ft__col-title">Ecosystem</h4>
-        <ul>
-          <li v-for="l in ecosystem" :key="l.href">
-            <a :href="l.href" target="_blank" rel="noopener noreferrer">{{ l.label }} <span class="ft__ext" aria-hidden="true">↗</span></a>
+          <li v-for="l in col.links" :key="l.id || l.url + l.label">
+            <a
+              :href="l.url"
+              :target="l.is_external ? '_blank' : undefined"
+              :rel="l.is_external ? 'noopener noreferrer' : undefined"
+            >{{ l.label }} <span v-if="l.is_external" class="ft__ext" aria-hidden="true">↗</span></a>
           </li>
         </ul>
       </nav>
 
-      <nav class="ft__col" aria-label="Connect">
-        <h4 class="ft__col-title">Connect</h4>
-        <ul>
-          <li v-for="l in connect" :key="l.href">
-            <a :href="l.href" target="_blank" rel="noopener noreferrer">{{ l.label }} <span class="ft__ext" aria-hidden="true">↗</span></a>
-          </li>
-        </ul>
-      </nav>
-
-      <div class="ft__col ft__col--news">
-        <h4 class="ft__col-title">Get updates</h4>
-        <form class="ft__form" @submit.prevent>
-          <input type="email" placeholder="you@example.com" required />
-          <button type="submit" aria-label="Subscribe"><span aria-hidden="true">→</span></button>
-        </form>
-        <p class="ft__col-fine">New essays and tools. Twice a month at most.</p>
-      </div>
     </div>
 
     <div class="ft__watermark" aria-hidden="true">
@@ -78,8 +90,8 @@ const connect = [
 
     <div class="container ft__bottom">
       <span class="ft__copy">© {{ year }} Agile Periodization · Mladen Jovanović</span>
-      <span class="ft__credo">Built by practitioners, for practitioners.</span>
-      <span class="ft__build is-desktop-only"><span>v 1.0</span><span>·</span><span>Belgrade / Global</span></span>
+      <span class="ft__credo">{{ t('footer.credo') }}</span>
+      <span class="ft__build is-desktop-only"><span>v 1.0</span><span>·</span><span>{{ t('footer.location') }}</span></span>
     </div>
   </footer>
 </template>
@@ -90,7 +102,7 @@ const connect = [
   padding-top: clamp(80px, 9vw, 130px); padding-bottom: 28px; overflow: hidden;
 }
 .ft__inner {
-  display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1.2fr; gap: 56px; align-items: start;
+  display: grid; grid-template-columns: 1.4fr repeat(var(--ft-cols, 3), 1fr); gap: 56px; align-items: start;
   position: relative; z-index: 1; padding-bottom: clamp(60px, 7vw, 100px); border-bottom: 1px solid var(--hairline-light);
 }
 
@@ -107,13 +119,6 @@ const connect = [
 .ft__col li a:hover { opacity: 1; }
 .ft__ext { font-size: 10px; opacity: 0.6; }
 
-.ft__col--news .ft__form { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
-.ft__col--news input { background: transparent; border: 1px solid var(--hairline-light-strong); border-radius: 999px; color: var(--cream); padding: 11px 16px; font-size: 13px; min-width: 0; }
-.ft__col--news input::placeholder { color: rgba(247, 242, 233, 0.5); }
-.ft__col--news input:focus { outline: none; border-color: var(--cream); }
-.ft__col--news button { background: var(--cream); color: var(--ink); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; transition: transform 220ms var(--ease); }
-.ft__col--news button:hover { transform: translateX(3px); }
-.ft__col-fine { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; color: rgba(247, 242, 233, 0.72); margin: 0; }
 
 .ft__watermark { position: absolute; right: -8vw; bottom: -10vw; width: clamp(420px, 60vw, 880px); height: clamp(380px, 50vw, 760px); pointer-events: none; z-index: 0; opacity: 0.85; }
 
@@ -133,7 +138,6 @@ const connect = [
   .ft__inner { grid-template-columns: 1fr 1fr; gap: 28px; padding-bottom: clamp(36px, 9vw, 64px); }
   .ft__brand { grid-column: 1 / -1; gap: 12px; }
   .ft__brand-title { font-size: 20px; }
-  .ft__col--news { grid-column: 1 / -1; }
   .ft__bottom { flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 18px; font-size: 10.5px; }
 }
 @media (max-width: 420px) { .ft__inner { grid-template-columns: 1fr; gap: 24px; } }

@@ -1,7 +1,15 @@
 <script setup>
+import { ref } from 'vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import HexLattice from '@/components/ui/HexLattice.vue'
+import DecisionLoop from '@/components/ui/DecisionLoop.vue'
 import { externalLinks } from '@/stores/content.js'
+import { useI18n } from '@/i18n'
+
+const { t } = useI18n()
+
+// Phase currently in focus on the Decision Loop (emitted by the ring)
+const phase = ref(0)
 </script>
 
 <template>
@@ -12,72 +20,59 @@ import { externalLinks } from '@/stores/content.js'
 
     <div class="container hero__inner">
       <div class="hero__copy fade-up">
-        <p class="hero__eyebrow">Agile Periodization</p>
+        <p class="hero__eyebrow">{{ t('hero.eyebrow') }}</p>
 
         <h1 id="hero-title" class="hero__title">
-          Build training systems that survive contact with reality.
+          {{ t('hero.title') }}
         </h1>
 
         <p class="hero__sub">
-          Agile Periodization helps coaches, sport scientists, physios, and performance teams turn fragile plans into adaptive systems: plan, train, monitor, review, adapt, repeat.
+          {{ t('hero.sub') }}
         </p>
 
         <div class="hero__cta">
-          <AppButton variant="onTeal" :href="externalLinks.skool" external>Join the Community</AppButton>
-          <AppButton variant="ghostOnTeal" href="#updates">Get Updates</AppButton>
+          <AppButton variant="onTeal" :href="externalLinks.skool" external>{{ t('hero.joinCommunity') }}</AppButton>
+          <AppButton variant="ghostOnTeal" href="#updates">{{ t('hero.getUpdates') }}</AppButton>
         </div>
 
-        <p class="hero__note">Tired of annual plans dying after the first injury, travel week, fatigue spike, or staff meeting?</p>
+        <p class="hero__note">{{ t('hero.note') }}</p>
 
         <div class="hero__tags" aria-label="What Agile Periodization provides">
-          <span v-for="t in ['Philosophy', 'Frameworks', 'Tools', 'Education', 'Community', 'Field notes']" :key="t" class="hero__tag">{{ t }}</span>
+          <span v-for="tag in t('hero.tags')" :key="tag" class="hero__tag">{{ tag }}</span>
         </div>
       </div>
 
       <div class="hero__visual fade-up" aria-hidden="true">
         <div class="hero__board">
-          <p class="hero__board-kicker">Adaptive operating system</p>
-          <div class="hero__ring-wrap">
-            <!-- dashed ring + directional tick marks -->
-            <svg class="hero__ring-svg" viewBox="0 0 280 280" aria-hidden="true">
-              <circle cx="140" cy="140" r="102" fill="none"
-                stroke="rgba(243,243,243,0.14)" stroke-width="1"
-                stroke-dasharray="5 5" />
-              <!-- 6 small direction arrows on the ring at 30°, 90°, 150°, 210°, 270°, 330° (between nodes) -->
-              <g stroke="rgba(243,243,243,0.3)" stroke-width="1.2" fill="none">
-                <polyline points="141,38 146,33 151,38"  transform="rotate(0,   140,140)" />
-                <polyline points="141,38 146,33 151,38"  transform="rotate(60,  140,140)" />
-                <polyline points="141,38 146,33 151,38"  transform="rotate(120, 140,140)" />
-                <polyline points="141,38 146,33 151,38"  transform="rotate(180, 140,140)" />
-                <polyline points="141,38 146,33 151,38"  transform="rotate(240, 140,140)" />
-                <polyline points="141,38 146,33 151,38"  transform="rotate(300, 140,140)" />
-              </g>
-            </svg>
+          <p class="hero__board-kicker">{{ t('hero.boardKicker') }}</p>
 
-            <!-- 6 nodes, each rotated into position then counter-rotated so text stays upright -->
-            <span class="hero__node" style="--i:0">Plan</span>
-            <span class="hero__node" style="--i:1">Train</span>
-            <span class="hero__node" style="--i:2">Monitor</span>
-            <span class="hero__node" style="--i:3">Review</span>
-            <span class="hero__node" style="--i:4">Adapt</span>
-            <span class="hero__node" style="--i:5">Repeat</span>
-
-            <div class="hero__loop-center">Decision<br>Loop</div>
+          <!-- The Decision Loop — splash screen lands here -->
+          <div id="hero-loop" class="hero__ring-wrap">
+            <DecisionLoop interactive @step="phase = $event.i" />
           </div>
-          <div class="hero__reality">
-            <span class="hero__reality-label">Reality pushing in</span>
-            <div class="hero__reality-tags">
-              <span v-for="t in ['Injuries', 'Fatigue', 'Travel', 'Rehab setbacks', 'Noisy data', 'Competition']" :key="t">{{ t }}</span>
+
+          <!-- The focused phase, explained; advances as the loop cycles -->
+          <div class="hero__phase">
+            <Transition name="phase" mode="out-in">
+              <div class="hero__phase-body" :key="phase">
+                <span class="hero__phase-num">{{ String(phase + 1).padStart(2, '0') }}</span>
+                <div class="hero__phase-text">
+                  <strong>{{ t('hero.loop')[phase] }}</strong>
+                  <p>{{ t('hero.loopSteps')[phase] }}</p>
+                </div>
+              </div>
+            </Transition>
+            <div class="hero__phase-track">
+              <span class="hero__phase-bar" :key="phase"></span>
             </div>
           </div>
         </div>
-
       </div>
     </div>
 
     <div class="hero__scroll" aria-hidden="true">
       <span class="hero__scroll-line"></span>
-      <span class="hero__scroll-label">Scroll</span>
+      <span class="hero__scroll-label">{{ t('hero.scroll') }}</span>
     </div>
   </section>
 </template>
@@ -143,59 +138,56 @@ import { externalLinks } from '@/stores/content.js'
 
 .hero__ring-wrap {
   position: relative;
-  width: 280px; height: 280px;
+  width: min(320px, 100%); aspect-ratio: 1;
   margin: 0 auto 18px;
 }
 
-.hero__ring-svg {
-  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+/* Focused phase caption — sits below "Reality pushing in" */
+.hero__phase {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(243, 243, 243, 0.1);
 }
+.hero__phase-body {
+  display: flex; align-items: baseline; gap: 12px;
+  min-height: 44px;
+}
+.hero__phase-num {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; color: rgba(243, 243, 243, 0.55);
+  flex-shrink: 0;
+}
+/* The board stays dark in every theme — keep this text explicitly light
+   (var(--cream) flips to dark ink under theme-v3). */
+.hero__phase-text strong {
+  display: block;
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
+  letter-spacing: -0.01em; color: #f3f3f3; margin-bottom: 2px;
+}
+.hero__phase-text p {
+  font-size: 12.5px; line-height: 1.5; color: rgba(243, 243, 243, 0.72); margin: 0;
+}
+.hero__phase-track {
+  margin-top: 12px; height: 2px; border-radius: 999px;
+  background: rgba(243, 243, 243, 0.12); overflow: hidden;
+}
+.hero__phase-bar {
+  display: block; height: 100%; width: 100%;
+  border-radius: inherit;
+  background: rgba(243, 243, 243, 0.55);
+  transform: scaleX(0); transform-origin: left;
+  animation: heroPhaseFill 4.2s linear forwards;
+}
+@keyframes heroPhaseFill { to { transform: scaleX(1); } }
 
-/* Each node sits at the ring radius, rotated then counter-rotated so text stays upright */
-.hero__node {
-  position: absolute;
-  top: 50%; left: 50%;
-  /* radius = 102px, half node size ~(44px × 15px) */
-  transform:
-    translate(-50%, -50%)
-    rotate(calc(var(--i, 0) * 60deg))
-    translateY(-102px)
-    rotate(calc(var(--i, 0) * -60deg));
+.phase-enter-active, .phase-leave-active { transition: opacity 240ms ease, transform 240ms ease; }
+.phase-enter-from { opacity: 0; transform: translateY(5px); }
+.phase-leave-to { opacity: 0; transform: translateY(-5px); }
 
-  padding: 7px 13px; white-space: nowrap;
-  background: rgba(243, 243, 243, 0.08); border: 1px solid rgba(243, 243, 243, 0.16);
-  border-radius: 999px;
-  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: rgba(243, 243, 243, 0.9);
+@media (prefers-reduced-motion: reduce) {
+  .hero__phase-bar { animation: none; transform: scaleX(1); }
+  .phase-enter-active, .phase-leave-active { transition: none; }
 }
-
-.hero__loop-center {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  background: var(--teal-deep); border: 1.5px solid rgba(243, 243, 243, 0.22);
-  border-radius: 999px; padding: 11px 18px;
-  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(243, 243, 243, 0.95); text-align: center; line-height: 1.45;
-  white-space: nowrap; z-index: 2;
-  box-shadow: 0 0 0 6px rgba(14,26,26,0.35), 0 6px 20px rgba(0,0,0,0.4);
-}
-
-.hero__reality {
-  padding-top: 16px; border-top: 1px solid rgba(243, 243, 243, 0.1);
-}
-.hero__reality-label {
-  display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em;
-  text-transform: uppercase; color: rgba(243, 243, 243, 0.5); margin-bottom: 10px;
-}
-.hero__reality-tags {
-  display: flex; flex-wrap: wrap; gap: 6px;
-}
-.hero__reality-tags span {
-  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em;
-  padding: 4px 10px; border-radius: 999px;
-  background: rgba(243, 243, 243, 0.06); border: 1px solid rgba(243, 243, 243, 0.12);
-  color: rgba(243, 243, 243, 0.72);
-}
-
 
 .hero__scroll {
   position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
@@ -208,7 +200,9 @@ import { externalLinks } from '@/stores/content.js'
   animation: scrollLine 2.6s ease-in-out infinite; transform-origin: top;
 }
 @keyframes scrollLine { 0%,100% { transform: scaleY(0.4); opacity: 0.4; } 50% { transform: scaleY(1); opacity: 0.85; } }
-@media (prefers-reduced-motion: reduce) { .hero__scroll-line { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero__scroll-line { animation: none; }
+}
 
 @media (max-width: 960px) {
   .hero__inner { grid-template-columns: 1fr; gap: 48px; padding-top: 20px; }
@@ -222,7 +216,6 @@ import { externalLinks } from '@/stores/content.js'
   .hero__sub { margin-bottom: 28px; font-size: 15px; }
   .hero__cta { flex-direction: column; width: 100%; gap: 10px; }
   .hero__cta :deep(.btn) { width: 100%; justify-content: center; }
-  .hero__stack { display: none; }
   .hero__scroll { bottom: 20px; }
 }
 

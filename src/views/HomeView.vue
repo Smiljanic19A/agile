@@ -1,7 +1,8 @@
 <script setup>
-import { onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useContentStore } from '@/stores/content.js'
 import { useFeaturedStore } from '@/stores/featured.js'
+import SplashScreen from '@/components/SplashScreen.vue'
 import AppNav from '@/components/AppNav.vue'
 import HeroSection from '@/components/sections/HeroSection.vue'
 import FeaturedBanner from '@/components/sections/FeaturedBanner.vue'
@@ -10,7 +11,6 @@ import EcosystemSection from '@/components/sections/EcosystemSection.vue'
 import CommunitySection from '@/components/sections/CommunitySection.vue'
 import BlogSection from '@/components/sections/BlogSection.vue'
 import StoreSection from '@/components/sections/StoreSection.vue'
-import AmazonSection from '@/components/sections/AmazonSection.vue'
 import NewsletterSection from '@/components/sections/NewsletterSection.vue'
 import ContactSection from '@/components/sections/ContactSection.vue'
 import FinalCTASection from '@/components/sections/FinalCTASection.vue'
@@ -18,6 +18,14 @@ import AppFooter from '@/components/sections/AppFooter.vue'
 
 const content  = useContentStore()
 const featured = useFeaturedStore()
+
+// Splash plays on a fresh page load, not on in-app back/forward navigation.
+const splashing = ref(!window.__apSplashPlayed)
+
+function splashDone() {
+  splashing.value = false
+  window.__apSplashPlayed = true
+}
 
 let io = null
 onMounted(() => {
@@ -39,6 +47,7 @@ onBeforeUnmount(() => { io?.disconnect() })
 
 <template>
   <div id="top">
+    <SplashScreen v-if="splashing" @done="splashDone" />
     <AppNav />
     <main>
       <HeroSection />
@@ -48,7 +57,6 @@ onBeforeUnmount(() => { io?.disconnect() })
       <CommunitySection />
       <BlogSection />
       <StoreSection />
-      <AmazonSection />
       <NewsletterSection />
       <ContactSection />
       <FinalCTASection />

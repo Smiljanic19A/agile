@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from './AdminLayout.vue'
+import ImageField from '@/components/admin/ImageField.vue'
 import { api } from '@/lib/api.js'
 
 const articles = ref([])
@@ -10,6 +11,11 @@ const editing = ref(null)
 const saving = ref(false)
 const deleteConfirm = ref(null)
 const search = ref('')
+const typeFilter = ref('')
+const sortBy = ref('newest')
+const selected = ref([])
+const bulkConfirm = ref(false)
+const bulkBusy = ref(false)
 
 const TYPES = ['Article', 'Essay', 'Field note', 'Field Notes', 'Theory', 'Conditioning', 'Tool']
 
@@ -26,13 +32,56 @@ const blank = () => ({
   published_at: '',
 })
 
+const presentTypes = computed(() =>
+  [...new Set(articles.value.map((a) => a.type).filter(Boolean))].sort(),
+)
+
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
-  if (!q) return articles.value
-  return articles.value.filter((a) =>
-    a.title.toLowerCase().includes(q) || (a.type || '').toLowerCase().includes(q)
-  )
+  let list = articles.value
+  if (typeFilter.value) list = list.filter((a) => a.type === typeFilter.value)
+  if (q) {
+    list = list.filter(
+      (a) => a.title.toLowerCase().includes(q) || (a.type || '').toLowerCase().includes(q),
+    )
+  }
+  const arr = [...list]
+  switch (sortBy.value) {
+    case 'oldest': arr.sort((a, b) => new Date(a.published_at || 0) - new Date(b.published_at || 0)); break
+    case 'title':  arr.sort((a, b) => a.title.localeCompare(b.title)); break
+    case 'order':  arr.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)); break
+    default:       arr.sort((a, b) => new Date(b.published_at || 0) - new Date(a.published_at || 0))
+  }
+  return arr
 })
+
+// ── Bulk selection ──────────────────────────────────────────
+function toggleSelect(id) {
+  selected.value = selected.value.includes(id)
+    ? selected.value.filter((x) => x !== id)
+    : [...selected.value, id]
+}
+const allSelected = computed(
+  () => filtered.value.length > 0 && filtered.value.every((a) => selected.value.includes(a.id)),
+)
+function toggleSelectAll() {
+  selected.value = allSelected.value ? [] : filtered.value.map((a) => a.id)
+}
+
+async function bulkDelete() {
+  bulkBusy.value = true
+  error.value = ''
+  try {
+    for (const id of selected.value) await api.admin.deleteArticle(id)
+    selected.value = []
+    bulkConfirm.value = false
+    await load()
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    bulkBusy.value = false
+  }
+}
 
 onMounted(load)
 
@@ -125,6 +174,21 @@ function fmtDate(d) {
           </svg>
           <input v-model="search" class="adm-input" placeholder="Search by title or type…" />
         </div>
+        <select v-model="typeFilter" class="adm-input aa__select" title="Filter by type">
+          <option value="">All types</option>
+          <option v-for="ty in presentTypes" :key="ty" :value="ty">{{ ty }}</option>
+        </select>
+        <select v-model="sortBy" class="adm-input aa__select" title="Sort">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="title">Title A–Z</option>
+          <option value="order">Display order</option>
+        </select>
+        <button
+          v-if="selected.length"
+          class="adm-btn adm-btn--danger adm-btn--sm"
+          @click="bulkConfirm = true"
+        >Delete selected ({{ selected.length }})</button>
         <span class="aa__count">{{ filtered.length }} of {{ articles.length }}</span>
       </div>
 
@@ -136,17 +200,33 @@ function fmtDate(d) {
       <div v-else-if="filtered.length" class="adm-table-wrap">
         <table class="adm-table">
           <thead>
-            <tr><th>Title</th><th>Type</th><th>Published</th><th>Order</th><th>Featured</th><th></th></tr>
+            <tr>
+              <th class="aa__th-check">
+                <input type="checkbox" :checked="allSelected" title="Select all shown" @change="toggleSelectAll" />
+              </th>
+              <th>Title</th><th>Type</th><th>Published</th><th>Order</th><th>Featured</th><th></th>
+            </tr>
           </thead>
           <tbody>
-            <tr v-for="a in filtered" :key="a.id" class="aa__row" @click="openEdit(a)">
+            <tr
+              v-for="a in filtered" :key="a.id"
+              class="aa__row"
+              :class="{ 'is-selected': selected.includes(a.id) }"
+              @click="openEdit(a)"
+            >
+              <td class="aa__td-check" @click.stop>
+                <input type="checkbox" :checked="selected.includes(a.id)" @change="toggleSelect(a.id)" />
+              </td>
               <td class="aa__td-title">
                 <span class="aa__title-text">{{ a.title }}</span>
                 <a :href="a.url" target="_blank" rel="noopener" class="aa__open" title="Open article" @click.stop>↗</a>
               </td>
               <td><span class="adm-badge adm-badge--teal">{{ a.type }}</span></td>
               <td>{{ fmtDate(a.published_at) }}</td>
-              <td>{{ a.display_order }}</td>
+              <td>
+                <span v-if="a.display_order > 0" class="adm-badge adm-badge--teal">#{{ a.display_order }}</span>
+                <span v-else style="opacity: 0.45">auto</span>
+              </td>
               <td>
                 <span v-if="a.is_featured" class="adm-badge adm-badge--ok">Featured</span>
               </td>
@@ -220,10 +300,7 @@ function fmtDate(d) {
             <label class="adm-label">URL <span class="req">*</span></label>
             <input v-model="editing.url" required type="url" class="adm-input adm-input--mono" placeholder="https://…" />
           </div>
-          <div class="adm-field">
-            <label class="adm-label">Image URL</label>
-            <input v-model="editing.image_url" class="adm-input adm-input--mono" placeholder="https://… (optional)" />
-          </div>
+          <ImageField v-model="editing.image_url" label="Image" hint="Paste a URL, or browse the media library / upload." />
           <div class="adm-grid-2">
             <div class="adm-field">
               <label class="adm-label">Published date</label>
@@ -231,7 +308,8 @@ function fmtDate(d) {
             </div>
             <div class="adm-field">
               <label class="adm-label">Display order</label>
-              <input v-model="editing.display_order" type="number" class="adm-input" />
+              <input v-model="editing.display_order" type="number" min="0" class="adm-input" />
+              <p class="adm-hint">0 = automatic (newest first). Set 1, 2, 3… to pin articles to the front in that order.</p>
             </div>
           </div>
           <label class="adm-switch">
@@ -267,6 +345,20 @@ function fmtDate(d) {
         </div>
       </div>
     </div>
+
+    <!-- Bulk delete confirm -->
+    <div v-if="bulkConfirm" class="adm-modal-bg" @click.self="bulkConfirm = false">
+      <div class="adm-modal">
+        <h3>Delete {{ selected.length }} article{{ selected.length === 1 ? '' : 's' }}?</h3>
+        <p>All selected articles will be removed. This cannot be undone.</p>
+        <div class="adm-modal-actions">
+          <button class="adm-btn" :disabled="bulkBusy" @click="bulkConfirm = false">Keep them</button>
+          <button class="adm-btn adm-btn--danger" :disabled="bulkBusy" @click="bulkDelete">
+            {{ bulkBusy ? 'Deleting…' : `Delete ${selected.length}` }}
+          </button>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
@@ -275,7 +367,14 @@ function fmtDate(d) {
 .aa__search { position: relative; flex: 1; max-width: 360px; }
 .aa__search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--adm-mute-2); pointer-events: none; }
 .aa__search .adm-input { padding-left: 36px; }
-.aa__count { font-family: var(--font-mono); font-size: 11px; color: var(--adm-mute); }
+.aa__count { font-family: var(--font-mono); font-size: 11px; color: var(--adm-mute); margin-left: auto; }
+.aa__select { width: auto; padding-top: 9px; padding-bottom: 9px; }
+
+.aa__th-check, .aa__td-check { width: 34px; }
+.aa__th-check input, .aa__td-check input {
+  width: 15px; height: 15px; accent-color: var(--adm-teal); cursor: pointer;
+}
+.aa__row.is-selected td { background: var(--adm-teal-mist); }
 
 .aa__row { cursor: pointer; }
 .aa__td-title { max-width: 380px; }

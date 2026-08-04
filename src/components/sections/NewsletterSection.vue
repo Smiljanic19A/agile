@@ -1,47 +1,104 @@
 <script setup>
-import { ref } from 'vue'
+/**
+ * Newsletter signup — served by Kit (formerly ConvertKit).
+ *
+ * The embed is Kit's own script, so whatever Mladen configures in the Kit
+ * dashboard (copy, image, colours, double opt-in) is what renders here; nothing
+ * about the form is duplicated in this repo.
+ *
+ * Because a <script> tag written into a template never executes, the element is
+ * created programmatically. Kit's loader inserts the form next to its own
+ * script tag, so appending it inside `hostEl` puts the form exactly there.
+ *
+ * If the script is blocked (ad/tracker blockers routinely eat it) we fall back
+ * to a plain form that POSTs to the same Kit endpoint — no JS required.
+ */
+import { onMounted, onBeforeUnmount, ref } from 'vue'
 import SectionLabel from '@/components/ui/SectionLabel.vue'
+import { useI18n } from '@/i18n'
 
-const name = ref('')
-const email = ref('')
-const sent = ref(false)
+const { t } = useI18n()
 
-function submit() {
-  if (!email.value.trim()) return
-  sent.value = true
+const KIT_UID       = '72f847aefe'
+const KIT_SCRIPT    = `https://agileperiodization.kit.com/${KIT_UID}/index.js`
+const KIT_ACTION    = 'https://app.kit.com/forms/9760554/subscriptions'
+const KIT_TIMEOUT   = 4000
+
+const hostEl = ref(null)
+const kitReady = ref(false)   // Kit rendered its form
+const kitFailed = ref(false)  // blocked or slow — show our own form
+
+let observer = null
+let timer = null
+
+onMounted(() => {
+  if (!hostEl.value) return
+
+  // Kit paints asynchronously; watch for the form landing in our container.
+  observer = new MutationObserver(() => {
+    if (hostEl.value?.querySelector('.formkit-form')) {
+      kitReady.value = true
+      cleanup()
+    }
+  })
+  observer.observe(hostEl.value, { childList: true, subtree: true })
+
+  const script = document.createElement('script')
+  script.async = true
+  script.src = KIT_SCRIPT
+  script.setAttribute('data-uid', KIT_UID)
+  script.onerror = () => { kitFailed.value = true; cleanup() }
+  hostEl.value.appendChild(script)
+
+  timer = setTimeout(() => {
+    if (!kitReady.value) kitFailed.value = true
+    cleanup()
+  }, KIT_TIMEOUT)
+})
+
+onBeforeUnmount(cleanup)
+
+function cleanup() {
+  if (observer) { observer.disconnect(); observer = null }
+  if (timer) { clearTimeout(timer); timer = null }
 }
 </script>
 
 <template>
   <section id="updates" class="updates section section--cream" aria-labelledby="updates-title">
     <div class="container">
-      <div class="updates__card fade-up">
+      <div class="updates__head fade-up">
+        <SectionLabel index="08" :label="t('updates.label')" />
+        <h2 id="updates-title" class="sr-only">{{ t('updates.title') }}</h2>
+      </div>
+
+      <!-- Kit renders here -->
+      <div ref="hostEl" class="updates__kit" :class="{ 'is-ready': kitReady }"></div>
+
+      <!-- Shown only if Kit's script never arrives -->
+      <div v-if="kitFailed && !kitReady" class="updates__card">
         <div class="updates__copy">
-          <SectionLabel index="08" label="Updates" />
-          <h2 id="updates-title" class="display-2 updates__title">Stay in the loop.</h2>
-          <p class="updates__desc">
-            Get new articles, tools, product releases, rehab/RTP work, workshops, and community updates.
-          </p>
+          <h3 class="display-2 updates__title">{{ t('updates.title') }}</h3>
+          <p class="updates__desc">{{ t('updates.desc') }}</p>
         </div>
 
-        <Transition name="fade-soft" mode="out-in">
-          <div v-if="sent" class="updates__confirm">
-            You're on the list. I'll send useful updates, not daily noise.
-          </div>
-          <form v-else class="updates__form" @submit.prevent="submit" novalidate>
-            <div class="updates__fields">
-              <div class="updates__field">
-                <label for="u-name" class="updates__label">Name</label>
-                <input id="u-name" v-model="name" type="text" placeholder="Your name" class="updates__input" />
-              </div>
-              <div class="updates__field">
-                <label for="u-email" class="updates__label">Email <span class="updates__req" aria-hidden="true">*</span></label>
-                <input id="u-email" v-model="email" type="email" placeholder="you@example.com" required class="updates__input" />
-              </div>
+        <form class="updates__form" :action="KIT_ACTION" method="post">
+          <div class="updates__fields">
+            <div class="updates__field">
+              <label for="u-name" class="updates__label">{{ t('updates.name') }}</label>
+              <input id="u-name" name="fields[first_name]" type="text"
+                     :placeholder="t('updates.namePlaceholder')" class="updates__input" />
             </div>
-            <button type="submit" class="updates__btn" :disabled="!email.trim()">Get Updates</button>
-          </form>
-        </Transition>
+            <div class="updates__field">
+              <label for="u-email" class="updates__label">
+                {{ t('updates.email') }} <span class="updates__req" aria-hidden="true">*</span>
+              </label>
+              <input id="u-email" name="email_address" type="email" required
+                     :placeholder="t('updates.emailPlaceholder')" class="updates__input" />
+            </div>
+          </div>
+          <button type="submit" class="updates__btn">{{ t('updates.button') }}</button>
+        </form>
       </div>
     </div>
   </section>
@@ -50,6 +107,15 @@ function submit() {
 <style scoped>
 .updates { background: var(--paper); color: var(--ink); }
 
+.updates__head { margin-bottom: 28px; }
+
+/* Kit ships its own stylesheet scoped to .formkit-form — we only centre it and
+   stop the fixed 700px max-width from looking stranded on wide screens. */
+.updates__kit { display: flex; justify-content: center; }
+.updates__kit :deep(.formkit-form) { width: 100%; max-width: 760px; }
+.updates__kit :deep(img) { max-width: 100%; height: auto; }
+
+/* ── Fallback form (Kit blocked) ───────────────────────────────── */
 .updates__card {
   background: var(--teal); color: #f3f3f3;
   border-radius: var(--radius-lg); padding: clamp(48px, 6vw, 80px);
@@ -90,16 +156,7 @@ function submit() {
   letter-spacing: -0.01em; cursor: pointer; align-self: flex-start;
   transition: background 200ms var(--ease), transform 180ms var(--ease);
 }
-.updates__btn:hover:not(:disabled) { background: rgba(243,243,243,0.88); transform: translateY(-1px); }
-.updates__btn:disabled { opacity: 0.38; cursor: default; }
-
-.updates__confirm {
-  font-family: var(--font-display); font-size: 20px; font-weight: 600; line-height: 1.4;
-  color: rgba(243,243,243,0.95); padding: 24px 0;
-}
-
-.fade-soft-enter-active, .fade-soft-leave-active { transition: opacity 200ms var(--ease); }
-.fade-soft-enter-from, .fade-soft-leave-to { opacity: 0; }
+.updates__btn:hover { background: rgba(243,243,243,0.88); transform: translateY(-1px); }
 
 @media (max-width: 900px) {
   .updates__card { grid-template-columns: 1fr; gap: 40px; }

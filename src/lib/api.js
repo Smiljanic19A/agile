@@ -12,6 +12,18 @@ async function request(method, path, body) {
   return data
 }
 
+async function requestForm(method, path, formData) {
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers: { Accept: 'application/json' }, // browser sets the multipart boundary
+    body: formData,
+  })
+  if (res.status === 204) return null
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw Object.assign(new Error(data.message || `HTTP ${res.status}`), { status: res.status, data })
+  return data
+}
+
 function qs(params) {
   const p = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null && v !== '') p.append(k, v)
@@ -25,6 +37,9 @@ export const api = {
   products:    (params = {}) => request('GET', '/products' + qs(params)),
   featured:    ()             => request('GET', '/featured'),
   footerLinks: ()             => request('GET', '/footer-links'),
+  footer:      ()             => request('GET', '/footer'),
+  contactBio:  ()             => request('GET', '/contact-bio'),
+  submitContact: (data)       => request('POST', '/contact', data),
 
   // Admin — all open, protected only by the frontend login guard
   admin: {
@@ -49,8 +64,34 @@ export const api = {
     importPayhip:    ()           => request('POST', '/admin/imports/payhip'),
     verifyPayhipKey: ()           => request('POST', '/admin/imports/payhip-verify'),
 
+    media:       ()     => request('GET', '/admin/media'),
+    uploadMedia: (file) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      return requestForm('POST', '/admin/media', fd)
+    },
+    deleteMedia: (id)   => request('DELETE', `/admin/media/${id}`),
+
     settings:       ()            => request('GET', '/admin/settings'),
     updateSettings: (settings)    => request('PUT', '/admin/settings', { settings }),
+
+    updateContactBio:   (data)  => request('PUT', '/admin/contact-bio', data),
+    contactEmail:       ()      => request('GET', '/admin/contact-email'),
+    updateContactEmail: (email) => request('PUT', '/admin/contact-email', { email }),
+
+    mailSettings:       ()      => request('GET',  '/admin/mail-settings'),
+    updateMailSettings: (data)  => request('PUT',  '/admin/mail-settings', data),
+    sendTestMail:       (email) => request('POST', '/admin/mail-test', { email }),
+
+    messages:      ()         => request('GET',    '/admin/messages'),
+    updateMessage: (id, data) => request('PUT',    `/admin/messages/${id}`, data),
+    deleteMessage: (id)       => request('DELETE', `/admin/messages/${id}`),
+
+    footerGroups:       ()         => request('GET',    '/admin/footer-groups'),
+    createFooterGroup:  (data)     => request('POST',   '/admin/footer-groups', data),
+    updateFooterGroup:  (id, data) => request('PUT',    `/admin/footer-groups/${id}`, data),
+    deleteFooterGroup:  (id)       => request('DELETE', `/admin/footer-groups/${id}`),
+    reorderFooterGroups:(order)    => request('PUT',    '/admin/footer-groups-reorder', { order }),
 
     footerLinks:       ()         => request('GET',    '/admin/footer-links'),
     createFooterLink:  (data)     => request('POST',   '/admin/footer-links', data),

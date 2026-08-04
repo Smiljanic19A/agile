@@ -32,7 +32,9 @@ export function sourceLabel(item) {
 
 function normalizeArticle(a, idx) {
   return {
-    id:          String(a.id),
+    // Prefixed — article and product DB ids overlap, and merged `items`
+    // lookups (e.g. the banner's source-item picker) need global uniqueness.
+    id:          'a-' + a.id,
     type:        a.type || 'Article',
     category:    'writing',
     title:       a.title,
@@ -52,7 +54,7 @@ function normalizeArticle(a, idx) {
 
 function normalizeProduct(p) {
   return {
-    id:          String(p.id),
+    id:          'p-' + p.id,
     type:        p.type || 'Course',
     category:    p.category || 'courses',
     title:       p.title,

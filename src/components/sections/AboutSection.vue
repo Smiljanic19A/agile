@@ -1,20 +1,9 @@
 <script setup>
 import HexLattice from '@/components/ui/HexLattice.vue'
 import SectionLabel from '@/components/ui/SectionLabel.vue'
+import { useI18n } from '@/i18n'
 
-const problems = [
-  'The annual plan dies early',
-  'Monitoring becomes decoration',
-  'Dose becomes the religion',
-  'Transfer is assumed',
-  'The coach carries the system',
-]
-
-const pillars = [
-  { name: 'Philosophy', desc: 'Mental models for uncertainty, robustness, adaptation, transfer, and decision-making.' },
-  { name: 'Frameworks', desc: 'Roll-on planning, microcycles, reviews, pivots, minimum viable plans, and explore/exploit cycles.' },
-  { name: 'Tools', desc: 'Courses, books, templates, software, articles, and community experiments that turn ideas into practice.' },
-]
+const { t } = useI18n()
 </script>
 
 <template>
@@ -25,27 +14,27 @@ const pillars = [
 
     <div class="container about__inner">
       <div class="about__col-main">
-        <SectionLabel index="02" label="What is AP?" />
+        <SectionLabel index="02" :label="t('about.label')" />
 
         <h2 id="ap-heading" class="about__headline display-2 fade-up">
-          Your problem is not that you need another template.
+          {{ t('about.headline') }}
         </h2>
 
         <p class="about__lead fade-up">
-          Most training systems are built for a clean world. Coaching happens in a messy one. The annual plan dies early. Monitoring becomes decoration. Rehab does not follow a straight line. Conditioning does not transfer automatically. Athletes respond differently. And the staff still needs to make a decision by Monday morning.
+          {{ t('about.lead') }}
         </p>
 
         <div class="about__problem-strip fade-up" aria-label="Common problems Agile Periodization addresses">
-          <span v-for="p in problems" :key="p">{{ p }}</span>
+          <span v-for="p in t('about.problems')" :key="p">{{ p }}</span>
         </div>
 
-        <h3 class="about__sub-heading fade-up">Agile Periodization is planning under uncertainty.</h3>
+        <h3 class="about__sub-heading fade-up">{{ t('about.subHeading') }}</h3>
         <p class="about__body fade-up">
-          It turns the plan from a prediction into a learning system. Instead of pretending we can control the whole season in advance, AP uses short iterative cycles, review rhythms, simple decision rules, and practical tools to keep the system moving without becoming random.
+          {{ t('about.body') }}
         </p>
 
         <div class="about__pillars fade-up">
-          <div v-for="p in pillars" :key="p.name" class="about__pillar">
+          <div v-for="p in t('about.pillars')" :key="p.name" class="about__pillar">
             <strong class="about__pillar-name">{{ p.name }}</strong>
             <span class="about__pillar-desc">{{ p.desc }}</span>
           </div>
@@ -54,22 +43,18 @@ const pillars = [
 
       <div class="about__col-side">
         <div class="about__reframe fade-up">
-          <h3 class="about__reframe-title">Stop worshipping the plan. Improve the system.</h3>
+          <h3 class="about__reframe-title">{{ t('about.reframeTitle') }}</h3>
           <div class="about__compare">
             <div class="about__compare-col">
-              <span class="about__compare-label">Traditional planning</span>
+              <span class="about__compare-label">{{ t('about.traditional') }}</span>
               <ul>
-                <li>Locks in the season too early</li>
-                <li>Starts with blocks, dose, and calendar</li>
-                <li>Reacts after the plan breaks</li>
+                <li v-for="item in t('about.traditionalItems')" :key="item">{{ item }}</li>
               </ul>
             </div>
             <div class="about__compare-col about__compare-col--ap">
-              <span class="about__compare-label">Agile Periodization</span>
+              <span class="about__compare-label">{{ t('about.ap') }}</span>
               <ul>
-                <li>Plans in short, rolling cycles</li>
-                <li>Starts with the problem to solve</li>
-                <li>Reviews, learns, and adapts the next step</li>
+                <li v-for="item in t('about.apItems')" :key="item">{{ item }}</li>
               </ul>
             </div>
           </div>

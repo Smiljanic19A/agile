@@ -1,68 +1,34 @@
 <script setup>
+import { computed } from 'vue'
 import SectionLabel from '@/components/ui/SectionLabel.vue'
 import { externalLinks } from '@/stores/content.js'
+import { useI18n } from '@/i18n'
 
-const cards = [
-  {
-    tag: 'Main door',
-    title: 'Skool Community',
-    desc: 'The main workshop for discussions, Q&As, early-access resources, tools, drafts, and implementation.',
-    cta: 'Join Skool',
-    href: externalLinks.skool,
-    external: true,
-    primary: true,
-  },
-  {
-    tag: 'Articles',
-    title: 'Substack',
-    desc: 'Long-form essays and field notes on planning, conditioning, monitoring, skill acquisition, theory, and coaching under uncertainty.',
-    cta: 'Read Articles',
-    href: '#substack',
-    external: false,
-  },
-  {
-    tag: 'Digital resources',
-    title: 'Payhip',
-    desc: 'Courses, PDFs, tools, templates, and working resources.',
-    cta: 'Browse Resources',
-    href: '#resources',
-    external: false,
-  },
-  {
-    tag: 'Paperback books',
-    title: 'Amazon',
-    desc: 'Physical and manual formats for long-form reading.',
-    cta: 'View Books',
-    href: '#amazon',
-    external: false,
-  },
-  {
-    tag: 'Updates',
-    title: 'Stay in the loop',
-    desc: 'New articles, tools, releases, rehab/RTP work, workshops, and community updates.',
-    cta: 'Get Updates',
-    href: '#updates',
-    external: false,
-  },
-  {
-    tag: 'Direct work',
-    title: 'Contact',
-    desc: 'Consulting, workshops, staff education, athlete programming, individual performance management, and audits.',
-    cta: 'Work With Me',
-    href: '#contact',
-    external: false,
-  },
+const { t } = useI18n()
+
+// Card copy lives in the i18n dictionaries; targets stay fixed.
+const targets = [
+  { href: externalLinks.skool, external: true, primary: true },
+  { href: '#substack',  external: false },
+  { href: '#resources', external: false },
+  { href: '#amazon',    external: false },
+  { href: '#updates',   external: false },
+  { href: '#contact',   external: false },
 ]
+
+const cards = computed(() =>
+  t('eco.cards').map((card, i) => ({ ...card, ...targets[i] }))
+)
 </script>
 
 <template>
   <section id="ecosystem" class="eco section section--teal" aria-labelledby="eco-title">
     <div class="container">
       <header class="eco__head fade-up">
-        <SectionLabel index="03" label="The Ecosystem" />
+        <SectionLabel index="03" :label="t('eco.label')" />
         <div class="eco__head-row">
-          <h2 id="eco-title" class="display-2 eco__title">One philosophy. <em>Multiple doors in.</em></h2>
-          <p class="eco__sub">Skool is the main door. Articles, products, books, updates, and direct work support the journey.</p>
+          <h2 id="eco-title" class="display-2 eco__title" v-html="t('eco.title')"></h2>
+          <p class="eco__sub">{{ t('eco.sub') }}</p>
         </div>
       </header>
 

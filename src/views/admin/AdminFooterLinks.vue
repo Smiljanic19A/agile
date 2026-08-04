@@ -3,18 +3,16 @@ import { ref, computed, onMounted } from 'vue'
 import AdminLayout from './AdminLayout.vue'
 import { api } from '@/lib/api.js'
 
-const GROUPS = [
-  { id: 'explore',   name: 'Explore',   hint: 'On-page navigation — anchors like #contact work best.' },
-  { id: 'ecosystem', name: 'Ecosystem', hint: 'Your platforms: Substack, Skool, Payhip, Amazon…' },
-  { id: 'connect',   name: 'Connect',   hint: 'Social profiles and anywhere else people can reach you.' },
-]
-
+const groups = ref([])
 const links = ref([])
 const loading = ref(true)
 const error = ref('')
 const saving = ref(false)
-const editing = ref(null)      // { id|null, group, label, url, is_external, enabled }
-const deleteConfirm = ref(null)
+
+const editing = ref(null)          // link drawer: { id|null, group, label, url, is_external, enabled }
+const deleteConfirm = ref(null)    // link pending deletion
+const groupEditing = ref(null)     // column modal: { id|null, title }
+const groupDeleteConfirm = ref(null)
 
 onMounted(load)
 
@@ -22,7 +20,10 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    links.value = await api.admin.footerLinks()
+    ;[groups.value, links.value] = await Promise.all([
+      api.admin.footerGroups(),
+      api.admin.footerLinks(),
+    ])
   } catch (e) {
     error.value = e.message
   } finally {
@@ -32,11 +33,67 @@ async function load() {
 
 const byGroup = computed(() => {
   const map = {}
-  for (const g of GROUPS) map[g.id] = []
+  for (const g of groups.value) map[g.slug] = []
   for (const l of links.value) (map[l.group] ??= []).push(l)
   return map
 })
 
+// ── Columns (groups) ────────────────────────────────────────
+function openNewGroup() {
+  groupEditing.value = { id: null, title: '' }
+}
+function openRenameGroup(g) {
+  groupEditing.value = { id: g.id, title: g.title }
+}
+
+async function saveGroup() {
+  if (!groupEditing.value?.title.trim()) return
+  saving.value = true
+  error.value = ''
+  try {
+    if (groupEditing.value.id) {
+      await api.admin.updateFooterGroup(groupEditing.value.id, { title: groupEditing.value.title.trim() })
+    } else {
+      await api.admin.createFooterGroup({ title: groupEditing.value.title.trim() })
+    }
+    groupEditing.value = null
+    await load()
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    saving.value = false
+  }
+}
+
+async function toggleGroupEnabled(g) {
+  try {
+    await api.admin.updateFooterGroup(g.id, { title: g.title, enabled: !g.enabled })
+    g.enabled = !g.enabled
+  } catch (e) { error.value = e.message }
+}
+
+async function moveGroup(g, dir) {
+  const idx = groups.value.findIndex((x) => x.id === g.id)
+  const swap = groups.value[idx + dir]
+  if (!swap) return
+  const reordered = [...groups.value]
+  reordered[idx] = swap
+  reordered[idx + dir] = g
+  try {
+    groups.value = await api.admin.reorderFooterGroups(reordered.map((x) => x.id))
+  } catch (e) { error.value = e.message }
+}
+
+async function confirmDeleteGroup() {
+  if (!groupDeleteConfirm.value) return
+  try {
+    await api.admin.deleteFooterGroup(groupDeleteConfirm.value.id)
+    groupDeleteConfirm.value = null
+    await load()
+  } catch (e) { error.value = e.message }
+}
+
+// ── Links ───────────────────────────────────────────────────
 function openNew(group) {
   editing.value = { id: null, group, label: '', url: '', is_external: group !== 'explore', enabled: true }
 }
@@ -56,7 +113,7 @@ async function save() {
       enabled: editing.value.enabled,
       display_order: editing.value.id
         ? editing.value.display_order
-        : byGroup.value[editing.value.group].length,
+        : (byGroup.value[editing.value.group] || []).length,
     }
     if (editing.value.id) await api.admin.updateFooterLink(editing.value.id, payload)
     else await api.admin.createFooterLink(payload)
@@ -89,7 +146,7 @@ async function move(link, dir) {
   const reordered = [...group]
   reordered[idx] = swap
   reordered[idx + dir] = link
-  const order = GROUPS.flatMap((g) => (g.id === link.group ? reordered : byGroup.value[g.id]).map((l) => l.id))
+  const order = groups.value.flatMap((g) => (g.slug === link.group ? reordered : byGroup.value[g.slug]).map((l) => l.id))
   try {
     links.value = await api.admin.reorderFooterLinks(order)
   } catch (e) { error.value = e.message }
@@ -111,33 +168,50 @@ async function confirmDelete() {
       <header class="adm-head">
         <div>
           <p class="adm-eyebrow">Content</p>
-          <h1 class="adm-title">Footer links</h1>
+          <h1 class="adm-title">Footer</h1>
           <p class="adm-sub">
-            Everything in the site footer's three columns. Changes go live the moment you save.
+            Columns and links in the site footer. Changes go live the moment you save.
           </p>
         </div>
+        <button class="adm-btn adm-btn--primary" @click="openNewGroup">+ New column</button>
       </header>
 
       <p v-if="error" class="adm-alert adm-alert--danger">{{ error }}</p>
 
       <div v-if="loading" class="adm-loading">
         <span class="adm-loop"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="14" /></svg></span>
-        Loading footer links…
+        Loading footer…
       </div>
 
       <div v-else class="fl__cols">
-        <section v-for="g in GROUPS" :key="g.id" class="adm-card fl__col">
+        <section
+          v-for="(g, gi) in groups" :key="g.id"
+          class="adm-card fl__col"
+          :class="{ 'is-off': !g.enabled }"
+        >
           <header class="fl__col-head">
-            <h2 class="fl__col-title">{{ g.name }}</h2>
-            <button class="adm-btn adm-btn--sm" @click="openNew(g.id)">+ Add link</button>
+            <div class="fl__col-order">
+              <button class="fl__arrow" :disabled="gi === 0" title="Move column left" @click="moveGroup(g, -1)">←</button>
+              <button class="fl__arrow" :disabled="gi === groups.length - 1" title="Move column right" @click="moveGroup(g, 1)">→</button>
+            </div>
+            <h2 class="fl__col-title" title="Rename column" @click="openRenameGroup(g)">{{ g.title }}</h2>
+            <label class="adm-switch" :title="g.enabled ? 'Column shown in footer' : 'Column hidden from footer'">
+              <input type="checkbox" :checked="g.enabled" @change="toggleGroupEnabled(g)" />
+              <span class="track"></span>
+            </label>
           </header>
-          <p class="fl__col-hint">{{ g.hint }}</p>
+
+          <div class="fl__col-tools">
+            <button class="adm-btn adm-btn--sm" @click="openNew(g.slug)">+ Add link</button>
+            <button class="fl__col-tool" @click="openRenameGroup(g)">Rename</button>
+            <button class="fl__col-tool fl__col-tool--danger" @click="groupDeleteConfirm = g">Delete</button>
+          </div>
 
           <TransitionGroup tag="ul" name="fl-list" class="fl__list">
-            <li v-for="(l, i) in byGroup[g.id]" :key="l.id" class="fl__item" :class="{ 'is-off': !l.enabled }">
+            <li v-for="(l, i) in byGroup[g.slug]" :key="l.id" class="fl__item" :class="{ 'is-off': !l.enabled }">
               <div class="fl__item-order">
                 <button class="fl__arrow" :disabled="i === 0" title="Move up" @click="move(l, -1)">↑</button>
-                <button class="fl__arrow" :disabled="i === byGroup[g.id].length - 1" title="Move down" @click="move(l, 1)">↓</button>
+                <button class="fl__arrow" :disabled="i === byGroup[g.slug].length - 1" title="Move down" @click="move(l, 1)">↓</button>
               </div>
               <div class="fl__item-body" @click="openEdit(l)">
                 <span class="fl__item-label">
@@ -156,12 +230,12 @@ async function confirmDelete() {
             </li>
           </TransitionGroup>
 
-          <p v-if="byGroup[g.id].length === 0" class="fl__empty">No links yet — add the first one.</p>
+          <p v-if="(byGroup[g.slug] || []).length === 0" class="fl__empty">No links yet — add the first one.</p>
         </section>
       </div>
     </div>
 
-    <!-- Editor drawer -->
+    <!-- Link editor drawer -->
     <template v-if="editing">
       <div class="ap-admin">
         <div class="adm-drawer-bg" @click="editing = null"></div>
@@ -179,10 +253,10 @@ async function confirmDelete() {
               <label class="adm-label">Column</label>
               <div class="adm-seg">
                 <button
-                  v-for="g in GROUPS" :key="g.id" type="button"
-                  :class="{ 'is-on': editing.group === g.id }"
-                  @click="editing.group = g.id"
-                >{{ g.name }}</button>
+                  v-for="g in groups" :key="g.id" type="button"
+                  :class="{ 'is-on': editing.group === g.slug }"
+                  @click="editing.group = g.slug"
+                >{{ g.title }}</button>
               </div>
             </div>
             <div class="adm-field">
@@ -221,7 +295,46 @@ async function confirmDelete() {
       </div>
     </template>
 
-    <!-- Delete confirm -->
+    <!-- Column editor modal -->
+    <div v-if="groupEditing" class="ap-admin">
+      <div class="adm-modal-bg" @click.self="groupEditing = null">
+        <div class="adm-modal">
+          <h3>{{ groupEditing.id ? 'Rename column' : 'New column' }}</h3>
+          <form @submit.prevent="saveGroup">
+            <div class="adm-field">
+              <label class="adm-label">Title <span class="req">*</span></label>
+              <input v-model="groupEditing.title" class="adm-input" required maxlength="40" placeholder="e.g. Resources" />
+            </div>
+          </form>
+          <div class="adm-modal-actions">
+            <button class="adm-btn" @click="groupEditing = null">Cancel</button>
+            <button class="adm-btn adm-btn--primary" :disabled="saving || !groupEditing.title.trim()" @click="saveGroup">
+              {{ saving ? 'Saving…' : groupEditing.id ? 'Rename' : 'Add column' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column delete confirm -->
+    <div v-if="groupDeleteConfirm" class="ap-admin">
+      <div class="adm-modal-bg" @click.self="groupDeleteConfirm = null">
+        <div class="adm-modal">
+          <h3>Delete this column?</h3>
+          <p>
+            <strong>{{ groupDeleteConfirm.title }}</strong> and its
+            {{ (byGroup[groupDeleteConfirm.slug] || []).length }} link(s) will be removed from the footer.
+            This cannot be undone.
+          </p>
+          <div class="adm-modal-actions">
+            <button class="adm-btn" @click="groupDeleteConfirm = null">Keep it</button>
+            <button class="adm-btn adm-btn--danger" @click="confirmDeleteGroup()">Delete column</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Link delete confirm -->
     <div v-if="deleteConfirm" class="ap-admin">
       <div class="adm-modal-bg" @click.self="deleteConfirm = null">
         <div class="adm-modal">
@@ -239,15 +352,30 @@ async function confirmDelete() {
 
 <style scoped>
 .fl__cols {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;
   align-items: start;
 }
 @media (max-width: 1080px) { .fl__cols { grid-template-columns: 1fr; } }
 
-.fl__col { padding: 20px; }
-.fl__col-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
-.fl__col-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
-.fl__col-hint { font-size: 12px; color: var(--adm-mute); line-height: 1.5; margin: 0 0 14px; }
+.fl__col { padding: 20px; transition: opacity 160ms var(--adm-ease); }
+.fl__col.is-off { opacity: 0.55; }
+.fl__col-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.fl__col-order { display: flex; gap: 1px; flex-shrink: 0; }
+.fl__col-title {
+  font-family: var(--font-display); font-size: 16px; font-weight: 700; margin: 0;
+  letter-spacing: -0.01em; flex: 1; min-width: 0; cursor: pointer;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fl__col-title:hover { color: var(--adm-teal-deep); }
+
+.fl__col-tools { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.fl__col-tool {
+  border: none; background: transparent; padding: 4px 6px;
+  font-size: 12px; color: var(--adm-mute); cursor: pointer; border-radius: 6px;
+  transition: color 140ms, background 140ms;
+}
+.fl__col-tool:hover { color: var(--adm-teal-deep); background: var(--adm-teal-mist); }
+.fl__col-tool--danger:hover { color: #b3402a; background: rgba(179, 64, 42, 0.08); }
 
 .fl__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .fl__item {

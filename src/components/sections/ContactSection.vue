@@ -1,42 +1,70 @@
 <script setup>
 import SectionLabel from '@/components/ui/SectionLabel.vue'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from '@/i18n'
+import { api } from '@/lib/api.js'
 
+const { t, locale } = useI18n()
+
+// ── Bio card (API-driven, i18n as offline fallback) ─────────────
+const DEFAULT_PHOTO = '/assets/images/mladen-profile.jpg'
+const bio = ref(null)
+const bioLoading = ref(true)
+
+onMounted(async () => {
+  try {
+    bio.value = await api.contactBio()
+  } catch {
+    /* API unreachable — fall back to the baked-in i18n copy */
+  }
+  bioLoading.value = false
+})
+
+function localized(field) {
+  const v = bio.value?.[field]
+  return (v && (v[locale.value] || v.en)) || ''
+}
+const bioTitle = computed(() => (bio.value ? localized('title') : t('contact.bioTitle')))
+const bioText = computed(() => (bio.value ? localized('text') : t('contact.bioText')))
+const bioBullets = computed(() => {
+  if (!bio.value) return t('contact.proofPoints')
+  return (bio.value.bullets || []).map((b) => b[locale.value] || b.en).filter(Boolean)
+})
+const bioPhoto = computed(() => bio.value?.photo_url || DEFAULT_PHOTO)
+
+// ── Form ─────────────────────────────────────────────────────────
 const name = ref('')
 const email = ref('')
 const role = ref('')
 const interest = ref('')
 const message = ref('')
 const sent = ref(false)
+const sending = ref(false)
+const sendError = ref('')
 
-const interestOptions = [
-  'Consulting',
-  'Workshop / staff education',
-  'Performance-system audit',
-  'Athlete programming',
-  'Individual athlete performance management',
-  'Speaking / conference',
-  'Software/tool/workflow design',
-  'Other',
-]
+const interestOptions = computed(() => t('contact.interestOptions'))
 
 const canSubmit = computed(() => email.value.trim() && interest.value)
 
-function submit() {
-  if (!canSubmit.value) return
-  const sub = encodeURIComponent(interest.value || 'Message via agileperiodization.com')
-  const body = encodeURIComponent(`Name: ${name.value || '—'}\nEmail: ${email.value}\nRole: ${role.value || '—'}\n\nInterest: ${interest.value}\n\nMessage:\n${message.value || '—'}`)
-  window.open(`mailto:mladen@agileperiodization.com?subject=${sub}&body=${body}`)
-  sent.value = true
+async function submit() {
+  if (!canSubmit.value || sending.value) return
+  sending.value = true
+  sendError.value = ''
+  try {
+    await api.submitContact({
+      name: name.value || null,
+      email: email.value,
+      role: role.value || null,
+      interest: interest.value || null,
+      message: message.value || null,
+    })
+    sent.value = true
+  } catch {
+    sendError.value = t('contact.errorSend')
+  } finally {
+    sending.value = false
+  }
 }
-
-const proofPoints = [
-  'Head of Performance, Serbia Women\'s National Football Team',
-  'Former Port Adelaide FC, Aspire Academy, Hammarby IF',
-  'Author of Strength Training Manual and HIIT Manual',
-  'Developer of AthleteSR, Strength Card Builder, HIT Builder',
-  'Founder/author at Complementary Training',
-]
 </script>
 
 <template>
@@ -45,62 +73,85 @@ const proofPoints = [
 
       <!-- Mladen bio card -->
       <div class="contact__about fade-up">
-        <div class="contact__photo-wrap">
-          <img src="/assets/images/mladen-profile.jpg" alt="Mladen Jovanović" class="contact__photo" />
-        </div>
-        <SectionLabel index="09" label="Why trust this?" />
-        <h2 id="contact-title" class="contact__bio-title">Built by a coach, sport scientist, and toolmaker.</h2>
-        <p class="contact__bio-text">
-          Mladen Jovanović, PhD, works at the intersection of coaching, sport science, software, and performance management.
-        </p>
-        <ul class="contact__proof">
-          <li v-for="p in proofPoints" :key="p">{{ p }}</li>
-        </ul>
+        <!-- Skeleton while the API-driven copy loads -->
+        <template v-if="bioLoading">
+          <div class="contact__photo-wrap">
+            <div class="contact__skel contact__skel--photo"></div>
+          </div>
+          <SectionLabel index="09" :label="t('contact.label')" />
+          <div class="contact__skel-stack" aria-hidden="true">
+            <div class="contact__skel contact__skel--title"></div>
+            <div class="contact__skel contact__skel--title" style="width: 58%"></div>
+          </div>
+          <div class="contact__skel-stack" aria-hidden="true">
+            <div class="contact__skel contact__skel--line"></div>
+            <div class="contact__skel contact__skel--line" style="width: 92%"></div>
+            <div class="contact__skel contact__skel--line" style="width: 64%"></div>
+          </div>
+          <div class="contact__skel-list" aria-hidden="true">
+            <div v-for="i in 5" :key="i" class="contact__skel contact__skel--bullet" :style="{ width: 60 + ((i * 13) % 35) + '%' }"></div>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="contact__photo-wrap">
+            <img :src="bioPhoto" alt="Mladen Jovanović" class="contact__photo" />
+          </div>
+          <SectionLabel index="09" :label="t('contact.label')" />
+          <h2 id="contact-title" class="contact__bio-title">{{ bioTitle }}</h2>
+          <p class="contact__bio-text">
+            {{ bioText }}
+          </p>
+          <ul class="contact__proof">
+            <li v-for="p in bioBullets" :key="p">{{ p }}</li>
+          </ul>
+        </template>
       </div>
 
       <!-- Contact form card -->
       <div class="contact__form-card fade-up">
-        <p class="contact__form-eyebrow">Direct work</p>
-        <h3 class="contact__form-title">Work with me directly.</h3>
+        <p class="contact__form-eyebrow">{{ t('contact.formEyebrow') }}</p>
+        <h3 class="contact__form-title">{{ t('contact.formTitle') }}</h3>
         <p class="contact__form-desc">
-          If you want help applying Agile Periodization inside your team, club, clinic, or individual performance environment, get in touch.
+          {{ t('contact.formDesc') }}
         </p>
 
         <Transition name="fade-soft" mode="out-in">
           <div v-if="sent" class="contact__confirm">
-            Got it. I'll be in touch soon.
+            {{ t('contact.confirm') }}
           </div>
           <form v-else class="contact__form" @submit.prevent="submit" novalidate>
             <div class="contact__field">
-              <label for="c-name" class="contact__label">Name</label>
-              <input id="c-name" v-model="name" type="text" placeholder="Your name" class="contact__input" autocomplete="name" />
+              <label for="c-name" class="contact__label">{{ t('contact.name') }}</label>
+              <input id="c-name" v-model="name" type="text" :placeholder="t('contact.namePlaceholder')" class="contact__input" autocomplete="name" />
             </div>
             <div class="contact__field">
-              <label for="c-email" class="contact__label">Email <span class="contact__req" aria-hidden="true">*</span></label>
-              <input id="c-email" v-model="email" type="email" placeholder="you@example.com" required class="contact__input" autocomplete="email" />
+              <label for="c-email" class="contact__label">{{ t('contact.email') }} <span class="contact__req" aria-hidden="true">*</span></label>
+              <input id="c-email" v-model="email" type="email" :placeholder="t('contact.emailPlaceholder')" required class="contact__input" autocomplete="email" />
             </div>
             <div class="contact__field">
-              <label for="c-role" class="contact__label">Role / organization</label>
-              <input id="c-role" v-model="role" type="text" placeholder="Coach, physio, athlete, club..." class="contact__input" />
+              <label for="c-role" class="contact__label">{{ t('contact.role') }}</label>
+              <input id="c-role" v-model="role" type="text" :placeholder="t('contact.rolePlaceholder')" class="contact__input" />
             </div>
             <div class="contact__field">
-              <label for="c-interest" class="contact__label">What are you interested in? <span class="contact__req" aria-hidden="true">*</span></label>
+              <label for="c-interest" class="contact__label">{{ t('contact.interest') }} <span class="contact__req" aria-hidden="true">*</span></label>
               <div class="contact__select-wrap">
                 <select id="c-interest" v-model="interest" required class="contact__select">
-                  <option value="">Select one</option>
+                  <option value="">{{ t('contact.selectOne') }}</option>
                   <option v-for="opt in interestOptions" :key="opt" :value="opt">{{ opt }}</option>
                 </select>
                 <span class="contact__select-chevron" aria-hidden="true">▾</span>
               </div>
             </div>
             <div class="contact__field">
-              <label for="c-message" class="contact__label">Message</label>
-              <textarea id="c-message" v-model="message" rows="4" placeholder="Tell me what you are trying to solve." class="contact__input contact__textarea"></textarea>
+              <label for="c-message" class="contact__label">{{ t('contact.message') }}</label>
+              <textarea id="c-message" v-model="message" rows="4" :placeholder="t('contact.messagePlaceholder')" class="contact__input contact__textarea"></textarea>
             </div>
-            <button type="submit" class="contact__submit" :disabled="!canSubmit">
-              Send Inquiry <span aria-hidden="true">→</span>
+            <button type="submit" class="contact__submit" :disabled="!canSubmit || sending">
+              {{ sending ? t('contact.sending') : t('contact.send') }} <span aria-hidden="true">→</span>
             </button>
-            <p class="contact__fine">Opens your mail client.</p>
+            <p v-if="sendError" class="contact__error" role="alert">{{ sendError }}</p>
+            <p class="contact__fine">{{ t('contact.fine') }}</p>
           </form>
         </Transition>
       </div>
@@ -210,6 +261,34 @@ const proofPoints = [
 .contact__confirm {
   font-family: var(--font-display); font-size: 18px; font-weight: 600; line-height: 1.4;
   color: var(--teal-deep); padding: 24px 0;
+}
+
+.contact__error {
+  font-size: 13.5px; line-height: 1.5; margin: 0; text-align: center;
+  color: #b3402a;
+}
+
+/* ── Bio skeleton ─────────────────────────────────────────────── */
+.contact__skel {
+  border-radius: 8px;
+  background: var(--hairline);
+  animation: contact-skel 1.4s ease-in-out infinite;
+}
+@keyframes contact-skel {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.contact__skel--photo { width: 100%; aspect-ratio: 4/3; border-radius: 0; }
+.contact__skel--title { height: clamp(22px, 2.4vw, 30px); width: 86%; }
+.contact__skel--line { height: 13px; }
+.contact__skel--bullet { height: 12px; }
+.contact__skel-stack { display: flex; flex-direction: column; gap: 10px; }
+.contact__skel-list {
+  display: flex; flex-direction: column; gap: 0;
+  border-top: 1px solid var(--hairline);
+}
+.contact__skel-list .contact__skel--bullet {
+  margin: 15px 0;
 }
 
 .fade-soft-enter-active, .fade-soft-leave-active { transition: opacity 200ms var(--ease); }

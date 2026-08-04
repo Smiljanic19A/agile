@@ -6,6 +6,7 @@ import { useContentStore } from '@/stores/content.js'
 import { useFeaturedStore, entryFromItem } from '@/stores/featured.js'
 import RichEditor from '@/components/admin/RichEditor.vue'
 import AssetPicker from '@/components/admin/AssetPicker.vue'
+import { youtubeId, youtubeThumb } from '@/lib/youtube.js'
 
 const content  = useContentStore()
 const featured = useFeaturedStore()
@@ -26,13 +27,22 @@ const draft = ref(null)         // null = closed (showing list)
 const draftMode = ref('new')    // 'new' | 'edit'
 const dirty = ref(false)
 
+const TABS = [
+  { id: 'copy',   label: 'Copy' },
+  { id: 'layout', label: 'Layout & style' },
+  { id: 'cta',    label: 'Links & visibility' },
+]
+const activeTab = ref('copy')
+
 function startNew() {
+  activeTab.value = 'copy'
   draft.value = {
     id: null,
     sourceItemId: null,
     title: '',
     description: '',
     image: '',
+    videoUrl: '',
     type: '',
     badge: '',
     ctaLabel: 'Learn more',
@@ -40,6 +50,8 @@ function startNew() {
     layout: 'overlay',
     textAlign: 'left',
     verticalAlign: 'bottom',
+    showText: true,
+    showCta: true,
     enabled: true,
   }
   draftMode.value = 'new'
@@ -47,6 +59,7 @@ function startNew() {
 }
 
 function editEntry(entry) {
+  activeTab.value = 'copy'
   draft.value = { ...entry }
   draftMode.value = 'edit'
   dirty.value = false
@@ -79,11 +92,26 @@ function pickSourceItem(itemId) {
   dirty.value = true
 }
 
+const draftVideoId = computed(() => (draft.value ? youtubeId(draft.value.videoUrl) : ''))
+
+// Mirrors the public banner: text sits beside the video when "Show text" is on
+// and there's real copy ("YouTube video" is just the auto-filled placeholder).
+const previewVideoHasText = computed(() => {
+  if (!draft.value || !draftVideoId.value || draft.value.showText === false) return false
+  const t = stripTags(draft.value.title).trim()
+  const realTitle = t && t.toLowerCase() !== 'youtube video'
+  return !!(realTitle || draft.value.description || draft.value.badge || draft.value.type)
+})
+
 function save() {
   if (!draft.value) return
   if (!draft.value.title || draft.value.title.replace(/<[^>]+>/g, '').trim() === '') {
-    alert('Title is required.')
-    return
+    // Video slides show no text, but the title still names the entry in this list.
+    if (draftVideoId.value) draft.value.title = 'YouTube video'
+    else {
+      alert('Title is required.')
+      return
+    }
   }
   if (draftMode.value === 'new') {
     const created = featured.create({ ...draft.value, id: undefined })
@@ -149,6 +177,44 @@ function clearColor(key) {
   markDirty()
 }
 
+// ── Source item picker ──────────────────────────────────────
+const itemPickerOpen = ref(false)
+const pickerCategory = ref('all')
+const pickerQuery = ref('')
+
+const pickerCategories = computed(() => {
+  const cats = [...new Set(sourceItems.value.map((i) => i.category).filter(Boolean))]
+  return ['all', ...cats]
+})
+const pickerItems = computed(() => {
+  let list = sourceItems.value
+  if (pickerCategory.value !== 'all') list = list.filter((i) => i.category === pickerCategory.value)
+  const q = pickerQuery.value.trim().toLowerCase()
+  if (q) {
+    list = list.filter(
+      (i) => (i.title || '').toLowerCase().includes(q) || (i.type || '').toLowerCase().includes(q),
+    )
+  }
+  return list
+})
+const linkedItem = computed(() =>
+  draft.value?.sourceItemId ? sourceItems.value.find((i) => i.id === draft.value.sourceItemId) : null,
+)
+
+function openItemPicker() {
+  pickerCategory.value = 'all'
+  pickerQuery.value = ''
+  itemPickerOpen.value = true
+}
+function closeItemPicker() { itemPickerOpen.value = false }
+
+function chooseItem(item) {
+  if (!draft.value) startNew() // "+ From item" in the list view starts a fresh entry
+  pickSourceItem(item.id)
+  closeItemPicker()
+}
+function unlinkItem() { pickSourceItem(null) }
+
 // ── Asset picker ────────────────────────────────────────────
 const pickerOpen = ref(false)
 function openPicker() { pickerOpen.value = true }
@@ -181,6 +247,7 @@ function clearImage() {
           </div>
           <div class="admin__panel-actions">
             <button class="button button-secondary" @click="resetAll">Reset to defaults</button>
+            <button class="button button-secondary" @click="openItemPicker">+ From item</button>
             <button class="button button-primary" @click="startNew">+ New entry</button>
           </div>
         </header>
@@ -191,14 +258,20 @@ function clearImage() {
               :class="{ 'is-off': !entry.enabled }">
             <div class="entry__thumb">
               <img v-if="entry.image" :src="entry.image" alt="" />
+              <img v-else-if="youtubeId(entry.videoUrl)" :src="youtubeThumb(entry.videoUrl)" alt="" />
               <span v-else class="entry__thumb-empty">no image</span>
             </div>
             <div class="entry__body">
               <div class="entry__meta">
                 <span class="dot" :class="entry.enabled ? 'on' : 'off'"></span>
-                <span>{{ entry.layout }}</span>
-                <span class="sep">·</span>
-                <span>align {{ entry.textAlign }}{{ entry.layout === 'overlay' ? ' / ' + entry.verticalAlign : '' }}</span>
+                <template v-if="youtubeId(entry.videoUrl)">
+                  <span>▶ video</span>
+                </template>
+                <template v-else>
+                  <span>{{ entry.layout }}</span>
+                  <span class="sep">·</span>
+                  <span>align {{ entry.textAlign }}{{ entry.layout === 'overlay' ? ' / ' + entry.verticalAlign : '' }}</span>
+                </template>
                 <span class="sep">·</span>
                 <span v-if="entry.sourceItemId">from item · <span class="entry__source-id">{{ entry.sourceItemId }}</span></span>
                 <span v-else>standalone</span>
@@ -256,20 +329,53 @@ function clearImage() {
                    'preview--align-' + draft.textAlign,
                    draft.layout === 'overlay' ? 'preview--v-' + draft.verticalAlign : '',
                  ]">
+              <!-- Video slide -->
+              <template v-if="draftVideoId">
+                <div v-if="previewVideoHasText" class="preview__video preview__video--with-text">
+                  <div class="preview__body preview__body--split">
+                    <div class="preview__meta" v-if="draft.badge || draft.type">
+                      <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
+                      <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
+                    </div>
+                    <div class="preview__title" :style="titleStyle" v-html="draft.title"></div>
+                    <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
+                    <span v-if="draft.showCta !== false && (draft.ctaUrl || draft.ctaLabel)" class="preview__cta">
+                      {{ draft.ctaLabel || 'Learn more' }} →
+                    </span>
+                  </div>
+                  <figure class="preview__media preview__media--video">
+                    <img :src="youtubeThumb(draft.videoUrl)" alt="" />
+                    <span class="preview__video-play preview__video-play--sm" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+                    </span>
+                  </figure>
+                </div>
+                <div v-else class="preview__video">
+                  <img class="preview__video-thumb" :src="youtubeThumb(draft.videoUrl)" alt="" />
+                  <div class="preview__video-scrim"></div>
+                  <span class="preview__video-play" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+                  </span>
+                  <span class="preview__video-note">Pure video slide — write copy &amp; enable “Show text” to place it beside the video</span>
+                </div>
+              </template>
+
               <!-- Overlay -->
-              <template v-if="draft.layout === 'overlay'">
+              <template v-else-if="draft.layout === 'overlay'">
                 <div class="preview__bg" aria-hidden="true">
                   <img v-if="draft.image" :src="draft.image" alt="" />
                   <div class="preview__scrim"></div>
                 </div>
                 <div class="preview__body preview__body--overlay">
-                  <div class="preview__meta">
-                    <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
-                    <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
-                  </div>
-                  <div class="preview__title" :style="titleStyle" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
-                  <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
-                  <span v-if="draft.ctaUrl || draft.ctaLabel" class="preview__cta">
+                  <template v-if="draft.showText !== false">
+                    <div class="preview__meta">
+                      <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
+                      <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
+                    </div>
+                    <div class="preview__title" :style="titleStyle" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
+                    <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
+                  </template>
+                  <span v-if="draft.showCta !== false && (draft.ctaUrl || draft.ctaLabel)" class="preview__cta">
                     {{ draft.ctaLabel || 'Learn more' }} →
                   </span>
                 </div>
@@ -278,13 +384,15 @@ function clearImage() {
               <!-- Split right -->
               <template v-else-if="draft.layout === 'split-right'">
                 <div class="preview__body preview__body--split">
-                  <div class="preview__meta">
-                    <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
-                    <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
-                  </div>
-                  <div class="preview__title" :style="titleStyle" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
-                  <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
-                  <span v-if="draft.ctaUrl || draft.ctaLabel" class="preview__cta">
+                  <template v-if="draft.showText !== false">
+                    <div class="preview__meta">
+                      <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
+                      <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
+                    </div>
+                    <div class="preview__title" :style="titleStyle" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
+                    <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
+                  </template>
+                  <span v-if="draft.showCta !== false && (draft.ctaUrl || draft.ctaLabel)" class="preview__cta">
                     {{ draft.ctaLabel || 'Learn more' }} →
                   </span>
                 </div>
@@ -301,13 +409,15 @@ function clearImage() {
                   <span v-else class="preview__media-empty">no image</span>
                 </figure>
                 <div class="preview__body preview__body--split">
-                  <div class="preview__meta">
-                    <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
-                    <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
-                  </div>
-                  <div class="preview__title" :style="titleStyle" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
-                  <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
-                  <span v-if="draft.ctaUrl || draft.ctaLabel" class="preview__cta">
+                  <template v-if="draft.showText !== false">
+                    <div class="preview__meta">
+                      <span v-if="draft.badge" class="preview__badge">{{ draft.badge }}</span>
+                      <span v-if="draft.type" class="preview__type">{{ draft.type }}</span>
+                    </div>
+                    <div class="preview__title" :style="titleStyle" v-html="draft.title || '<span class=\'placeholder\'>(title)</span>'"></div>
+                    <div v-if="draft.description" class="preview__desc" :style="descStyle" v-html="draft.description"></div>
+                  </template>
+                  <span v-if="draft.showCta !== false && (draft.ctaUrl || draft.ctaLabel)" class="preview__cta">
                     {{ draft.ctaLabel || 'Learn more' }} →
                   </span>
                 </div>
@@ -315,9 +425,14 @@ function clearImage() {
             </div>
 
             <div class="editor__preview-meta">
-              <span>{{ draft.layout }}</span>
-              <span class="sep">·</span>
-              <span>align {{ draft.textAlign }}{{ draft.layout === 'overlay' ? ' / ' + draft.verticalAlign : '' }}</span>
+              <template v-if="draftVideoId">
+                <span>▶ video</span>
+              </template>
+              <template v-else>
+                <span>{{ draft.layout }}</span>
+                <span class="sep">·</span>
+                <span>align {{ draft.textAlign }}{{ draft.layout === 'overlay' ? ' / ' + draft.verticalAlign : '' }}</span>
+              </template>
               <span class="sep">·</span>
               <span :class="['state', draft.enabled ? 'on' : 'off']">
                 {{ draft.enabled ? 'enabled' : 'disabled' }}
@@ -328,15 +443,40 @@ function clearImage() {
 
         <!-- ═══════ FORM ═══════ -->
         <section class="editor__form">
+          <nav class="editor__tabs" role="tablist">
+            <button v-for="tab in TABS" :key="tab.id"
+                    type="button" role="tab"
+                    :aria-selected="activeTab === tab.id"
+                    :class="{ 'is-on': activeTab === tab.id }"
+                    @click="activeTab = tab.id">
+              {{ tab.label }}
+            </button>
+          </nav>
+
+          <!-- ── Tab: Copy ── -->
+          <div v-show="activeTab === 'copy'" class="editor__panel">
           <fieldset class="field">
             <legend>Source item (optional)</legend>
-            <select :value="draft.sourceItemId || ''"
-                    @change="pickSourceItem($event.target.value)">
-              <option value="">— standalone (no source item) —</option>
-              <option v-for="item in sourceItems" :key="item.id" :value="item.id">
-                [{{ item.category }} · {{ item.source }}] {{ item.title }}
-              </option>
-            </select>
+            <div v-if="draft.sourceItemId" class="src-card">
+              <div class="src-card__thumb" :class="{ 'is-empty': !linkedItem?.image }">
+                <img v-if="linkedItem?.image" :src="linkedItem.image" alt="" />
+                <span v-else>—</span>
+              </div>
+              <div class="src-card__body">
+                <span class="src-card__meta">{{ linkedItem ? `${linkedItem.category} · ${linkedItem.source}` : 'linked item' }}</span>
+                <span class="src-card__title">{{ linkedItem?.title || draft.sourceItemId }}</span>
+              </div>
+              <div class="src-card__actions">
+                <button type="button" class="button button-secondary button-small" @click="openItemPicker">Change</button>
+                <button type="button" class="button button-ghost button-small" @click="unlinkItem">Unlink</button>
+              </div>
+            </div>
+            <button v-else type="button" class="src-pick button button-secondary" @click="openItemPicker">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M1.5 6h13M5.5 9.5h5"/>
+              </svg>
+              Create from item…
+            </button>
             <p class="field__hint">
               Pick an existing item and the title, description, image, type, and CTA URL auto-fill from it. Override any field below freely — the original item is never touched.
             </p>
@@ -346,18 +486,72 @@ function clearImage() {
             <legend>Title <span class="req">*</span></legend>
             <RichEditor v-model="draft.title"
                         placeholder="What is Agile Periodization?"
+                        min-height="64px"
                         @update:modelValue="markDirty" />
             <p class="field__hint">
-              Wrap a phrase in italic for the teal accent (or use <code>&lt;em&gt;</code> in raw HTML).
+              Wrap a phrase in italic for the teal accent (or use <code>&lt;em&gt;</code> in the HTML view).
             </p>
           </fieldset>
 
           <fieldset class="field">
             <legend>Description</legend>
             <RichEditor v-model="draft.description"
-                        placeholder="Short, sharp explanation. Line breaks and italic supported."
+                        placeholder="Short, sharp explanation. Headings, lists, links, images and embeds all work."
                         @update:modelValue="markDirty" />
           </fieldset>
+
+          <div class="row">
+            <fieldset class="field">
+              <legend>Badge label</legend>
+              <input v-model="draft.badge" type="text"
+                     placeholder="e.g. Start here"
+                     @input="markDirty" />
+            </fieldset>
+            <fieldset class="field">
+              <legend>Type label</legend>
+              <input v-model="draft.type" type="text"
+                     placeholder="e.g. Tool · Conditioning"
+                     @input="markDirty" />
+            </fieldset>
+          </div>
+          </div>
+
+          <!-- ── Tab: Layout & style ── -->
+          <div v-show="activeTab === 'layout'" class="editor__panel">
+          <fieldset class="field">
+            <legend>Layout preset</legend>
+            <div class="seg">
+              <button v-for="opt in ['overlay', 'split-right', 'split-left']" :key="opt"
+                      :class="{ 'is-on': draft.layout === opt }"
+                      @click="draft.layout = opt; markDirty()">
+                {{ opt }}
+              </button>
+            </div>
+            <p class="field__hint">
+              <strong>overlay</strong> — image fills the slide, text overlaid.
+              <strong>split-right</strong> — text left, media right.
+              <strong>split-left</strong> — media left, text right.
+            </p>
+          </fieldset>
+
+          <div class="row">
+            <fieldset class="field">
+              <legend>Text alignment</legend>
+              <div class="seg">
+                <button v-for="opt in ['left', 'center', 'right']" :key="opt"
+                        :class="{ 'is-on': draft.textAlign === opt }"
+                        @click="draft.textAlign = opt; markDirty()">{{ opt }}</button>
+              </div>
+            </fieldset>
+            <fieldset class="field" v-if="draft.layout === 'overlay'">
+              <legend>Vertical anchor</legend>
+              <div class="seg">
+                <button v-for="opt in ['top', 'center', 'bottom']" :key="opt"
+                        :class="{ 'is-on': draft.verticalAlign === opt }"
+                        @click="draft.verticalAlign = opt; markDirty()">{{ opt }}</button>
+              </div>
+            </fieldset>
+          </div>
 
           <fieldset class="field">
             <legend>Text colors (optional)</legend>
@@ -441,60 +635,29 @@ function clearImage() {
             </p>
           </fieldset>
 
+          </div>
+
           <AssetPicker :open="pickerOpen"
                        :current-value="draft.image"
                        @close="closePicker"
                        @selected="onAssetSelected" />
 
+          <!-- ── Tab: Links & visibility ── -->
+          <div v-show="activeTab === 'cta'" class="editor__panel">
           <fieldset class="field">
-            <legend>Layout preset</legend>
-            <div class="seg">
-              <button v-for="opt in ['overlay', 'split-right', 'split-left']" :key="opt"
-                      :class="{ 'is-on': draft.layout === opt }"
-                      @click="draft.layout = opt; markDirty()">
-                {{ opt }}
-              </button>
-            </div>
+            <legend>YouTube video</legend>
+            <input v-model="draft.videoUrl" type="text"
+                   placeholder="https://www.youtube.com/watch?v=…"
+                   @input="markDirty" />
             <p class="field__hint">
-              <strong>overlay</strong> — image fills the slide, text overlaid.
-              <strong>split-right</strong> — text left, media right.
-              <strong>split-left</strong> — media left, text right.
+              Paste a YouTube link to turn this slide into a video slide.
+              With <strong>Show text</strong> on, your title, description, badges, and CTA sit <strong>beside</strong> the video — never over it.
+              Turn it off for a pure video slide.
+            </p>
+            <p v-if="draft.videoUrl && !draftVideoId" class="field__hint field__hint--warn">
+              That doesn't look like a YouTube link — the slide will fall back to its normal layout.
             </p>
           </fieldset>
-
-          <div class="row">
-            <fieldset class="field">
-              <legend>Text alignment</legend>
-              <div class="seg">
-                <button v-for="opt in ['left', 'center', 'right']" :key="opt"
-                        :class="{ 'is-on': draft.textAlign === opt }"
-                        @click="draft.textAlign = opt; markDirty()">{{ opt }}</button>
-              </div>
-            </fieldset>
-            <fieldset class="field" v-if="draft.layout === 'overlay'">
-              <legend>Vertical anchor</legend>
-              <div class="seg">
-                <button v-for="opt in ['top', 'center', 'bottom']" :key="opt"
-                        :class="{ 'is-on': draft.verticalAlign === opt }"
-                        @click="draft.verticalAlign = opt; markDirty()">{{ opt }}</button>
-              </div>
-            </fieldset>
-          </div>
-
-          <div class="row">
-            <fieldset class="field">
-              <legend>Badge label</legend>
-              <input v-model="draft.badge" type="text"
-                     placeholder="e.g. Start here"
-                     @input="markDirty" />
-            </fieldset>
-            <fieldset class="field">
-              <legend>Type / category</legend>
-              <input v-model="draft.type" type="text"
-                     placeholder="e.g. Tool · Conditioning"
-                     @input="markDirty" />
-            </fieldset>
-          </div>
 
           <div class="row">
             <fieldset class="field">
@@ -512,14 +675,84 @@ function clearImage() {
           </div>
 
           <fieldset class="field">
+            <legend>Visibility</legend>
+            <label class="toggle">
+              <input type="checkbox" v-model="draft.showText" @change="markDirty" />
+              <span>Show text — title, description, and badges</span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" v-model="draft.showCta" @change="markDirty" />
+              <span>Show the CTA button</span>
+            </label>
+            <p class="field__hint">
+              Turn both off for a pure-image slide — the background image stands alone.
+            </p>
+          </fieldset>
+
+          <fieldset class="field">
             <legend>State</legend>
             <label class="toggle">
               <input type="checkbox" v-model="draft.enabled" @change="markDirty" />
               <span>Enabled — show on the public banner</span>
             </label>
           </fieldset>
+          </div>
         </section>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══════ SOURCE ITEM PICKER ═══════ -->
+  <div v-if="itemPickerOpen" class="ipicker" @click.self="closeItemPicker">
+    <div class="ipicker__panel" role="dialog" aria-modal="true" aria-label="Pick a source item">
+      <header class="ipicker__head">
+        <div>
+          <p class="eyebrow">Create from item</p>
+          <h3>Pick a source item</h3>
+        </div>
+        <button class="ipicker__close" aria-label="Close" @click="closeItemPicker">
+          <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M3 3l10 10M13 3L3 13" />
+          </svg>
+        </button>
+      </header>
+
+      <div class="ipicker__filters">
+        <div class="seg">
+          <button
+            v-for="c in pickerCategories" :key="c" type="button"
+            :class="{ 'is-on': pickerCategory === c }"
+            @click="pickerCategory = c"
+          >{{ c }}</button>
+        </div>
+        <input v-model="pickerQuery" class="ipicker__search" type="search" placeholder="Search titles…" />
+      </div>
+
+      <div class="ipicker__grid">
+        <div
+          v-for="item in pickerItems" :key="item.id"
+          class="ipicker__card"
+          :class="{ 'is-current': draft && draft.sourceItemId === item.id }"
+          role="button" tabindex="0"
+          @click="chooseItem(item)"
+          @keydown.enter="chooseItem(item)"
+        >
+          <div class="ipicker__thumb">
+            <img v-if="item.image" :src="item.image" alt="" loading="lazy" />
+            <span v-else class="ipicker__thumb-empty">{{ item.type }}</span>
+          </div>
+          <div class="ipicker__body">
+            <span class="ipicker__meta">{{ item.category }} · {{ item.source }}</span>
+            <span class="ipicker__title">{{ item.title }}</span>
+            <span v-if="item.price || item.readTime" class="ipicker__sub">{{ item.price || item.readTime }}</span>
+          </div>
+        </div>
+        <p v-if="!pickerItems.length" class="ipicker__empty">Nothing matches — try another category or search.</p>
+      </div>
+
+      <footer class="ipicker__foot">
+        Picking an item pre-fills the title, description, image, type, and CTA — you can override everything afterwards.
+      </footer>
     </div>
   </div>
   </AdminLayout>
@@ -969,6 +1202,21 @@ function clearImage() {
 }
 .preview__desc :deep(em) { font-style: italic; color: var(--em-color, var(--accent-on-dark)); font-weight: 500; }
 .preview__desc :deep(strong) { font-weight: 700; color: inherit; }
+/* The copy is full HTML now — keep rich content inside the preview frame. */
+.preview__desc :deep(p) { margin: 0 0 0.6em; }
+.preview__desc :deep(p:last-child) { margin-bottom: 0; }
+.preview__desc :deep(a) { color: var(--em-color, var(--accent-on-dark)); text-decoration: underline; }
+.preview__desc :deep(h1),
+.preview__desc :deep(h2),
+.preview__desc :deep(h3),
+.preview__desc :deep(h4) { font-size: 1.15em; margin: 0.5em 0 0.3em; color: inherit; }
+.preview__desc :deep(ul), .preview__desc :deep(ol) { margin: 0 0 0.6em; padding-left: 1.3em; }
+.preview__desc :deep(img) { max-width: 100%; height: auto; border-radius: 6px; }
+.preview__desc :deep(iframe) { max-width: 100%; border: none; }
+.preview__desc :deep(.rte-embed iframe) { width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius: 6px; }
+.preview__desc :deep(table) { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+.preview__desc :deep(th), .preview__desc :deep(td) { border: 1px solid rgba(247, 242, 233, 0.25); padding: 4px 7px; }
+.preview__title :deep(img), .preview__title :deep(iframe) { max-width: 100%; }
 .preview__cta {
   display: inline-flex;
   align-items: center; gap: 8px;
@@ -981,6 +1229,48 @@ function clearImage() {
   font-weight: 600;
   align-self: flex-start;
   width: fit-content;
+}
+
+/* Video slide preview */
+.preview__video { position: absolute; inset: 0; z-index: 1; }
+.preview__video--with-text { display: flex; align-items: stretch; }
+.preview__video--with-text .preview__body--split { flex: 1; align-self: center; padding: 28px; }
+.preview__media--video { flex: 1; margin: 0; }
+.preview__media--video img { max-height: 240px; border-radius: var(--radius-sm); }
+.preview__video-play--sm {
+  width: 46px; height: 46px;
+  top: 50%;
+}
+.preview__video-play--sm svg { margin-left: 2px; }
+.preview__video-thumb {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.75;
+}
+.preview__video-scrim {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.55) 90%);
+}
+.preview__video-play {
+  position: absolute; top: 45%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px; height: 64px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: rgba(247, 242, 233, 0.92);
+  color: var(--ink);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+}
+.preview__video-play svg { margin-left: 3px; }
+.preview__video-note {
+  position: absolute; bottom: 18px; left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 233, 0.85);
 }
 
 /* split layouts on mobile collapse */
@@ -1014,10 +1304,245 @@ function clearImage() {
   overflow-y: auto;
   align-content: start;
 }
+/* ── Form tabs ──────────────────────────────── */
+.editor__tabs {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--cream);
+}
+.editor__tabs button {
+  flex: 1;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ink-quiet);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.editor__tabs button:hover { color: var(--ink); }
+.editor__tabs button.is-on { background: var(--ink); color: var(--paper); }
+
+.editor__panel {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+
 .editor__form::-webkit-scrollbar { width: 10px; }
 .editor__form::-webkit-scrollbar-thumb { background: rgba(17, 32, 30, 0.18); border-radius: 999px; }
 .editor__form::-webkit-scrollbar-thumb:hover { background: rgba(17, 32, 30, 0.32); }
 .editor__form::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Source item card + picker ──────────────── */
+.src-pick { display: inline-flex; align-items: center; gap: 8px; width: fit-content; }
+
+.src-card {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+}
+.src-card__thumb {
+  width: 64px; height: 52px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  display: grid; place-items: center;
+  background: var(--paper);
+  color: var(--ink-quiet);
+}
+.src-card__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.src-card__body { display: grid; gap: 2px; min-width: 0; }
+.src-card__meta {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+}
+.src-card__title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.src-card__actions { display: inline-flex; gap: 6px; }
+.src-card__actions .button { min-height: 34px; padding: 6px 12px; font-size: 0.82rem; }
+.src-card__actions .button.button-ghost {
+  background: transparent; border: 1px solid transparent; color: var(--ink-quiet);
+}
+.src-card__actions .button.button-ghost:hover {
+  color: var(--rust-deep); border-color: rgba(196, 106, 58, 0.3);
+}
+
+.ipicker {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(14, 26, 26, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: grid; place-items: center;
+  padding: 24px;
+}
+.ipicker__panel {
+  width: min(920px, 100%);
+  max-height: min(82svh, 780px);
+  display: flex; flex-direction: column;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+.ipicker__head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.ipicker__head h3 {
+  font-family: var(--font-display);
+  font-size: 1.3rem; font-weight: 600; letter-spacing: -0.015em;
+  margin: 4px 0 0; color: var(--ink);
+}
+.ipicker__close {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.ipicker__close:hover { background: var(--cream); border-color: var(--ink); }
+
+.ipicker__filters {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.ipicker__search {
+  flex: 1;
+  min-width: 180px;
+  padding: 9px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+}
+.ipicker__search:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(69, 124, 119, 0.18);
+}
+
+.ipicker__grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: max-content;
+  gap: 12px;
+  padding: 18px 24px;
+  align-content: start;
+}
+.ipicker__card {
+  display: flex; flex-direction: column;
+  text-align: left;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.ipicker__card:hover {
+  border-color: var(--teal);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+.ipicker__card.is-current {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgba(69, 124, 119, 0.3);
+}
+.ipicker__thumb {
+  height: 120px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--cream), var(--paper-warm));
+  display: grid; place-items: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+.ipicker__thumb img { width: 100%; height: 100%; object-fit: cover; }
+.ipicker__thumb-empty {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+}
+.ipicker__body { display: grid; gap: 3px; padding: 10px 12px 12px; }
+.ipicker__meta {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+}
+.ipicker__title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ipicker__sub {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--teal-deep);
+}
+.ipicker__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--ink-quiet);
+  padding: 40px 0;
+  margin: 0;
+}
+.ipicker__foot {
+  padding: 12px 24px;
+  border-top: 1px solid var(--line);
+  font-size: 0.8rem;
+  color: var(--ink-quiet);
+}
+
+@media (max-width: 720px) {
+  .ipicker { padding: 10px; }
+  .ipicker__grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); padding: 14px; }
+  .src-card { grid-template-columns: 52px minmax(0, 1fr); }
+  .src-card__actions { grid-column: 1 / -1; }
+}
 
 /* ── Image field row ────────────────────────── */
 .image-row {
@@ -1180,6 +1705,7 @@ function clearImage() {
   line-height: 1.5;
 }
 .field__hint strong { color: var(--ink); font-weight: 600; }
+.field__hint--warn { color: var(--rust-deep); }
 .field__hint code {
   font-family: var(--font-mono);
   font-size: 0.78em;

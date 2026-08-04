@@ -3,7 +3,9 @@ import { computed } from 'vue'
 import SectionLabel from '@/components/ui/SectionLabel.vue'
 import AppButton from '@/components/ui/AppButton.vue'
 import { useContentStore, externalLinks } from '@/stores/content.js'
+import { useI18n } from '@/i18n'
 
+const { t } = useI18n()
 const content = useContentStore()
 
 // Books from the API; fall back to static list if none loaded yet
@@ -32,17 +34,15 @@ const bookImages = computed(() => [
       </div>
 
       <div class="amz__copy fade-up">
-        <SectionLabel index="07" label="Amazon Books" />
-        <h2 id="amz-title" class="display-2 amz__title">
-          Long-form manuals for people who still <em>like paper.</em>
-        </h2>
+        <SectionLabel index="07" :label="t('amz.label')" />
+        <h2 id="amz-title" class="display-2 amz__title" v-html="t('amz.title')"></h2>
         <p class="prose amz__lead">
-          Some resources are available as paperback books for coaches and practitioners who prefer reading, annotating, and destroying margins with notes.
+          {{ t('amz.lead') }}
         </p>
         <ul class="amz__list">
           <li v-for="b in books" :key="b.id || b.title">{{ b.title || b }}</li>
         </ul>
-        <AppButton variant="ghost" :href="externalLinks.amazon" external>View Books on Amazon</AppButton>
+        <AppButton variant="ghost" :href="externalLinks.amazon" external>{{ t('amz.viewBooks') }}</AppButton>
       </div>
     </div>
   </section>

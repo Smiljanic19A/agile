@@ -46,6 +46,11 @@ defineProps({
   font-family: var(--font-body);
 }
 .btn:hover .btn__arrow { transform: translateX(3px); }
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover, .btn:active { transform: none; }
+}
 
 .btn--sm { font-size: 13px; padding: 10px 16px; }
 .btn--lg { font-size: 15px; padding: 16px 26px; }
